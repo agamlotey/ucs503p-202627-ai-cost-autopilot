@@ -1,0 +1,14 @@
+# --- shared / gateway ---
+fastapi
+uvicorn[standard]
+httpx
+tiktoken
+pytest
+
+# --- trimmer (Agam) — uncomment when needed ---
+# tree-sitter
+# tree-sitter-languages
+
+# --- cache (Devansh) — uncomment when needed ---
+# sentence-transformers
+# numpy

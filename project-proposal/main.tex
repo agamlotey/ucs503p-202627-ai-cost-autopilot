@@ -4,239 +4,179 @@
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage{xcolor}
-
-% -----------------------------------------------------
-% bvraghav-tiet-ucs503p-article.sty
-% -----------------------------------------------------
-
-% Variable: Lab Instructor
-\makeatletter \newcommand{\BvrSetLabInstructor}[1]{%
-  \gdef\Bvr@LabInstructor{#1}}
-% default
-\newcommand{\Bvr@LabInstructor}{Dr. Raghav %
-  B. Venkataramaiyer}
-% public accessor
-\newcommand{\BvrLabInstructorValue}{\Bvr@LabInstructor}
-\makeatother
-
-% Add subtitle
+\usepackage{booktabs}
+\usepackage{array}
 \usepackage{titling}
-% -- Set title bold
-\pretitle{\begin{center}\bfseries\fontsize{18bp}{18bp}\selectfont}
-\makeatletter
-\newcommand{\BvrSubtitle}[1]{%
-  \posttitle{%
-    \par\end{center}
-    \begin{center}\large#1\end{center}
-    \vskip 0.5em}%
-}
-\makeatother
 
-% Hints in the section title(s)
-\newcommand{\BvrHint}[1]{%
-  {\normalfont\normalsize\itshape\hfill #1}}
+\setlength{\droptitle}{-3em}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
 
-% -----------------------------------------------------
-
-\title{Grievance-Resolution System for a Tier-2/3 City}
-
-\BvrSetLabInstructor{Dr. Raghav B. Venkataramaiyer}
-
-\BvrSubtitle{%
-  Project Proposal for UCS503P  \\
-  Submitted to: \BvrLabInstructorValue \\ \bfseries
-  Thapar Institute of Engineering and Technology% 
-}
+% NOTE: Replace the placeholder full names and emails below with the real ones.
+\title{\textbf{AI Cost Autopilot}\\[0.3em]
+\large A Compiler-Aware Gateway for Token and Cost Optimization\\ in LLM Coding Agents}
 
 \author{
-  Vidya Vaidyanathan, CSED%
-  \thanks{Roll No: \texttt{1024030xxx}, %
-    Email: \texttt{vvaidhanathan\_be24\@thapar.edu}}
-  \and 
-  Bhanurekha Ganesan, CSED%
-  \thanks{Roll No: \texttt{1024030xxx}, %
-    Email: \texttt{bganesan\_be24\@thapar.edu}}
+Agam (1024240033) \and
+Devansh (1024240012) \and
+Furmaan (1024240029)
 }
 
-\date{\today}
+\date{Project Proposal --- UCS503P (2026--27 Odd)\\
+Computer Science and Engineering Department\\
+Thapar Institute of Engineering and Technology, Patiala}
 
 \begin{document}
 \maketitle
 
-\section{Higher-order goal%
-  \BvrHint{\ldots secondary framing}}
-This project aims to improve sustainable urban
-governance by reducing the time and effort required to
-resolve citizen issues. While the topic is broader than
-any single municipality, the immediate engineering
-objective is to translate \emph{efficient public
-  service delivery} into a measurable, deployable
-software solution.
+\section{Introduction and Problem Statement}
 
-\section{Time-to-value %
-\BvrHint{\ldots primary heuristic}}
-\begin{itemize}[leftmargin=0.7cm]
-    \item We will deliver meaningful increments quickly by prototyping the core user workflow and validating it with users within a short iteration window.
-    \item We will prioritize fast feedback over perfection by using weekly iterations (and targeting CI-backed automation early) to reduce release friction.
-    \item Success is defined by what can be delivered and measured in the first iteration, then improved based on user feedback.
+Large Language Model (LLM) coding assistants such as Cursor, Claude Code, and
+Codex have rapidly become part of everyday software development. These tools
+work by sending a developer's source code and instructions to a hosted LLM,
+which is billed per \emph{token} (a small fragment of text). As a project or
+team grows, the number and size of these requests grow with it, and so does the
+bill.
+
+In practice, a large share of this spend is avoidable. Coding agents routinely
+attach big portions of a codebase to \emph{every} request, re-send
+near-identical prompts, and include files the model does not actually need for
+the task at hand. This creates three problems: (i)~unpredictable and rapidly
+growing API bills; (ii)~unnecessary exposure of private source code to
+third-party providers; and (iii)~the absence of any standard control layer to
+manage either. Existing ``prompt-compression'' tools treat code as plain text
+and cut it by length or pattern. This is unsafe: they can silently delete a line
+of logic the model needs, breaking correctness.
+
+This project proposes \textbf{AI Cost Autopilot}, a lightweight,
+provider-agnostic gateway that sits between a coding agent and the LLM and
+reduces cost on every request through three cooperating components: a
+\emph{compiler-aware trimmer} that understands code structure and sends only
+what is needed; a \emph{semantic cache} that reuses answers to questions that
+mean the same thing; and an \emph{autopilot} policy that selects the cheapest
+safe action per request. We have already validated the core hypothesis with a
+proof-of-concept: routing the open-source TestZeus/Hercules agent through a
+proxy with off-the-shelf prompt compression cut token usage by roughly 25\% with
+no observable change in the agent's behaviour across repeated runs. This
+proposal covers building our own, purpose-built, and safer system.
+
+\section{Objectives}
+
+\noindent\textbf{Primary goal:} Design and build a provider-agnostic gateway
+that measurably reduces the token cost of LLM coding agents on repetitive,
+code-heavy workloads, without changing agent behaviour. Specific,
+time-bound sub-goals:
+
+\begin{itemize}[noitemsep]
+  \item Implement a \textbf{compiler-aware trimmer} for at least one language
+        (Python) that uses AST analysis to keep needed code in full and collapse
+        the rest to signatures.
+  \item Implement a \textbf{semantic cache} using embeddings, with a tuned
+        similarity threshold and a secret/PII filter.
+  \item Implement an \textbf{autopilot} policy that selects reuse, trim, or
+        pass-through per request.
+  \item Integrate all three behind a single \textbf{OpenAI/Anthropic-compatible}
+        endpoint that existing tools connect to by changing one setting.
+  \item \textbf{Evaluate} token savings ($\geq$ 30\% target on code-heavy
+        repetitive workloads), cache hit-rate, and behavioural equivalence on the
+        TestZeus/Hercules agent by W17.
 \end{itemize}
 
-\section{Problem Statement}
-Citizens in a tier-2/3 Indian city face delays and uncertainty when reporting local issues (e.g., streetlight outages, water leakage, garbage accumulation, road potholes). Common pain points include:
-\begin{itemize}[leftmargin=0.7cm]
-    \item \textbf{Fragmentation:} complaints are often made via multiple channels (calls, social media, paper forms), causing lost context.
-    \item \textbf{Low transparency:} citizens cannot easily see the status of their complaint (e.g., ``received'', ``assigned'', ``in progress'', ``resolved'').
-    \item \textbf{Slow coordination:} departments/field teams lack a unified, trackable workflow with clear ownership.
-    \item \textbf{Poor data quality:} duplicate or incomplete reports force rework and extend resolution time.
+\section{Methodology and System Architecture}
+
+\subsection{System Architecture and Tech Stack}
+The system is a proxy exposing an OpenAI- and Anthropic-compatible
+\texttt{/v1/chat/completions} endpoint, so any coding agent connects by changing
+a single base-URL setting. It is implemented in \textbf{Python} using
+\textbf{FastAPI} (web service) and \textbf{httpx} (forwarding to the provider),
+with token accounting via \textbf{tiktoken}. Responses are streamed back to the
+client, and tool/function-call structures are preserved unchanged so agentic
+tools keep working.
+
+\subsection{Module Development}
+\begin{itemize}[noitemsep]
+  \item \textbf{Compiler-Aware Trimmer (Agam).} Uses \texttt{tree-sitter} to
+        parse code into an Abstract Syntax Tree, builds a dependency graph, keeps
+        the focus file plus its 1--2 hop dependencies in full, and collapses all
+        other functions/classes to their signatures. It is deterministic and
+        never breaks syntax. Python first, then TypeScript.
+  \item \textbf{Semantic Cache (Devansh).} Uses \texttt{sentence-transformers}
+        embeddings and a vector store (SQLite\,+\,NumPy or FAISS). Each request is
+        embedded and matched against stored requests by cosine similarity; on a
+        match above a tuned threshold, the stored answer is returned. Includes
+        per-user isolation, a time-to-live, and a filter that refuses to cache
+        secrets or personal data.
+  \item \textbf{Autopilot Policy (Furmaan).} For each request it runs a safety
+        check, then a cache lookup, then decides between trimming and pass-through
+        using cheap signals (token count, presence of code). Conservative
+        thresholds prevent serving a ``close-enough'' but wrong cached answer.
 \end{itemize}
 
-\textbf{Why this matters now (contextual relevance):} In an urban setting with limited staff bandwidth, even small process improvements can noticeably reduce resolution delays and repeated submissions.
+\subsection{Testing and Validation}
+Each module ships with unit tests, and an integration test exercises the full
+pipeline end-to-end. We validate on the open-source \textbf{TestZeus/Hercules}
+agent, measuring: (i)~percentage token reduction, (ii)~cache hit-rate,
+(iii)~dollar cost per run, and (iv)~\emph{behavioural equivalence} --- confirming
+the agent reaches the same outcome with and without the gateway across repeated
+runs. Success criteria: $\geq$ 30\% token reduction on code-heavy repetitive
+workloads with \textbf{zero} behavioural regressions.
 
-\section{Proposed Solution %
-\BvrHint{\ldots Software Proposition}}
-\subsection{Overview}
-Build a \textbf{web-based} ``Grievance-to-Resolution'' system with the following components:
-\begin{itemize}[leftmargin=0.7cm]
-    \item \textbf{Citizen submission portal:} users submit an issue with photo (optional), category, and locality/ward.
-    \item \textbf{Automated triage:} basic duplicate detection and completeness checks.
-    \item \textbf{Department workflow:} assign issues to relevant department/team and update statuses.
-    \item \textbf{Status transparency:} citizens track status and receive notifications when resolved.
-    \item \textbf{Admin/ops dashboard:} performance summaries (resolution time, backlog).
+\section{Timeline}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright}p{1.6cm} p{7.7cm} p{4.4cm}}
+\toprule
+\textbf{Week} & \textbf{Task} & \textbf{Deliverable} \\
+\midrule
+W4 & Project proposal (this document) & Proposal + report \\
+W5--W6 & Gateway pass-through; freeze shared interfaces; v1 of each module (mocked) & Running gateway; module stubs \\
+W7 & Prototype: Python trimmer, exact-match cache, basic autopilot, end-to-end & \textbf{Prototype demo (MST)} \\
+W8 & Improvement plan from prototype feedback & Improvement plan \\
+W9--W10 & MST period (limited work) & --- \\
+W11--W12 & Semantic cache (embeddings), TypeScript trimmer, autopilot tuning; integrate and measure & Integrated build + metrics \\
+W13 & Buffer (holiday week) & --- \\
+W14--W15 & Full integration; benchmark savings across tools & \textbf{Second prototype} \\
+W16 & Improvements over second prototype & Refined build \\
+W17 & Final prototype, presentation, final report & \textbf{Final deliverable (EST)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Resources and Team Roles}
+
+\textbf{Team roles.} Agam --- compiler-aware trimmer; Devansh --- semantic cache;
+Furmaan --- autopilot policy. The gateway and the evaluation harness are shared,
+with pull-request review across the team.
+
+\textbf{Software (all open-source / free).} Python, FastAPI, httpx,
+tree-sitter, sentence-transformers, FAISS/SQLite, tiktoken, and pytest;
+Git and GitHub for version control and collaboration.
+
+\textbf{Compute and budget.} Development runs on the team members' personal
+laptops. A small amount of LLM API credit (estimated under a few hundred rupees
+on a low-cost model such as \texttt{gpt-4o-mini}) is needed for benchmarking. No
+external funding is required; all other resources are freely available through
+open-source tooling and the university.
+
+\section{Risks and Mitigation}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Language-specific parsing is complex.} Start with Python, add
+        languages incrementally, and fall back to safe generic trimming when a
+        file cannot be parsed.
+  \item \textbf{The cache could return a wrong ``close'' answer.} Use a
+        conservative similarity threshold plus behavioural-equivalence checks, and
+        never cache sensitive content.
+  \item \textbf{Provider APIs may change.} Isolate provider specifics behind a
+        thin adapter layer.
+  \item \textbf{Scope creep.} Follow a milestone-driven plan: one language and
+        one provider first, then expand.
 \end{itemize}
 
-\subsection{Core workflow}
-\begin{enumerate}[leftmargin=0.7cm]
-    \item Citizen creates a complaint and receives a complaint ID immediately.
-    \item System validates completeness and suggests possible duplicates (lightweight similarity on text/category and approximate location).
-    \item Department staff update status (Received $\rightarrow$ Assigned $\rightarrow$ In Progress $\rightarrow$ Resolved).
-    \item Citizen views status updates and resolution notes.
-\end{enumerate}
-
-\subsection{Operational constraints for an educational, tier-2/3 setting}
-\begin{itemize}[leftmargin=0.7cm]
-    \item Keep the solution usable on low-to-mid range devices via responsive web design.
-    \item Avoid dependence on advanced research algorithms; focus on workflow, automation, and system correctness.
-    \item Design for deployability using common web hosting and managed databases.
-\end{itemize}
-
-\section{Solution Approach %
-\BvrHint{\ldots Engineering focus}}
-This is an engineering course project, so we focus on scalable administrative and workflow aspects rather than novel algorithm research.
-
-\subsection{Duplicate/quality assistance %
-\BvrHint{\ldots non-research}}
-Duplicate detection will be heuristic-based:
-\begin{itemize}[leftmargin=0.7cm]
-    \item Normalize text (category + short description keywords).
-    \item Use a simple similarity measure (e.g., token overlap / TF-IDF cosine with threshold) without claiming state-of-the-art.
-    \item Show top candidate duplicates to staff for decision; never fully auto-delete or auto-reject.
-\end{itemize}
-
-\subsection{Web architecture %
-\BvrHint{\ldots web-based solution}}
-A typical 3-tier web architecture:
-\begin{itemize}[leftmargin=0.7cm]
-    \item \textbf{Frontend:} responsive UI for citizens and staff (status pages, submission form, dashboard).
-    \item \textbf{Backend API:} authentication, complaint submission, status transitions, assignment logic.
-    \item \textbf{Database:} store users, complaints, status history, attachments metadata.
-\end{itemize}
-
-\subsection{CI/CD and fast delivery enabler}
-CI/CD will be used to:
-\begin{itemize}[leftmargin=0.7cm]
-    \item Automatically build and run tests on every change.
-    \item Produce repeatable deployment artifacts to staging.
-    \item Enable safe and frequent releases of incremental features.
-\end{itemize}
-
-\section{Evaluation Criterion %
-\BvrHint{\ldots measurable and attributable}}
-We define success using measurable metrics tied to the core workflow.
-
-\subsection{Primary evaluation metric}
-\textbf{Time-to-acknowledgement (TTA):} time between complaint submission and ``Received/Assigned'' status creation in the system.
-\begin{itemize}[leftmargin=0.7cm]
-    \item Target: median TTA $\le$ 2 hours during pilot window.
-    \item Attribution: measured from database timestamps (submission vs. first status update by staff).
-\end{itemize}
-
-\subsection{Secondary evaluation metrics}
-\begin{itemize}[leftmargin=0.7cm]
-    \item \textbf{Resolution time reduction:} reduce time-to-resolved compared to baseline process (even if baseline is collected via survey).
-    \item \textbf{Duplicate rate:} percentage of complaints flagged as duplicates and resolved without rework.
-    \item \textbf{User clarity:} citizen-reported clarity of status using a simple 1--5 feedback question.
-    \item \textbf{Reliability:} availability of staging/production for login and submission during business hours (e.g., $\ge$ 99\% uptime in pilot).
-\end{itemize}
-
-\subsection{Pilot validation plan %
-\BvrHint{\ldots high-level}}
-\begin{itemize}[leftmargin=0.7cm]
-    \item Recruit 10--20 pilot users (citizens) and 3--5 staff roles (department simulation if real staff unavailable).
-    \item Compare metrics before/after within the iteration window by logging baseline estimates via short interviews or existing process observations.
-\end{itemize}
-
-\section{Scalability %
-\BvrHint{\ldots with foresight}}
-The proposition should scale in both theoretical and practical senses.
-
-\begin{enumerate}[leftmargin=0.7cm]
-    \item \textbf{Scalable (theoretically):} The system should support growth in number of complaints and concurrent dashboard usage by:
-    \begin{itemize}[leftmargin=0.7cm]
-        \item decoupling components (frontend/backend),
-        \item enabling pagination and indexing for common queries,
-        \item using stateless API design.
-    \end{itemize}
-    
-    \item \textbf{Operationally deployable (practically):} The system should run on common web hosting:
-    \begin{itemize}[leftmargin=0.7cm]
-        \item managed database,
-        \item containerized or platform-hosted deployment,
-        \item CI/CD pipeline for staging/production.
-    \end{itemize}
-\end{enumerate}
-
-\section{Engine availability heuristic}
-A mature set of ``engines'' (tooling/services) is available to implement this as a web-based project:
-\begin{itemize}[leftmargin=0.7cm]
-    \item Web framework for REST APIs and templated/reactive pages.
-    \item Managed relational or document database.
-    \item Authentication approach (token-based or session-based).
-    \item Object storage for optional attachments (or local storage for pilot).
-    \item Test framework for unit/integration tests.
-    \item CI runner and staging deployment target.
-\end{itemize}
-We will use these mature components to focus on workflow design, correctness, and measurement rather than inventing new infrastructure.
-
-\section{Project scope and deliverables %
-\BvrHint{\ldots iteration-friendly}}
-\subsection{Initial deliverable %
-\BvrHint{\ldots first iteration}}
-\begin{itemize}[leftmargin=0.7cm]
-    \item Citizen submission form + complaint ID generation
-    \item Staff workflow: update status and assignment
-    \item Citizen status page: view timeline/history
-    \item Basic logging and timestamps for TTA measurement
-    \item CI: build + backend unit tests + linting
-    \item CD to staging with a single command or pipeline job
-\end{itemize}
-
-\subsection{Subsequent deliverables}
-\begin{itemize}[leftmargin=0.7cm]
-    \item Lightweight duplicate suggestions with staff review
-    \item Notification layer (email/SMS optional in later iteration; can start with in-app notifications)
-    \item Admin dashboard for metrics and backlog
-    \item Improved search/filtering and indexed queries for scale readiness
-\end{itemize}
-
-\section{Risks and mitigations}
-\begin{itemize}[leftmargin=0.7cm]
-    \item \textbf{Data privacy / consent:} minimize collected data; keep attachments optional; store only what is needed.
-    \item \textbf{Staff adoption:} provide an easy UI for status updates; keep workflow steps minimal; include shortcuts.
-    \item \textbf{Evaluation measurement ambiguity:} instrument timestamps and define clear status transitions before development begins.
-    \item \textbf{Operational issues in pilot:} use staging early; ensure CI/CD produces repeatable deployments.
-\end{itemize}
-
-\section{Summary}
-This project proposes a deployable web platform to reduce grievance handling delays in a tier-2/3 city context. It meets the course criteria by emphasizing time-to-value through rapid iterations, implementing CI/CD to support frequent safe releases, and using measurable evaluation criteria (especially time-to-acknowledgement). It remains focused on engineering workflow and scalability readiness rather than research-driven novelty.
+\vspace{1em}
+\noindent\textbf{Elevator pitch.} \emph{Coding agents waste money and expose code
+by sending far more to the AI than any task needs. AI Cost Autopilot is a gateway
+that trims code safely, reuses past answers, and auto-selects the cheapest safe
+path --- cutting bills by up to 40\% with no change to how developers work.}
 
 \end{document}
