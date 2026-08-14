@@ -5,9 +5,9 @@ httpx
 tiktoken
 pytest
 
-# --- trimmer (Agam) — uncomment when needed ---
-# tree-sitter
-# tree-sitter-languages
+# --- trimmer (Agam) ---
+tree-sitter
+tree-sitter-python
 
 # --- cache (Devansh) — uncomment when needed ---
 # sentence-transformers
