@@ -1,0 +1,14 @@
+- [Home](index.md)
+- [The Problem](problem.md)
+- [Architecture](architecture.md)
+- Components
+    - [Compiler-Aware Trimmer](components/trimmer.md)
+    - [Semantic Cache](components/cache.md)
+    - [Autopilot](components/autopilot.md)
+- [Usage](usage.md)
+- [Roadmap](roadmap.md)
+- [Team](team.md)
+- Journals
+    - [Agam](journals/1024240033-agam/index.md)
+    - [Devansh](journals/1024240012-devansh/index.md)
+    - [Furmaan](journals/1024240029-furmaan/index.md)

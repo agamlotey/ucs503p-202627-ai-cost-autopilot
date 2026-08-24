@@ -1,6 +1,27 @@
 import os
 
-from trimmer.trimmer import CodeTrimmer, collapse_python
+from trimmer.trimmer import (
+    CodeTrimmer,
+    collapse_python,
+    build_call_graph,
+    expand_focus,
+)
+
+SAMPLE = '''
+def foo(x):
+    """entry"""
+    return bar(x) + 1
+
+
+def bar(y):
+    """helper"""
+    return y * 2
+
+
+def baz(z):
+    """unrelated"""
+    return z - 3
+'''
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "..", "fixtures", "sample_project")
 
@@ -58,3 +79,47 @@ def test_keep_list_preserves_named_function():
     assert "json.loads" in out
     # others still collapsed
     assert "required = " not in out
+
+
+# ---- phase 2: focus + call graph ----
+
+def test_build_call_graph_edges():
+    g = build_call_graph(SAMPLE)
+    assert "bar" in g["foo"]      # foo calls bar
+    assert g["baz"] == set()      # baz calls nothing known
+
+
+def test_expand_focus_follows_calls():
+    g = build_call_graph(SAMPLE)
+    assert expand_focus({"foo"}, g, hops=2) == {"foo", "bar"}
+
+
+def test_trim_keeps_focus_and_its_callees():
+    msgs = [
+        {"role": "user", "content": "please fix foo"},   # plain text -> focus = foo
+        {"role": "user", "content": SAMPLE},
+    ]
+    out, stats = CodeTrimmer().trim(msgs, token_budget=5)
+    code = out[1]["content"]
+    assert "return bar(x) + 1" in code   # foo kept (focus)
+    assert "return y * 2" in code        # bar kept (called by foo)
+    assert "z - 3" not in code           # baz collapsed
+    assert "def baz(z):" in code         # baz signature still there
+    assert stats["tokens_saved"] > 0
+
+
+def test_trim_no_focus_collapses_all():
+    out, _ = CodeTrimmer().trim([{"role": "user", "content": SAMPLE}], token_budget=5)
+    code = out[0]["content"]
+    assert "return bar(x) + 1" not in code
+    assert "z - 3" not in code
+    assert "def foo(x):" in code          # signatures remain
+
+
+def test_ctx_focus_override():
+    out, _ = CodeTrimmer().trim(
+        [{"role": "user", "content": SAMPLE}], token_budget=5, ctx={"focus": ["baz"]}
+    )
+    code = out[0]["content"]
+    assert "z - 3" in code                # baz kept via explicit focus
+    assert "return y * 2" not in code     # bar collapsed
