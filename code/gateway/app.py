@@ -4,6 +4,8 @@ The gateway. Wires the three components together.
 Flow:  request -> signals -> autopilot.decide -> (cache.lookup) ->
        (trimmer.trim) -> provider.forward -> cache.store -> response
 """
+import copy
+
 from fastapi import FastAPI, Request
 
 from . import provider, config
@@ -39,11 +41,17 @@ def health():
 @app.post("/v1/chat/completions")
 async def chat_completions(req: Request):
     body = await req.json()
-    signals = compute_signals(body)
-    plan = autopilot.decide(body, signals)
+
+    # Snapshot the request BEFORE trimming mutates it. The cache must key on the
+    # *original* request for both lookup and store — otherwise the response gets
+    # stored under the trimmed key and the next identical request never hits.
+    original = copy.deepcopy(body)
+
+    signals = compute_signals(original)
+    plan = autopilot.decide(original, signals)
 
     if plan.get("use_cache"):
-        hit = cache.lookup(body)
+        hit = cache.lookup(original)
         if hit is not None:
             return hit
 
@@ -53,5 +61,7 @@ async def chat_completions(req: Request):
         )
 
     response = await provider.forward(body)
-    cache.store(body, response)
+
+    if plan.get("use_cache"):
+        cache.store(original, response)
     return response
