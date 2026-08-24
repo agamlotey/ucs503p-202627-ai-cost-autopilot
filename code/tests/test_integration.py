@@ -1,13 +1,11 @@
-import pytest
+from fastapi.testclient import TestClient
 
-# Declared once for the whole module instead of inside every test.
-pytest.importorskip("fastapi")
+from gateway import config
+from gateway.app import app
+from gateway.provider import mock_response
 
-from fastapi.testclient import TestClient  # noqa: E402
-
-from gateway import config  # noqa: E402
-from gateway.app import app  # noqa: E402
-from gateway.provider import mock_response  # noqa: E402
+# The fastapi guard lives in conftest.py so it is declared once for the
+# whole tests/ directory.
 
 
 def test_app_imports():
