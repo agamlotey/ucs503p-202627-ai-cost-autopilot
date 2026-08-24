@@ -123,3 +123,43 @@ def test_ctx_focus_override():
     code = out[0]["content"]
     assert "z - 3" in code                # baz kept via explicit focus
     assert "return y * 2" not in code     # bar collapsed
+
+
+# ---- call-graph edge resolution ----
+
+SUPER_SAMPLE = '''
+class ConfigError(Exception):
+    def __init__(self, message):
+        """Raised when a config file is invalid."""
+        self.message = message
+        super().__init__(message)
+
+
+def helper(x):
+    return x
+
+
+def caller(x):
+    return helper(x)
+
+
+def recurse(n):
+    return recurse(n - 1)
+'''
+
+
+def test_super_call_does_not_create_false_edge():
+    """super().__init__() dispatches to the base class, not to our __init__."""
+    g = build_call_graph(SUPER_SAMPLE)
+    assert "__init__" not in g["__init__"]
+
+
+def test_no_self_edges():
+    """Recursion adds nothing to focus expansion."""
+    g = build_call_graph(SUPER_SAMPLE)
+    assert "recurse" not in g["recurse"]
+
+
+def test_real_edges_still_resolved():
+    g = build_call_graph(SUPER_SAMPLE)
+    assert g["caller"] == {"helper"}

@@ -134,15 +134,34 @@ def _defined_functions(source: str) -> set[str]:
     return names
 
 
+def _text(node, data: bytes) -> str:
+    return data[node.start_byte:node.end_byte].decode("utf-8", "ignore")
+
+
 def _callee_name(fn_node, data: bytes) -> str:
+    """Name of the function being called, or "" if it cannot be resolved.
+
+    Attribute calls (`obj.method()`) are matched by their bare method name,
+    which is an approximation: it can link to a same-named function elsewhere
+    in the file. It errs towards keeping too much rather than too little.
+
+    `super().method()` is excluded — it dispatches to the *base class*, so
+    treating it as a call to a same-named function in this file produces a
+    false edge (notably `__init__` appearing to call itself).
+    """
     if fn_node is None:
         return ""
     if fn_node.type == "identifier":
-        return data[fn_node.start_byte:fn_node.end_byte].decode("utf-8", "ignore")
+        return _text(fn_node, data)
     if fn_node.type == "attribute":  # obj.method(...) -> "method"
+        obj = fn_node.child_by_field_name("object")
+        if obj is not None and obj.type == "call":
+            inner = obj.child_by_field_name("function")
+            if inner is not None and _text(inner, data) == "super":
+                return ""
         attr = fn_node.child_by_field_name("attribute")
         if attr is not None:
-            return data[attr.start_byte:attr.end_byte].decode("utf-8", "ignore")
+            return _text(attr, data)
     return ""
 
 
@@ -178,7 +197,10 @@ def build_call_graph(source: str) -> dict[str, set[str]]:
                 body = child.child_by_field_name("body")
                 if nn is not None and body is not None:
                     caller = data[nn.start_byte:nn.end_byte].decode("utf-8", "ignore")
-                    graph.setdefault(caller, set()).update(calls_in(body))
+                    # Drop self-edges: recursion adds nothing to focus
+                    # expansion, since the caller is already in the set.
+                    edges = {c for c in calls_in(body) if c != caller}
+                    graph.setdefault(caller, set()).update(edges)
             walk(child)
 
     walk(tree.root_node)
