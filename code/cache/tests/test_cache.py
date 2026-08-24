@@ -1,115 +1,135 @@
-from cache.cache import SemanticCache
+"""Tests for the v2 semantic cache.
+
+Most tests inject a tiny FAKE embedder (a fixed text->vector map) so we can
+test the cache LOGIC — threshold, bucketing, cosine — deterministically and
+without downloading PyTorch. One test at the bottom uses the REAL model and is
+skipped if sentence-transformers isn't installed.
+"""
+import pytest
+
+from cache.cache import SemanticCache, DEFAULT_THRESHOLD
 
 
-def _req(text):
-    return {"messages": [{"role": "user", "content": text}]}
+# --- fake embedder ---------------------------------------------------------
+# Hand-picked vectors so we know the cosine similarities exactly:
+#   FR ~ FR2  (cosine 0.96, a "paraphrase")   |   FR vs JP (cosine 0.0)
+_VECTORS = {
+    "capital of France?": [1.0, 0.0, 0.0],
+    "France's capital?":  [0.96, 0.28, 0.0],   # cosine with FR ~= 0.96
+    "capital of Japan?":  [0.0, 1.0, 0.0],     # cosine with FR  = 0.0
+}
 
 
-def test_lookup_miss_then_store_ok():
-    c = SemanticCache()
-    assert c.lookup({"messages": []}) is None
-    c.store({"messages": []}, {"ok": True})  # should not raise
+def _fake_embed(text):
+    return _VECTORS.get(text, [0.0, 0.0, 1.0])   # unknown -> a 3rd direction
 
 
-def test_store_then_lookup_hits():
-    """The core promise: store an answer, get it back for the same request."""
-    c = SemanticCache()
-    req = _req("what is the capital of France?")
-    answer = {"choices": [{"message": {"content": "Paris"}}]}
-    assert c.lookup(req) is None          # not seen yet -> miss
-    c.store(req, answer)
-    assert c.lookup(req) == answer        # identical request -> hit
+def _req(text, **extra):
+    return {"model": "gpt-4o", "messages": [{"role": "user", "content": text}], **extra}
 
 
-def test_different_requests_do_not_collide():
-    """A stored answer must not leak to a different question."""
-    c = SemanticCache()
+def _cache(threshold=DEFAULT_THRESHOLD):
+    return SemanticCache(embed_fn=_fake_embed, threshold=threshold)
+
+
+# --- core behaviour --------------------------------------------------------
+
+def test_miss_when_empty():
+    assert _cache().lookup(_req("capital of France?")) is None
+
+
+def test_identical_request_hits():
+    c = _cache()
+    c.store(_req("capital of France?"), {"a": "Paris"})
+    assert c.lookup(_req("capital of France?")) == {"a": "Paris"}
+
+
+def test_paraphrase_above_threshold_hits():
+    """Different wording, same meaning (cosine 0.96 >= 0.90) -> reuse."""
+    c = _cache()
+    c.store(_req("capital of France?"), {"a": "Paris"})
+    assert c.lookup(_req("France's capital?")) == {"a": "Paris"}
+
+
+def test_dissimilar_question_misses():
+    """A genuinely different question (cosine 0.0) must not reuse the answer."""
+    c = _cache()
     c.store(_req("capital of France?"), {"a": "Paris"})
     assert c.lookup(_req("capital of Japan?")) is None
 
 
-def test_key_is_order_independent_within_message():
-    """Same messages but keys written in a different order still match,
-    because we hash with sort_keys=True."""
-    c = SemanticCache()
-    c.store({"messages": [{"role": "user", "content": "hi"}]}, {"a": 1})
-    # same message, dict keys built in the opposite order
-    reordered = {"messages": [{"content": "hi", "role": "user"}]}
-    assert c.lookup(reordered) == {"a": 1}
+# --- v1 safety preserved (hard key) ----------------------------------------
+
+def test_different_model_does_not_match():
+    """Same text, different model -> different bucket -> no reuse."""
+    c = _cache()
+    c.store(_req("capital of France?", model="gpt-4o"), {"a": "Paris"})
+    assert c.lookup(_req("capital of France?", model="gpt-3.5-turbo")) is None
 
 
-def test_repeated_store_overwrites():
-    """Storing the same request twice keeps the latest answer."""
-    c = SemanticCache()
-    req = _req("q")
-    c.store(req, {"v": 1})
-    c.store(req, {"v": 2})
-    assert c.lookup(req) == {"v": 2}
+def test_different_temperature_does_not_match():
+    c = _cache()
+    c.store(_req("capital of France?", temperature=0), {"a": "Paris"})
+    assert c.lookup(_req("capital of France?", temperature=1.9)) is None
 
 
-def test_different_models_do_not_share_an_answer():
-    """Same question, different model -> different cache entry.
-
-    Serving one model's answer for another is a wrong-answer bug: the whole
-    point of the cache is 'reuse when it's genuinely the same request'.
-    """
-    c = SemanticCache()
-    q = [{"role": "user", "content": "2+2?"}]
-    c.store({"model": "gpt-4o", "messages": q}, {"a": "from gpt-4o"})
-    assert c.lookup({"model": "gpt-3.5-turbo", "messages": q}) is None
-    assert c.lookup({"model": "gpt-4o", "messages": q}) == {"a": "from gpt-4o"}
+def test_ignored_field_still_shares_entry():
+    """`user` is denylisted -> same bucket -> reuse."""
+    c = _cache()
+    c.store(_req("capital of France?", user="alice"), {"a": "Paris"})
+    assert c.lookup(_req("capital of France?", user="bob")) == {"a": "Paris"}
 
 
-def test_lookup_returns_a_copy_not_the_stored_object():
-    """Mutating a looked-up response must not corrupt the cache."""
-    c = SemanticCache()
-    req = _req("q")
-    c.store(req, {"choices": [{"text": "original"}]})
-    hit = c.lookup(req)
-    hit["choices"][0]["text"] = "TAMPERED"     # caller mutates their copy
-    assert c.lookup(req)["choices"][0]["text"] == "original"  # cache intact
+# --- threshold + robustness ------------------------------------------------
+
+def test_threshold_is_configurable():
+    """Below the default a paraphrase misses; lower the bar and it hits."""
+    strict = SemanticCache(embed_fn=_fake_embed, threshold=0.99)
+    strict.store(_req("capital of France?"), {"a": "Paris"})
+    assert strict.lookup(_req("France's capital?")) is None   # 0.96 < 0.99
+
+    loose = SemanticCache(embed_fn=_fake_embed, threshold=0.80)
+    loose.store(_req("capital of France?"), {"a": "Paris"})
+    assert loose.lookup(_req("France's capital?")) == {"a": "Paris"}
 
 
-def test_store_snapshots_the_response():
-    """Mutating the caller's object AFTER store() must not change the cache."""
-    c = SemanticCache()
-    req = _req("q")
-    resp = {"answer": "v1"}
-    c.store(req, resp)
-    resp["answer"] = "v2"                       # caller changes it later
-    assert c.lookup(req) == {"answer": "v1"}    # cache kept the snapshot
+def test_lookup_returns_a_copy():
+    c = _cache()
+    c.store(_req("capital of France?"), {"choices": [{"text": "Paris"}]})
+    hit = c.lookup(_req("capital of France?"))
+    hit["choices"][0]["text"] = "TAMPERED"
+    assert c.lookup(_req("capital of France?"))["choices"][0]["text"] == "Paris"
 
 
-def test_different_temperature_does_not_share_an_answer():
-    """temperature changes the answer, so it must be part of the key."""
-    c = SemanticCache()
-    q = [{"role": "user", "content": "write a poem"}]
-    c.store({"model": "gpt-4o", "messages": q, "temperature": 0}, {"a": "deterministic"})
-    assert c.lookup({"model": "gpt-4o", "messages": q, "temperature": 1.9}) is None
+def test_store_snapshots_response():
+    c = _cache()
+    resp = {"a": "v1"}
+    c.store(_req("capital of France?"), resp)
+    resp["a"] = "v2"
+    assert c.lookup(_req("capital of France?")) == {"a": "v1"}
 
 
-def test_stream_flag_is_part_of_key():
-    """A streaming client must not be served a stored non-streaming dict."""
-    c = SemanticCache()
-    q = [{"role": "user", "content": "hi"}]
-    c.store({"model": "gpt-4o", "messages": q}, {"non": "stream dict"})
-    assert c.lookup({"model": "gpt-4o", "messages": q, "stream": True}) is None
+# --- real model (skipped if the library is missing) ------------------------
+
+def test_real_embeddings_match_paraphrase_not_unrelated():
+    pytest.importorskip("sentence_transformers")
+    c = SemanticCache()  # real all-MiniLM embedder, default threshold
+    c.store(_req("What is the capital of France?"), {"a": "Paris"})
+    # a genuine paraphrase should reuse...
+    assert c.lookup(_req("Which city is France's capital?")) == {"a": "Paris"}
+    # ...an unrelated question should not
+    assert c.lookup(_req("How do I sort a list in Python?")) is None
 
 
-def test_unknown_param_misses_rather_than_wrong_hit():
-    """Design guarantee: a param we've never seen fails toward a MISS (safe),
-    never a wrong reuse. This is why the key is a denylist, not an allowlist."""
-    c = SemanticCache()
-    q = [{"role": "user", "content": "hi"}]
-    c.store({"model": "gpt-4o", "messages": q}, {"a": 1})
-    # some future OpenAI field we don't special-case
-    assert c.lookup({"model": "gpt-4o", "messages": q, "some_new_2027_param": 5}) is None
+def test_degrades_to_noop_when_embedder_unavailable(monkeypatch):
+    """If sentence-transformers isn't installed, the cache must not crash the
+    gateway: every lookup misses and store is dropped (safe passthrough)."""
+    import cache.cache as m
 
+    def _boom():
+        raise ImportError("sentence-transformers not installed")
 
-def test_ignored_field_does_not_change_key():
-    """Fields in the denylist (e.g. `user`) don't affect the answer, so
-    requests differing only there SHARE a cache entry."""
-    c = SemanticCache()
-    q = [{"role": "user", "content": "hi"}]
-    c.store({"model": "gpt-4o", "messages": q, "user": "alice"}, {"a": 1})
-    assert c.lookup({"model": "gpt-4o", "messages": q, "user": "bob"}) == {"a": 1}
+    monkeypatch.setattr(m, "_default_embedder", _boom)
+    c = SemanticCache()  # no embed_fn -> tries the (now failing) default
+    c.store(_req("capital of France?"), {"a": "Paris"})   # dropped, no raise
+    assert c.lookup(_req("capital of France?")) is None    # safe miss
