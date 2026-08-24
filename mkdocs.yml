@@ -1,5 +1,5 @@
-site_name: "UCS503 : Software Engineering : Project Template"
-site_url: https://tiet-ucs503.github.io/ucs503p-202627odd-template
+site_name: "AI Cost Autopilot"
+site_url: https://agamlotey.github.io/ucs503p-202627-ai-cost-autopilot
 
 plugins:
 - search
@@ -16,7 +16,7 @@ plugins:
 - mkdocstrings:
     handlers:
       python:
-        paths: [src]
+        paths: [code]
         options:
           summary: true
           show_symbol_type_heading: true
@@ -46,14 +46,14 @@ theme:
   logo: assets/tiet-logo.svg
   favicon: assets/favicon.png
 
-repo_url: https://github.com/tiet-ucs503/ucs503p-202627odd-template
-repo_name: ucs503p-202627odd-template
-copyright: "Copyright &copy; 2025 <a href='https://bvraghav.com/'>Raghav B. Venkataramaiyer</a> &lt;<code style='color:inherit; background:transparent'>bv.raghav</code>&gt;"
+repo_url: https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot
+repo_name: ucs503p-202627-ai-cost-autopilot
+copyright: "UCS503P (2026&ndash;27 Odd) &middot; Agam, Devansh, Furmaan &middot; Thapar Institute of Engineering and Technology, Patiala"
 extra:
   social:
   - icon: fontawesome/brands/github
-    link: https://github.com/tiet-ucs503/ucs503p-202627odd-template
-    name: Git Repo for UCS503P Project Template
+    link: https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot
+    name: Git Repo for AI Cost Autopilot
 
 extra_css:
   - assets/stylesheets/extra.css
