@@ -78,3 +78,38 @@ def test_store_snapshots_the_response():
     c.store(req, resp)
     resp["answer"] = "v2"                       # caller changes it later
     assert c.lookup(req) == {"answer": "v1"}    # cache kept the snapshot
+
+
+def test_different_temperature_does_not_share_an_answer():
+    """temperature changes the answer, so it must be part of the key."""
+    c = SemanticCache()
+    q = [{"role": "user", "content": "write a poem"}]
+    c.store({"model": "gpt-4o", "messages": q, "temperature": 0}, {"a": "deterministic"})
+    assert c.lookup({"model": "gpt-4o", "messages": q, "temperature": 1.9}) is None
+
+
+def test_stream_flag_is_part_of_key():
+    """A streaming client must not be served a stored non-streaming dict."""
+    c = SemanticCache()
+    q = [{"role": "user", "content": "hi"}]
+    c.store({"model": "gpt-4o", "messages": q}, {"non": "stream dict"})
+    assert c.lookup({"model": "gpt-4o", "messages": q, "stream": True}) is None
+
+
+def test_unknown_param_misses_rather_than_wrong_hit():
+    """Design guarantee: a param we've never seen fails toward a MISS (safe),
+    never a wrong reuse. This is why the key is a denylist, not an allowlist."""
+    c = SemanticCache()
+    q = [{"role": "user", "content": "hi"}]
+    c.store({"model": "gpt-4o", "messages": q}, {"a": 1})
+    # some future OpenAI field we don't special-case
+    assert c.lookup({"model": "gpt-4o", "messages": q, "some_new_2027_param": 5}) is None
+
+
+def test_ignored_field_does_not_change_key():
+    """Fields in the denylist (e.g. `user`) don't affect the answer, so
+    requests differing only there SHARE a cache entry."""
+    c = SemanticCache()
+    q = [{"role": "user", "content": "hi"}]
+    c.store({"model": "gpt-4o", "messages": q, "user": "alice"}, {"a": 1})
+    assert c.lookup({"model": "gpt-4o", "messages": q, "user": "bob"}) == {"a": 1}
