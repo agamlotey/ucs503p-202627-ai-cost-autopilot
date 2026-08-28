@@ -4,179 +4,300 @@
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage{xcolor}
-\usepackage{booktabs}
-\usepackage{array}
+
+% -----------------------------------------------------
+% bvraghav-tiet-ucs503p-article.sty
+% -----------------------------------------------------
+
+% Variable: Lab Instructor
+\makeatletter \newcommand{\BvrSetLabInstructor}[1]{%
+  \gdef\Bvr@LabInstructor{#1}}
+% default
+\newcommand{\Bvr@LabInstructor}{Dr. Raghav %
+  B. Venkataramaiyer}
+% public accessor
+\newcommand{\BvrLabInstructorValue}{\Bvr@LabInstructor}
+\makeatother
+
+% Add subtitle
 \usepackage{titling}
+% -- Set title bold
+\pretitle{\begin{center}\bfseries\fontsize{18bp}{18bp}\selectfont}
+\makeatletter
+\newcommand{\BvrSubtitle}[1]{%
+  \posttitle{%
+    \par\end{center}
+    \begin{center}\large#1\end{center}
+    \vskip 0.5em}%
+}
+\makeatother
 
-\setlength{\droptitle}{-3em}
-\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+% Hints in the section title(s)
+\newcommand{\BvrHint}[1]{%
+  {\normalfont\normalsize\itshape\hfill #1}}
 
-% NOTE: Replace the placeholder full names and emails below with the real ones.
-\title{\textbf{AI Cost Autopilot}\\[0.3em]
-\large A Compiler-Aware Gateway for Token and Cost Optimization\\ in LLM Coding Agents}
+% -----------------------------------------------------
 
-\author{
-Agam (1024240033) \and
-Devansh (1024240012) \and
-Furmaan (1024240029)
+\title{AI Cost Autopilot: A Compiler-Aware Gateway for
+  Token-Cost Optimisation in LLM Coding Agents}
+
+\BvrSetLabInstructor{Dr. Raghav B. Venkataramaiyer}
+
+\BvrSubtitle{%
+  Project Proposal for UCS503P  \\
+  Submitted to: \BvrLabInstructorValue \\ \bfseries
+  Thapar Institute of Engineering and Technology%
 }
 
-\date{Project Proposal --- UCS503P (2026--27 Odd)\\
-Computer Science and Engineering Department\\
-Thapar Institute of Engineering and Technology, Patiala}
+\author{
+  Agampreet Kaur, CSED%
+  \thanks{Roll No: \texttt{1024240033}, %
+    Email: \texttt{akaur11\_be24@thapar.edu}}
+  \and
+  Devansh Sharma, CSED%
+  \thanks{Roll No: \texttt{1024240012}, %
+    Email: \texttt{dsharma10\_be24@thapar.edu}}
+  \and
+  Furmaandeep Kaur, CSED%
+  \thanks{Roll No: \texttt{1024240029}, %
+    Email: \texttt{fsaini\_be24@thapar.edu}}
+}
 
 \begin{document}
 \maketitle
 
-\section{Introduction and Problem Statement}
+\section{Higher-order goal \BvrHint{...secondary framing}}
 
-Large Language Model (LLM) coding assistants such as Cursor, Claude Code, and
-Codex have rapidly become part of everyday software development. These tools
-work by sending a developer's source code and instructions to a hosted LLM,
-which is billed per \emph{token} (a small fragment of text). As a project or
-team grows, the number and size of these requests grow with it, and so does the
-bill.
+This project aims to make AI-assisted software development economically
+sustainable by reducing the computation paid for on every request to a Large
+Language Model (LLM). While the topic is broader than any single development
+team, the immediate engineering objective is to translate \emph{efficient
+context usage} into a measurable, deployable piece of software: a gateway that
+sits between a coding agent and the model it calls.
 
-In practice, a large share of this spend is avoidable. Coding agents routinely
-attach big portions of a codebase to \emph{every} request, re-send
-near-identical prompts, and include files the model does not actually need for
-the task at hand. This creates three problems: (i)~unpredictable and rapidly
-growing API bills; (ii)~unnecessary exposure of private source code to
-third-party providers; and (iii)~the absence of any standard control layer to
-manage either. Existing ``prompt-compression'' tools treat code as plain text
-and cut it by length or pattern. This is unsafe: they can silently delete a line
-of logic the model needs, breaking correctness.
-
-This project proposes \textbf{AI Cost Autopilot}, a lightweight,
-provider-agnostic gateway that sits between a coding agent and the LLM and
-reduces cost on every request through three cooperating components: a
-\emph{compiler-aware trimmer} that understands code structure and sends only
-what is needed; a \emph{semantic cache} that reuses answers to questions that
-mean the same thing; and an \emph{autopilot} policy that selects the cheapest
-safe action per request. We have already validated the core hypothesis with a
-proof-of-concept: routing the open-source TestZeus/Hercules agent through a
-proxy with off-the-shelf prompt compression cut token usage by roughly 25\% with
-no observable change in the agent's behaviour across repeated runs. This
-proposal covers building our own, purpose-built, and safer system.
-
-\section{Objectives}
-
-\noindent\textbf{Primary goal:} Design and build a provider-agnostic gateway
-that measurably reduces the token cost of LLM coding agents on repetitive,
-code-heavy workloads, without changing agent behaviour. Specific,
-time-bound sub-goals:
+\section{Time-to-value \BvrHint{...primary heuristic}}
 
 \begin{itemize}[noitemsep]
-  \item Implement a \textbf{compiler-aware trimmer} for at least one language
-        (Python) that uses AST analysis to keep needed code in full and collapse
-        the rest to signatures.
-  \item Implement a \textbf{semantic cache} using embeddings, with a tuned
-        similarity threshold and a secret/PII filter.
-  \item Implement an \textbf{autopilot} policy that selects reuse, trim, or
-        pass-through per request.
-  \item Integrate all three behind a single \textbf{OpenAI/Anthropic-compatible}
-        endpoint that existing tools connect to by changing one setting.
-  \item \textbf{Evaluate} token savings ($\geq$ 30\% target on code-heavy
-        repetitive workloads), cache hit-rate, and behavioural equivalence on the
-        TestZeus/Hercules agent by W17.
+  \item We shall deliver meaningful increments quickly: a transparent
+        pass-through gateway first, then one optimisation at a time, each
+        measurable on its own.
+  \item We shall prioritise fast feedback over perfection, using weekly
+        iterations with CI-backed automation from the first week to reduce
+        release friction.
+  \item Success is defined by what can be delivered and \emph{measured} in the
+        first iteration, then improved --- every subsequent component must
+        demonstrate a token reduction that the previous configuration did not
+        already achieve.
 \end{itemize}
 
-\section{Methodology and System Architecture}
+\section{Problem Statement}
 
-\subsection{System Architecture and Tech Stack}
-The system is a proxy exposing an OpenAI- and Anthropic-compatible
-\texttt{/v1/chat/completions} endpoint, so any coding agent connects by changing
-a single base-URL setting. It is implemented in \textbf{Python} using
-\textbf{FastAPI} (web service) and \textbf{httpx} (forwarding to the provider),
-with token accounting via \textbf{tiktoken}. Responses are streamed back to the
-client, and tool/function-call structures are preserved unchanged so agentic
-tools keep working.
-
-\subsection{Module Development}
-\begin{itemize}[noitemsep]
-  \item \textbf{Compiler-Aware Trimmer (Agam).} Uses \texttt{tree-sitter} to
-        parse code into an Abstract Syntax Tree, builds a dependency graph, keeps
-        the focus file plus its 1--2 hop dependencies in full, and collapses all
-        other functions/classes to their signatures. It is deterministic and
-        never breaks syntax. Python first, then TypeScript.
-  \item \textbf{Semantic Cache (Devansh).} Uses \texttt{sentence-transformers}
-        embeddings and a vector store (SQLite\,+\,NumPy or FAISS). Each request is
-        embedded and matched against stored requests by cosine similarity; on a
-        match above a tuned threshold, the stored answer is returned. Includes
-        per-user isolation, a time-to-live, and a filter that refuses to cache
-        secrets or personal data.
-  \item \textbf{Autopilot Policy (Furmaan).} For each request it runs a safety
-        check, then a cache lookup, then decides between trimming and pass-through
-        using cheap signals (token count, presence of code). Conservative
-        thresholds prevent serving a ``close-enough'' but wrong cached answer.
-\end{itemize}
-
-\subsection{Testing and Validation}
-Each module ships with unit tests, and an integration test exercises the full
-pipeline end-to-end. We validate on the open-source \textbf{TestZeus/Hercules}
-agent, measuring: (i)~percentage token reduction, (ii)~cache hit-rate,
-(iii)~dollar cost per run, and (iv)~\emph{behavioural equivalence} --- confirming
-the agent reaches the same outcome with and without the gateway across repeated
-runs. Success criteria: $\geq$ 30\% token reduction on code-heavy repetitive
-workloads with \textbf{zero} behavioural regressions.
-
-\section{Timeline}
-
-\begin{center}
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{>{\raggedright}p{1.6cm} p{7.7cm} p{4.4cm}}
-\toprule
-\textbf{Week} & \textbf{Task} & \textbf{Deliverable} \\
-\midrule
-W4 & Project proposal (this document) & Proposal + report \\
-W5--W6 & Gateway pass-through; freeze shared interfaces; v1 of each module (mocked) & Running gateway; module stubs \\
-W7 & Prototype: Python trimmer, exact-match cache, basic autopilot, end-to-end & \textbf{Prototype demo (MST)} \\
-W8 & Improvement plan from prototype feedback & Improvement plan \\
-W9--W10 & MST period (limited work) & --- \\
-W11--W12 & Semantic cache (embeddings), TypeScript trimmer, autopilot tuning; integrate and measure & Integrated build + metrics \\
-W13 & Buffer (holiday week) & --- \\
-W14--W15 & Full integration; benchmark savings across tools & \textbf{Second prototype} \\
-W16 & Improvements over second prototype & Refined build \\
-W17 & Final prototype, presentation, final report & \textbf{Final deliverable (EST)} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\section{Resources and Team Roles}
-
-\textbf{Team roles.} Agam --- compiler-aware trimmer; Devansh --- semantic cache;
-Furmaan --- autopilot policy. The gateway and the evaluation harness are shared,
-with pull-request review across the team.
-
-\textbf{Software (all open-source / free).} Python, FastAPI, httpx,
-tree-sitter, sentence-transformers, FAISS/SQLite, tiktoken, and pytest;
-Git and GitHub for version control and collaboration.
-
-\textbf{Compute and budget.} Development runs on the team members' personal
-laptops. A small amount of LLM API credit (estimated under a few hundred rupees
-on a low-cost model such as \texttt{gpt-4o-mini}) is needed for benchmarking. No
-external funding is required; all other resources are freely available through
-open-source tooling and the university.
-
-\section{Risks and Mitigation}
+Developers increasingly work through LLM coding agents such as Cursor, Claude
+Code and Codex. These tools operate by transmitting source code and
+instructions to a hosted model, which bills per \emph{token}. As a codebase and
+a team grow, both the size and the number of these requests grow with them.
+Common pain points include:
 
 \begin{itemize}[noitemsep]
-  \item \textbf{Language-specific parsing is complex.} Start with Python, add
-        languages incrementally, and fall back to safe generic trimming when a
-        file cannot be parsed.
-  \item \textbf{The cache could return a wrong ``close'' answer.} Use a
-        conservative similarity threshold plus behavioural-equivalence checks, and
-        never cache sensitive content.
-  \item \textbf{Provider APIs may change.} Isolate provider specifics behind a
-        thin adapter layer.
-  \item \textbf{Scope creep.} Follow a milestone-driven plan: one language and
-        one provider first, then expand.
+  \item \textbf{Bulk context transmission:} agents attach large portions of a
+        repository to every request, including files the task does not need.
+  \item \textbf{Repetition:} semantically identical questions are re-asked and
+        re-billed, because nothing remembers previous answers.
+  \item \textbf{Budget unpredictability:} spend scales with usage in a way that
+        teams cannot forecast or cap.
+  \item \textbf{Exposure of private code:} more source leaves the developer's
+        machine than the task requires.
+  \item \textbf{Unsafe existing remedies:} generic prompt compressors treat code
+        as plain text and may delete a line of logic the model needed, trading
+        correctness for savings.
 \end{itemize}
 
-\vspace{1em}
-\noindent\textbf{Elevator pitch.} \emph{Coding agents waste money and expose code
-by sending far more to the AI than any task needs. AI Cost Autopilot is a gateway
-that trims code safely, reuses past answers, and auto-selects the cheapest safe
-path --- cutting bills by up to 40\% with no change to how developers work.}
+\textbf{Why this matters now (contextual relevance):} adoption of coding agents
+is rising faster than any discipline for controlling their cost, and no standard
+layer exists between the developer's tool and the model to manage it.
+
+\section{Proposed Solution \BvrHint{...Software Proposition}}
+
+\subsection{Overview}
+Build a \textbf{provider-agnostic gateway} that intercepts each request and
+reduces its cost before forwarding it, with the following components:
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Gateway:} an OpenAI/Anthropic-compatible endpoint, so an
+        existing tool connects by changing a single base-URL setting.
+  \item \textbf{Compiler-aware trimmer:} removes code the task does not need,
+        using the structure of the code rather than its text.
+  \item \textbf{Semantic cache:} reuses a stored answer when a new request means
+        the same thing as an earlier one.
+  \item \textbf{Autopilot policy:} selects, per request, the cheapest action that
+        is still safe.
+  \item \textbf{Metering:} records tokens before and after, cost, and cache
+        hit-rate for every request.
+\end{itemize}
+
+\subsection{Core workflow}
+\begin{enumerate}[noitemsep]
+  \item The coding agent issues a request to the gateway instead of the provider.
+  \item The gateway computes cheap signals (token count, presence of code) and
+        the autopilot selects a plan.
+  \item If a semantically equivalent request was answered before, the stored
+        answer is returned without contacting the model.
+  \item Otherwise the trimmer reduces the request, preserving the code the task
+        depends on.
+  \item The reduced request is forwarded to the provider; the answer is returned
+        and recorded against the \emph{original} request.
+\end{enumerate}
+
+\subsection{Operational constraints for an educational setting}
+\begin{itemize}[noitemsep]
+  \item The system must run on student laptops: no GPU, no cluster.
+  \item Every optimisation must degrade gracefully --- if an optional dependency
+        is absent, the gateway continues to work as a pass-through.
+  \item We avoid claims of novel research; the contribution is engineering
+        judgement, measurement discipline and safety, not a new algorithm.
+\end{itemize}
+
+\section{Solution Approach \BvrHint{...Engineering focus}}
+
+\subsection{Context reduction \BvrHint{...non-research}}
+Reduction is deterministic and structural, not statistical. Source files are
+parsed into an Abstract Syntax Tree; a call graph is derived; the function the
+task concerns and the functions it depends on are retained in full, while every
+other definition is reduced to its signature. Because edits are made at syntactic
+boundaries, the reduced file remains valid source. Where a dependency cannot be
+resolved with confidence, the approximation deliberately retains \emph{more} than
+necessary: an unnecessary retention costs savings, whereas an incorrect removal
+costs correctness.
+
+\subsection{System architecture}
+A three-tier arrangement:
+\begin{itemize}[noitemsep]
+  \item \textbf{Interface:} an HTTP endpoint mirroring the provider API, so no
+        client modification is required; streaming and tool-call structures pass
+        through unchanged.
+  \item \textbf{Optimisation layer:} the trimmer, the cache and the policy, each
+        an independent module behind a fixed interface so they can be developed
+        and tested in isolation.
+  \item \textbf{Provider adapter:} forwards to the upstream model, with an
+        offline mock so the whole pipeline can be exercised without an API key.
+\end{itemize}
+
+\subsection{CI/CD and fast delivery enabler}
+Continuous integration runs the full test suite on every change, so a
+modification to one module cannot silently break another. Every change reaches
+the main branch through a reviewed pull request. Project documentation is built
+and published automatically from the repository.
+
+\section{Evaluation Criterion \BvrHint{...measurable and attributable}}
+
+\subsection{Primary evaluation metric}
+\textbf{Incremental token reduction at equal task outcome:} the percentage of
+input tokens removed by our system \emph{beyond} what a naive alternative
+already achieves, on requests where the agent still completes the task
+correctly.
+
+\begin{itemize}[noitemsep]
+  \item Target: $\geq 30\%$ reduction against an untouched request, on
+        code-heavy repetitive workloads.
+  \item Attribution: measured with a tokeniser on the exact payloads sent, logged
+        per request by the gateway itself.
+\end{itemize}
+
+\subsection{Secondary evaluation metrics}
+\begin{itemize}[noitemsep]
+  \item \textbf{Behavioural equivalence:} the agent reaches the same outcome with
+        and without the gateway, over repeated runs. A saving that changes the
+        result is counted as a failure, not a saving.
+  \item \textbf{Cache hit-rate} and the proportion of cost avoided by reuse.
+  \item \textbf{Added latency:} time introduced by the gateway per request.
+  \item \textbf{Context exposure:} how much source code leaves the machine,
+        relative to the unmodified agent.
+\end{itemize}
+
+\subsection{Validation plan \BvrHint{...high-level}}
+A single fixed workload is run through progressively more capable
+configurations, and the \emph{incremental} contribution of each is reported:
+(i)~the untouched request, as a control; (ii)~trivial textual cleanup;
+(iii)~generic text compression; (iv)~our compiler-aware reduction;
+(v)~with semantic reuse enabled. This ablation is deliberate: a single
+percentage quoted without a baseline cannot distinguish our contribution from
+what a trivial transformation would have achieved anyway. Each row is reported
+alongside its behavioural-equivalence result, so cost and correctness are never
+presented separately.
+
+\section{Scalability \BvrHint{...with foresight}}
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{Scalable (theoretically):} the gateway holds no per-request
+        state, so instances may be added independently; cached entries are
+        partitioned by request settings so lookups do not degrade as unrelated
+        traffic grows; the store is addressed through an interface that admits a
+        dedicated vector database.
+  \item \textbf{Operationally deployable (practically):} it runs as a single
+        local process for one developer, or as a shared instance for a team,
+        where a common cache increases the proportion of reused answers.
+\end{enumerate}
+
+\section{Engine availability heuristic}
+
+Mature components exist for every part of this system, so effort can be spent on
+design and measurement rather than infrastructure:
+
+\begin{itemize}[noitemsep]
+  \item Web framework for an HTTP API, and an HTTP client for forwarding.
+  \item Incremental parser with grammars for mainstream languages.
+  \item Tokeniser for measurement, matching provider billing.
+  \item Sentence-embedding model and a vector store for semantic reuse.
+  \item Test framework, continuous-integration runner and documentation
+        publishing.
+\end{itemize}
+
+\section{Project scope and deliverables \BvrHint{...iteration-friendly}}
+
+\subsection{Initial deliverable \BvrHint{...first iteration}}
+\begin{itemize}[noitemsep]
+  \item Gateway forwarding requests to a provider, with token and cost logging.
+  \item Structural reduction for one language, preserving valid syntax.
+  \item Exact-match reuse of previously answered requests.
+  \item A policy selecting between reuse, reduction and pass-through.
+  \item CI running the test suite on every change; published documentation.
+\end{itemize}
+
+\subsection{Subsequent deliverables}
+\begin{itemize}[noitemsep]
+  \item Dependency-aware retention across multiple files.
+  \item Semantic reuse with a calibrated similarity threshold.
+  \item A second language grammar.
+  \item The ablation benchmark and the measured results it produces.
+\end{itemize}
+
+\section{Risks and mitigations}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Reduction removes needed context:} retain the task's
+        dependencies in full, bias every approximation towards retention, and
+        fall back to pass-through when a file cannot be parsed.
+  \item \textbf{Reuse returns a plausible but wrong answer:} gate reuse behind a
+        conservative similarity threshold calibrated on source code rather than
+        prose, and never reuse across differing model or request settings.
+  \item \textbf{Savings are indistinguishable from a trivial baseline:} report
+        incremental gains against explicit baselines rather than a single
+        headline figure.
+  \item \textbf{Provider interfaces change:} isolate provider specifics behind a
+        thin adapter.
+  \item \textbf{Scope creep:} one language and one provider first; additional
+        coverage only after the first iteration is measured.
+\end{itemize}
+
+\section{Summary}
+
+This project proposes a deployable gateway that reduces the token cost of LLM
+coding agents without changing developer workflow or agent behaviour. It meets
+the course criteria by emphasising time-to-value through weekly measurable
+increments, using CI/CD to support frequent safe releases, and defining
+evaluation criteria that are both measurable and attributable --- specifically,
+incremental token reduction reported against explicit baselines and paired with
+behavioural equivalence. It remains focused on engineering workflow, safety and
+measurement rather than research novelty.
 
 \end{document}
