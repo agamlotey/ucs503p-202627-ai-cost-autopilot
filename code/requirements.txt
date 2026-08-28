@@ -9,6 +9,8 @@ pytest
 tree-sitter
 tree-sitter-python
 
-# --- cache (Devansh) — uncomment when needed ---
-# sentence-transformers
-# numpy
+# --- cache (Devansh) ---
+# Semantic cache needs an embedding model. This pulls in PyTorch (large), so
+# it's optional: without it the cache degrades to a safe no-op (passthrough).
+# Install locally with:  pip install sentence-transformers
+# sentence-transformers   # optional; enables semantic (meaning-based) caching
