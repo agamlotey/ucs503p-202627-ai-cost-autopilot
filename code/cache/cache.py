@@ -112,7 +112,9 @@ class SemanticCache:
         # buckets: hard_key -> list of (vector, stored_response). We only ever
         # compare within one bucket, preserving v1's exact-match-on-settings
         # safety while matching meaning on the text.
-        self._buckets: dict[str, list[tuple[Vector, Response]]] = {}
+        # bucket entry = (semantic_text, vector, response). Text is kept so a
+        # re-store of the SAME request overwrites instead of appending.
+        self._buckets: dict[str, list[tuple[str, Vector, Response]]] = {}
         self._threshold = threshold
         self._embedder: Optional[Callable[[str], Vector]] = embed_fn
         # If the embedding library is missing we can't do semantic matching, so
@@ -147,10 +149,10 @@ class SemanticCache:
         query = self._embed(_semantic_text(request))
         if query is None:            # embedder unavailable -> safe miss
             return None
-        best_score, best_resp = 0.0, None
-        for vec, resp in bucket:
+        best_score, best_resp = -1.0, None
+        for _text, vec, resp in bucket:
             score = _cosine(query, vec)
-            if score > best_score:
+            if score >= best_score:   # >= so the newest entry wins on a tie
                 best_score, best_resp = score, resp
         if best_resp is not None and best_score >= self._threshold:
             return copy.deepcopy(best_resp)
@@ -160,9 +162,14 @@ class SemanticCache:
         """Remember this request -> response so a future same-meaning request
         (same hard key) is free. Stores a copy so later mutation of the caller's
         object doesn't change what's cached."""
-        vec = self._embed(_semantic_text(request))
+        text = _semantic_text(request)
+        vec = self._embed(text)
         if vec is None:              # embedder unavailable -> don't cache
             return
-        self._buckets.setdefault(_hard_key(request), []).append(
-            (vec, copy.deepcopy(response))
-        )
+        bucket = self._buckets.setdefault(_hard_key(request), [])
+        snapshot = copy.deepcopy(response)
+        for i, (etext, _vec, _resp) in enumerate(bucket):
+            if etext == text:        # same request -> refresh in place, don't append
+                bucket[i] = (text, vec, snapshot)
+                return
+        bucket.append((text, vec, snapshot))

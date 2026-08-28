@@ -133,3 +133,16 @@ def test_degrades_to_noop_when_embedder_unavailable(monkeypatch):
     c = SemanticCache()  # no embed_fn -> tries the (now failing) default
     c.store(_req("capital of France?"), {"a": "Paris"})   # dropped, no raise
     assert c.lookup(_req("capital of France?")) is None    # safe miss
+
+
+def test_repeated_store_overwrites_and_does_not_duplicate():
+    """Re-storing the SAME request refreshes the answer (newest wins) and keeps
+    exactly one bucket entry — restored from v1, adapted to v2's buckets."""
+    c = _cache()
+    req = _req("capital of France?")
+    c.store(req, {"a": "OLD"})
+    c.store(req, {"a": "NEW"})
+    assert c.lookup(req) == {"a": "NEW"}
+    # only one entry in the bucket despite two stores
+    bucket = next(iter(c._buckets.values()))
+    assert len(bucket) == 1
