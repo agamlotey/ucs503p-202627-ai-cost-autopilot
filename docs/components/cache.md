@@ -41,6 +41,23 @@ The similarity threshold decides correctness:
 A wrong-but-cheap answer is worse than paying, so the threshold starts
 deliberately conservative and is tuned with measurements.
 
+### Prose threshold vs. code payloads
+
+The 0.90 default was validated on natural-language questions (paraphrases score
+~0.91–0.94, unrelated questions ≤0.47 — a clean gap). But our real payload is
+**code**, and the embedding model (`all-MiniLM-L6-v2`) is trained on prose. On
+near-identical but *opposite-meaning* code it scores dangerously high:
+
+| Code pair | cosine |
+|---|---|
+| `if a > b` vs `if a >= b` | 0.96 |
+| `return True` vs `return False` | 0.90 |
+| `x + 1` vs `x - 1` | 0.88 |
+
+At 0.90 these would be wrongly reused. So the threshold must be **re-measured on
+code pairs** before the semantic path is trusted on real code traffic — that
+measurement is the component's core ML task, tracked next.
+
 ## Safety
 
 - **Never cache secrets or personal data** — a filter rejects them.
@@ -55,7 +72,7 @@ layer is then added on top.
 
 ## Status and next steps
 
-- [ ] Exact-match cache (hash key)
-- [ ] Embeddings + cosine similarity search
-- [ ] Threshold tuning with measured precision / hit-rate
+- [x] Exact-match cache (hash key) — *merged (#9)*
+- [x] Embeddings + cosine similarity search — *merged (#11)*
+- [ ] Threshold tuning on **code** with measured precision / hit-rate *(in progress)*
 - [ ] Secrets filter, per-user isolation, TTL
