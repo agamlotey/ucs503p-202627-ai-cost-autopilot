@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" role="img" aria-labelledby="rf-title rf-desc">
+  <title id="rf-title">Request flow through the AI Cost Autopilot gateway</title>
+  <desc id="rf-desc">A coding agent posts to the gateway. The gateway snapshots the original request, computes signals, asks the autopilot for a plan, checks the cache (returning early on a hit), trims the request, forwards it to the LLM, stores the response against the original request, and returns it.</desc>
+
+  <style>
+    .bg    { fill: #ffffff; }
+    .amber { stroke: #e0a800; }
+    .fill-amber { fill: #f0b429; }
+    .box   { fill: #fffdf6; stroke: #e0a800; stroke-width: 1.6; }
+    .dash  { fill: none; stroke: #e0a800; stroke-width: 1.6; stroke-dasharray: 7 6; }
+    .lbl   { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #1f2328; font-size: 17px; }
+    .code  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #1f2328; font-size: 16px; }
+    .head  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #8a5200; font-weight: 700; }
+    .sub   { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #57534e; font-size: 15px; }
+    .num   { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #3b2a00; font-weight: 700; font-size: 16px; }
+    .tiny  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #8a5200; font-size: 13px; }
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e0a800"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1000" height="800" rx="10"/>
+
+  <!-- title -->
+  <line class="amber" x1="180" y1="38" x2="360" y2="38" stroke-width="2"/>
+  <circle class="fill-amber" cx="176" cy="38" r="4"/>
+  <text class="head" x="500" y="46" font-size="27" text-anchor="middle">REQUEST FLOW</text>
+  <line class="amber" x1="640" y1="38" x2="820" y2="38" stroke-width="2"/>
+  <circle class="fill-amber" cx="824" cy="38" r="4"/>
+
+  <!-- coding agent -->
+  <rect class="box" x="300" y="76" width="400" height="86" rx="12" stroke-width="2"/>
+  <rect class="amber" x="322" y="98" width="42" height="42" rx="8" fill="none" stroke-width="2"/>
+  <text class="code" x="331" y="126" font-size="17" fill="#8a5200">&lt;/&gt;</text>
+  <text class="head" x="382" y="108" font-size="17">CODING AGENT</text>
+  <text class="sub"  x="382" y="129">(Cursor / Claude Code / Codex)</text>
+  <text class="code" x="382" y="152" font-size="14">POST /v1/chat/completions</text>
+
+  <line class="amber" x1="500" y1="162" x2="500" y2="196" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- gateway container -->
+  <rect class="dash" x="60" y="206" width="700" height="470" rx="14"/>
+  <rect class="bg"  x="330" y="194" width="290" height="26"/>
+  <text class="head" x="400" y="214" font-size="19">GATEWAY <tspan class="sub" font-size="17" font-weight="400">(FastAPI)</tspan></text>
+
+  <!-- steps -->
+  <g>
+    <circle class="fill-amber" cx="108" cy="256" r="17"/><text class="num" x="108" y="262" text-anchor="middle">1</text>
+    <rect class="box" x="140" y="234" width="590" height="44" rx="9"/>
+    <text class="lbl" x="164" y="262">snapshot the original request</text>
+
+    <circle class="fill-amber" cx="108" cy="310" r="17"/><text class="num" x="108" y="316" text-anchor="middle">2</text>
+    <rect class="box" x="140" y="288" width="590" height="44" rx="9"/>
+    <text class="lbl" x="164" y="316">compute cheap signals <tspan class="code">(token count, has_code?)</tspan></text>
+
+    <circle class="fill-amber" cx="108" cy="364" r="17"/><text class="num" x="108" y="370" text-anchor="middle">3</text>
+    <rect class="box" x="140" y="342" width="590" height="44" rx="9"/>
+    <text class="code" x="164" y="370">autopilot.decide(request, signals) -&gt; plan</text>
+
+    <circle class="fill-amber" cx="108" cy="418" r="17"/><text class="num" x="108" y="424" text-anchor="middle">4</text>
+    <rect class="box" x="140" y="396" width="590" height="44" rx="9"/>
+    <text class="code" x="164" y="424">if plan.use_cache -&gt; cache.lookup()</text>
+
+    <circle class="fill-amber" cx="108" cy="472" r="17"/><text class="num" x="108" y="478" text-anchor="middle">5</text>
+    <rect class="box" x="140" y="450" width="590" height="44" rx="9"/>
+    <text class="code" x="164" y="478">if plan.trim -&gt; trimmer.trim()</text>
+
+    <circle class="fill-amber" cx="108" cy="526" r="17"/><text class="num" x="108" y="532" text-anchor="middle">6</text>
+    <rect class="box" x="140" y="504" width="590" height="44" rx="9"/>
+    <text class="code" x="164" y="532">provider.forward() -&gt; real LLM (or mock)</text>
+
+    <circle class="fill-amber" cx="108" cy="580" r="17"/><text class="num" x="108" y="586" text-anchor="middle">7</text>
+    <rect class="box" x="140" y="558" width="590" height="44" rx="9"/>
+    <text class="code" x="164" y="586">cache.store(original, response)</text>
+
+    <circle class="fill-amber" cx="108" cy="634" r="17"/><text class="num" x="108" y="640" text-anchor="middle">8</text>
+    <rect class="box" x="140" y="612" width="590" height="44" rx="9"/>
+    <text class="lbl" x="164" y="640">return response</text>
+  </g>
+
+  <!-- connectors -->
+  <g stroke="#e0a800" stroke-width="2" fill="none">
+    <line x1="108" y1="273" x2="108" y2="291" marker-end="url(#arrow)"/>
+    <line x1="108" y1="327" x2="108" y2="345" marker-end="url(#arrow)"/>
+    <line x1="108" y1="381" x2="108" y2="399" marker-end="url(#arrow)"/>
+    <line x1="108" y1="435" x2="108" y2="453" marker-end="url(#arrow)"/>
+    <line x1="108" y1="489" x2="108" y2="507" marker-end="url(#arrow)"/>
+    <line x1="108" y1="543" x2="108" y2="561" marker-end="url(#arrow)"/>
+    <line x1="108" y1="597" x2="108" y2="615" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- cache hit branch -->
+  <path class="dash" d="M730 418 L 800 418" marker-end="url(#arrow)"/>
+  <text class="tiny" x="742" y="410">hit</text>
+  <rect class="fill-amber" x="808" y="396" width="150" height="46" rx="9"/>
+  <circle cx="832" cy="419" r="12" fill="#ffffff"/>
+  <path d="M826 419 l4 5 l9 -10" stroke="#8a5200" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="852" y="415" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#3b2a00">HIT</text>
+  <text x="852" y="433" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#3b2a00">RETURN</text>
+
+  <!-- provider branch -->
+  <path class="dash" d="M730 526 L 812 526"/>
+  <g transform="translate(824,500)">
+    <path class="amber" fill="none" stroke-width="2" d="M14 34 a14 14 0 0 1 2 -27 a19 19 0 0 1 35 6 a12 12 0 0 1 -3 23 z"/>
+    <rect class="amber" x="22" y="16" width="20" height="16" rx="3" fill="none" stroke-width="1.8"/>
+    <g stroke="#e0a800" stroke-width="1.6">
+      <line x1="27" y1="12" x2="27" y2="16"/><line x1="32" y1="12" x2="32" y2="16"/><line x1="37" y1="12" x2="37" y2="16"/>
+      <line x1="27" y1="32" x2="27" y2="36"/><line x1="32" y1="32" x2="32" y2="36"/><line x1="37" y1="32" x2="37" y2="36"/>
+    </g>
+  </g>
+  <text class="tiny" x="812" y="562" font-size="12">LLM provider</text>
+
+  <!-- response -->
+  <line class="amber" x1="500" y1="676" x2="500" y2="706" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect class="box" x="290" y="714" width="420" height="66" rx="12" stroke-width="2"/>
+  <circle cx="332" cy="747" r="14" fill="#f0b429"/>
+  <path d="M325 747 l5 6 l11 -12" stroke="#ffffff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="head" x="360" y="743" font-size="17">RESPONSE</text>
+  <text class="sub"  x="360" y="765" font-size="14">returned to coding agent</text>
+</svg>
