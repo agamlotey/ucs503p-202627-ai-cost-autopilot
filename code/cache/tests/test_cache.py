@@ -146,3 +146,36 @@ def test_repeated_store_overwrites_and_does_not_duplicate():
     # only one entry in the bucket despite two stores
     bucket = next(iter(c._buckets.values()))
     assert len(bucket) == 1
+
+
+# --- v3: code payloads use exact match, not similarity -----------------------
+
+def _code_embed(text):
+    """Fake embedder where the two near-identical code snippets are ~identical
+    vectors (cosine ~0.99) — mimics all-MiniLM's behaviour on code."""
+    if "return a > b" in text:  return [1.0, 0.0]
+    if "return a >= b" in text: return [0.9995, 0.0316]  # cosine ~0.9995 with above
+    return [0.0, 1.0]
+
+
+def test_code_operator_flip_is_not_reused():
+    """`>` vs `>=`: near-identical vectors, but OPPOSITE meaning -> must MISS."""
+    c = SemanticCache(embed_fn=_code_embed, threshold=0.90)
+    c.store({"model": "m", "messages": [{"role": "user", "content": "def f():\n    return a > b"}]},
+            {"a": "uses >"})
+    hit = c.lookup({"model": "m", "messages": [{"role": "user", "content": "def f():\n    return a >= b"}]})
+    assert hit is None   # would have wrongly reused under pure cosine >= 0.90
+
+
+def test_identical_code_still_hits():
+    c = SemanticCache(embed_fn=_code_embed, threshold=0.90)
+    req = {"model": "m", "messages": [{"role": "user", "content": "def f():\n    return a > b"}]}
+    c.store(req, {"a": "answer"})
+    assert c.lookup(req) == {"a": "answer"}   # exact match on code still works
+
+
+def test_prose_still_uses_semantic_matching():
+    """Non-code paraphrase must still reuse (routing only tightens code)."""
+    c = _cache()  # the prose fake embedder from earlier
+    c.store(_req("capital of France?"), {"a": "Paris"})
+    assert c.lookup(_req("France's capital?")) == {"a": "Paris"}

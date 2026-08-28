@@ -81,6 +81,11 @@ def _semantic_text(request: Request) -> str:
     return "\n".join(parts)
 
 
+def _looks_like_code(text: str) -> bool:
+    """Same cheap heuristic the gateway uses for its `has_code` signal."""
+    return ("```" in text) or ("def " in text) or ("import " in text)
+
+
 def _default_embedder() -> Callable[[str], Vector]:
     """Lazily build the real sentence-transformers embedder. Imported here so
     the module (and the whole gateway) still loads if the library is absent."""
@@ -146,7 +151,22 @@ class SemanticCache:
         bucket = self._buckets.get(_hard_key(request))
         if not bucket:
             return None
-        query = self._embed(_semantic_text(request))
+        text = _semantic_text(request)
+
+        # CODE payloads: a one-operator change (`>` vs `>=`, `and` vs `or`) is
+        # textually near-identical, so cosine cannot tell opposite-meaning code
+        # apart (measured in benchmark/FINDINGS.md: such pairs score 0.92-0.99,
+        # above any usable threshold). For code we therefore require an EXACT
+        # text match and never reuse on mere similarity.
+        if _looks_like_code(text):
+            for etext, _vec, resp in bucket:
+                if etext == text:
+                    return copy.deepcopy(resp)
+            return None
+
+        # NATURAL-LANGUAGE payloads: semantic reuse above the threshold, which
+        # separates cleanly for prose (paraphrases ~0.9+, different <0.6).
+        query = self._embed(text)
         if query is None:            # embedder unavailable -> safe miss
             return None
         best_score, best_resp = -1.0, None
