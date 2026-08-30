@@ -163,3 +163,38 @@ def test_no_self_edges():
 def test_real_edges_still_resolved():
     g = build_call_graph(SUPER_SAMPLE)
     assert g["caller"] == {"helper"}
+
+
+# ---- realistic fixture ----
+
+def test_notes_api_fixture_is_valid_python():
+    """Every fixture file must compile, or measurements made on it are junk."""
+    from trimmer.fixtures.loader import project_files
+
+    files = project_files("notes_api")
+    assert len(files) >= 10
+    for rel, source in files:
+        compile(source, rel, "exec")
+
+
+def test_notes_api_fixture_is_big_enough_to_measure():
+    """A toy project cannot demonstrate selective retention."""
+    from trimmer.fixtures.loader import project_files
+    from trimmer.trimmer import _defined_functions, count_tokens
+
+    files = project_files("notes_api")
+    functions = set()
+    tokens = 0
+    for _rel, source in files:
+        functions |= _defined_functions(source)
+        tokens += count_tokens(source)
+    assert len(functions) >= 40
+    assert tokens >= 2500
+
+
+def test_as_messages_puts_each_file_in_its_own_message():
+    from trimmer.fixtures.loader import as_messages, project_files
+
+    msgs = as_messages("fix create_note")
+    assert msgs[0]["content"] == "fix create_note"
+    assert len(msgs) == len(project_files("notes_api")) + 1
