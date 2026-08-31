@@ -1,148 +1,150 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 880" width="1200" height="880" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1000" width="1300" height="1000" role="img" aria-labelledby="t d">
   <title id="t">UML use case diagram for AI Cost Autopilot</title>
-  <desc id="d">The Developer and the Coding Agent send coding requests. Sending a request always includes reducing token cost, which always includes selecting the cheapest safe action and reporting savings. Reusing a past answer, reducing code context and obtaining a completion from the LLM provider each conditionally extend the selection step. The Maintainer configures the gateway and runs the benchmark.</desc>
+  <desc id="d">The Developer and the Coding Agent send coding requests. Sending a request always includes reducing token cost, which always includes selecting the cheapest safe action, which always includes reporting savings. Reusing a past answer, reducing code context and obtaining a completion each conditionally extend the selection step. The Maintainer configures the gateway and runs the benchmark. The LLM provider participates in obtaining a completion.</desc>
 
   <style>
-    .bg    { fill:#0b0b0e }
-    .sys   { fill:#101015; stroke:#ffc107; stroke-width:2.2 }
-    .uc    { fill:#1d1810; stroke:#ffc107; stroke-width:2 }
-    .act   { stroke:#ffc107; stroke-width:2; fill:none }
-    .actbox{ fill:#17151a; stroke:#ffc107; stroke-width:2 }
-    .name  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#f2ece0; font-size:14px; font-weight:700 }
-    .uct   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#f2ece0; font-size:14px }
-    .sub   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#9d958a; font-size:12px }
-    .ste   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#ffc107; font-size:12px; font-style:italic }
-    .head  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#ffc107; font-size:26px; font-weight:700 }
-    .boxt  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#ffc107; font-size:15px; font-weight:700 }
-    .assoc { stroke:#ffc107; stroke-width:1.6; fill:none }
-    .dep   { stroke:#ffc107; stroke-width:1.6; fill:none; stroke-dasharray:7 5 }
+    .bg    { fill:#ffffff }
+    .sys   { fill:none; stroke:#1f2328; stroke-width:2 }
+    .uc    { fill:#fff4d6; stroke:#1f2328; stroke-width:1.8 }
+    .act   { stroke:#1f2328; stroke-width:1.8; fill:none }
+    .actbox{ fill:#f7f4ee; stroke:#1f2328; stroke-width:1.8 }
+    .name  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:14px; font-weight:700 }
+    .uct   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:14px }
+    .sub   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px }
+    .ste   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px; font-style:italic }
+    .head  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:25px; font-weight:700 }
+    .boxt  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:15px; font-weight:700 }
+    .assoc { stroke:#1f2328; stroke-width:1.5; fill:none }
+    .dep   { stroke:#1f2328; stroke-width:1.5; fill:none; stroke-dasharray:7 5 }
   </style>
 
   <defs>
-    <marker id="open" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
-      <path d="M1 1 L11 6 L1 11" fill="none" stroke="#ffc107" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <marker id="open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1.5 1.5 L10.5 6 L1.5 10.5" fill="none" stroke="#1f2328" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
   </defs>
 
-  <rect class="bg" width="1200" height="880"/>
-  <text class="head" x="600" y="46" text-anchor="middle">Use Case Diagram — AI Cost Autopilot</text>
+  <rect class="bg" width="1300" height="1000"/>
+  <text class="head" x="650" y="52" text-anchor="middle">Use Case Diagram — AI Cost Autopilot</text>
 
   <!-- system boundary -->
-  <rect class="sys" x="340" y="88" width="520" height="740" rx="10"/>
-  <text class="boxt" x="600" y="120" text-anchor="middle">AI Cost Autopilot Gateway</text>
+  <rect class="sys" x="340" y="100" width="620" height="830" rx="6"/>
+  <text class="boxt" x="650" y="132" text-anchor="middle">AI Cost Autopilot Gateway</text>
 
-  <!-- ============ actors ============ -->
-  <g transform="translate(170,200)">
-    <circle class="act" cx="0" cy="-30" r="14"/>
-    <line class="act" x1="0" y1="-16" x2="0" y2="16"/>
-    <line class="act" x1="-18" y1="-4" x2="18" y2="-4"/>
-    <line class="act" x1="0" y1="16" x2="-14" y2="40"/>
-    <line class="act" x1="0" y1="16" x2="14" y2="40"/>
-    <text class="name" x="0" y="62" text-anchor="middle">Developer</text>
+  <!-- ================= actors ================= -->
+  <g transform="translate(170,150)">
+    <circle class="act" cx="0" cy="-28" r="13"/>
+    <line class="act" x1="0" y1="-15" x2="0" y2="14"/>
+    <line class="act" x1="-17" y1="-4" x2="17" y2="-4"/>
+    <line class="act" x1="0" y1="14" x2="-13" y2="36"/>
+    <line class="act" x1="0" y1="14" x2="13" y2="36"/>
+    <text class="name" x="0" y="58" text-anchor="middle">Developer</text>
   </g>
 
-  <g transform="translate(170,400)">
-    <rect class="actbox" x="-58" y="-30" width="116" height="54" rx="5"/>
-    <text class="name" x="0" y="-8" text-anchor="middle">Coding Agent</text>
-    <text class="sub"  x="0" y="12" text-anchor="middle">Cursor / Codex</text>
+  <g transform="translate(170,290)">
+    <rect class="actbox" x="-60" y="-28" width="120" height="52" rx="4"/>
+    <text class="name" x="0" y="-6" text-anchor="middle">Coding Agent</text>
+    <text class="sub"  x="0" y="14" text-anchor="middle">Cursor / Codex</text>
     <text class="ste"  x="0" y="42" text-anchor="middle">&#171;system&#187;</text>
   </g>
 
-  <g transform="translate(170,690)">
-    <circle class="act" cx="0" cy="-30" r="14"/>
-    <line class="act" x1="0" y1="-16" x2="0" y2="16"/>
-    <line class="act" x1="-18" y1="-4" x2="18" y2="-4"/>
-    <line class="act" x1="0" y1="16" x2="-14" y2="40"/>
-    <line class="act" x1="0" y1="16" x2="14" y2="40"/>
-    <text class="name" x="0" y="62" text-anchor="middle">Maintainer</text>
+  <g transform="translate(170,800)">
+    <circle class="act" cx="0" cy="-28" r="13"/>
+    <line class="act" x1="0" y1="-15" x2="0" y2="14"/>
+    <line class="act" x1="-17" y1="-4" x2="17" y2="-4"/>
+    <line class="act" x1="0" y1="14" x2="-13" y2="36"/>
+    <line class="act" x1="0" y1="14" x2="13" y2="36"/>
+    <text class="name" x="0" y="58" text-anchor="middle">Maintainer</text>
   </g>
 
-  <g transform="translate(1030,470)">
-    <rect class="actbox" x="-58" y="-30" width="116" height="54" rx="5"/>
-    <text class="name" x="0" y="-8" text-anchor="middle">LLM Provider</text>
-    <text class="sub"  x="0" y="12" text-anchor="middle">OpenAI / Anthropic</text>
+  <g transform="translate(1120,610)">
+    <rect class="actbox" x="-60" y="-28" width="120" height="52" rx="4"/>
+    <text class="name" x="0" y="-6" text-anchor="middle">LLM Provider</text>
+    <text class="sub"  x="0" y="14" text-anchor="middle">OpenAI / Anthropic</text>
     <text class="ste"  x="0" y="42" text-anchor="middle">&#171;system&#187;</text>
   </g>
 
-  <!-- ============ use cases ============ -->
-  <ellipse class="uc" cx="500" cy="180" rx="115" ry="32"/>
-  <text class="uct" x="500" y="185" text-anchor="middle">Send coding request</text>
+  <!-- ================= use cases: include chain (centre column) ================= -->
+  <ellipse class="uc" cx="500" cy="190" rx="115" ry="36"/>
+  <text class="uct" x="500" y="195" text-anchor="middle">Send coding request</text>
 
-  <ellipse class="uc" cx="500" cy="280" rx="115" ry="32"/>
-  <text class="uct" x="500" y="285" text-anchor="middle">Reduce token cost</text>
+  <ellipse class="uc" cx="500" cy="310" rx="115" ry="36"/>
+  <text class="uct" x="500" y="315" text-anchor="middle">Reduce token cost</text>
 
-  <ellipse class="uc" cx="500" cy="420" rx="115" ry="32"/>
-  <text class="uct" x="500" y="416" text-anchor="middle">Select cheapest</text>
-  <text class="uct" x="500" y="434" text-anchor="middle">safe action</text>
+  <ellipse class="uc" cx="500" cy="470" rx="115" ry="36"/>
+  <text class="uct" x="500" y="465" text-anchor="middle">Select cheapest</text>
+  <text class="uct" x="500" y="483" text-anchor="middle">safe action</text>
 
-  <ellipse class="uc" cx="500" cy="560" rx="115" ry="32"/>
-  <text class="uct" x="500" y="565" text-anchor="middle">Report savings</text>
+  <ellipse class="uc" cx="500" cy="640" rx="115" ry="36"/>
+  <text class="uct" x="500" y="645" text-anchor="middle">Report savings</text>
 
-  <ellipse class="uc" cx="500" cy="680" rx="115" ry="32"/>
-  <text class="uct" x="500" y="685" text-anchor="middle">Configure gateway</text>
+  <ellipse class="uc" cx="500" cy="780" rx="115" ry="36"/>
+  <text class="uct" x="500" y="785" text-anchor="middle">Configure gateway</text>
 
-  <ellipse class="uc" cx="500" cy="770" rx="115" ry="32"/>
-  <text class="uct" x="500" y="775" text-anchor="middle">Run benchmark</text>
+  <ellipse class="uc" cx="500" cy="870" rx="115" ry="36"/>
+  <text class="uct" x="500" y="875" text-anchor="middle">Run benchmark</text>
 
-  <ellipse class="uc" cx="730" cy="360" rx="105" ry="32"/>
-  <text class="uct" x="730" y="365" text-anchor="middle">Reuse past answer</text>
+  <!-- ================= use cases: the three conditional extensions ================= -->
+  <ellipse class="uc" cx="800" cy="330" rx="110" ry="36"/>
+  <text class="uct" x="800" y="335" text-anchor="middle">Reuse past answer</text>
 
-  <ellipse class="uc" cx="730" cy="470" rx="105" ry="32"/>
-  <text class="uct" x="730" y="466" text-anchor="middle">Reduce code</text>
-  <text class="uct" x="730" y="484" text-anchor="middle">context</text>
+  <ellipse class="uc" cx="800" cy="470" rx="110" ry="36"/>
+  <text class="uct" x="800" y="465" text-anchor="middle">Reduce code</text>
+  <text class="uct" x="800" y="483" text-anchor="middle">context</text>
 
-  <ellipse class="uc" cx="730" cy="580" rx="105" ry="32"/>
-  <text class="uct" x="730" y="585" text-anchor="middle">Obtain completion</text>
+  <ellipse class="uc" cx="800" cy="610" rx="110" ry="36"/>
+  <text class="uct" x="800" y="615" text-anchor="middle">Obtain completion</text>
 
-  <!-- ============ associations (plain lines, no arrowheads in UML) ============ -->
-  <line class="assoc" x1="205" y1="186" x2="387" y2="176"/>
-  <line class="assoc" x1="230" y1="380" x2="392" y2="200"/>
-  <line class="assoc" x1="205" y1="672" x2="386" y2="674"/>
-  <line class="assoc" x1="205" y1="700" x2="392" y2="758"/>
-  <line class="assoc" x1="971" y1="486" x2="838" y2="570"/>
+  <!-- ================= associations (undirected lines) ================= -->
+  <line class="assoc" x1="204" y1="160" x2="386" y2="180"/>
+  <line class="assoc" x1="231" y1="272" x2="392" y2="212"/>
+  <line class="assoc" x1="204" y1="782" x2="386" y2="778"/>
+  <line class="assoc" x1="204" y1="800" x2="390" y2="858"/>
+  <line class="assoc" x1="1059" y1="610" x2="912" y2="610"/>
 
-  <!-- ============ include: the base always performs the included case ============ -->
-  <path class="dep" d="M500 212 L 500 246" marker-end="url(#open)"/>
-  <text class="ste" x="560" y="234" text-anchor="middle">&#171;include&#187;</text>
+  <!-- ================= include: base always performs it (base -> included) =========
+       Straight vertical arrows in the gaps between the ellipses. -->
+  <path class="dep" d="M500 226 L 500 272" marker-end="url(#open)"/>
+  <text class="ste" x="444" y="253" text-anchor="end">&#171;include&#187;</text>
 
-  <path class="dep" d="M500 312 L 500 386" marker-end="url(#open)"/>
-  <text class="ste" x="560" y="354" text-anchor="middle">&#171;include&#187;</text>
+  <path class="dep" d="M500 346 L 500 432" marker-end="url(#open)"/>
+  <text class="ste" x="444" y="393" text-anchor="end">&#171;include&#187;</text>
 
-  <path class="dep" d="M500 452 L 500 526" marker-end="url(#open)"/>
-  <text class="ste" x="560" y="494" text-anchor="middle">&#171;include&#187;</text>
+  <path class="dep" d="M500 506 L 500 602" marker-end="url(#open)"/>
+  <text class="ste" x="444" y="558" text-anchor="end">&#171;include&#187;</text>
 
-  <!-- ============ extend: the extension conditionally adds to the base,
-                    so the arrow points FROM the extension TO the base ============ -->
-  <path class="dep" d="M628 378 L 604 400" marker-end="url(#open)"/>
-  <text class="ste" x="655" y="404" text-anchor="middle">&#171;extend&#187;</text>
+  <!-- ================= extend: conditional (extension -> base) ====================
+       Endpoints are computed to sit exactly on the base ellipse, so no arrow
+       finishes inside a bubble. The upper and lower pair are symmetric. -->
+  <path class="dep" d="M690 330 L 545 437" marker-end="url(#open)"/>
+  <text class="ste" x="702" y="374" text-anchor="middle">&#171;extend&#187;</text>
 
-  <path class="dep" d="M625 462 L 617 436" marker-end="url(#open)"/>
-  <text class="ste" x="660" y="432" text-anchor="middle">&#171;extend&#187;</text>
+  <path class="dep" d="M690 470 L 617 470" marker-end="url(#open)"/>
+  <text class="ste" x="653" y="458" text-anchor="middle">&#171;extend&#187;</text>
 
-  <path class="dep" d="M662 558 L 574 452" marker-end="url(#open)"/>
-  <text class="ste" x="655" y="512" text-anchor="middle">&#171;extend&#187;</text>
+  <path class="dep" d="M690 610 L 545 503" marker-end="url(#open)"/>
+  <text class="ste" x="702" y="566" text-anchor="middle">&#171;extend&#187;</text>
 
-  <!-- ============ legend ============ -->
-  <g transform="translate(900,660)">
-    <rect x="0" y="0" width="270" height="150" rx="8" fill="#101015" stroke="#2f2a22" stroke-width="1.4"/>
-    <text class="name" x="18" y="30" font-size="13">Notation</text>
-    <ellipse class="uc" cx="36" cy="58" rx="20" ry="12"/>
-    <text class="sub" x="70" y="62">use case</text>
-    <line class="assoc" x1="16" y1="92" x2="56" y2="92"/>
-    <text class="sub" x="70" y="96">association</text>
-    <path class="dep" d="M16 124 L 56 124" marker-end="url(#open)"/>
-    <text class="sub" x="70" y="128">include / extend</text>
-  </g>
-
-  <!-- semantics note -->
-  <g transform="translate(900,120)">
-    <rect x="0" y="0" width="270" height="180" rx="8" fill="#101015" stroke="#2f2a22" stroke-width="1.4"/>
+  <!-- ================= panels ================= -->
+  <g transform="translate(990,140)">
+    <rect x="0" y="0" width="290" height="190" rx="6" fill="#faf8f4" stroke="#c9c2b6" stroke-width="1.3"/>
     <text class="name" x="18" y="30" font-size="13">Reading the arrows</text>
     <text class="sub" x="18" y="58">&#171;include&#187; — the base case</text>
-    <text class="sub" x="18" y="78">always performs it. Arrow</text>
-    <text class="sub" x="18" y="98">points base &#8594; included.</text>
-    <text class="sub" x="18" y="126">&#171;extend&#187; — conditional</text>
-    <text class="sub" x="18" y="146">behaviour. Arrow points</text>
-    <text class="sub" x="18" y="166">extension &#8594; base.</text>
+    <text class="sub" x="18" y="78">always performs it.</text>
+    <text class="sub" x="18" y="98">Arrow: base &#8594; included.</text>
+    <text class="sub" x="18" y="132">&#171;extend&#187; — optional,</text>
+    <text class="sub" x="18" y="152">conditional behaviour.</text>
+    <text class="sub" x="18" y="172">Arrow: extension &#8594; base.</text>
+  </g>
+
+  <g transform="translate(990,760)">
+    <rect x="0" y="0" width="290" height="150" rx="6" fill="#faf8f4" stroke="#c9c2b6" stroke-width="1.3"/>
+    <text class="name" x="18" y="30" font-size="13">Notation</text>
+    <ellipse class="uc" cx="42" cy="58" rx="22" ry="12"/>
+    <text class="sub" x="80" y="62">use case</text>
+    <line class="assoc" x1="20" y1="92" x2="64" y2="92"/>
+    <text class="sub" x="80" y="96">association</text>
+    <path class="dep" d="M20 124 L 64 124" marker-end="url(#open)"/>
+    <text class="sub" x="80" y="128">include / extend</text>
   </g>
 </svg>

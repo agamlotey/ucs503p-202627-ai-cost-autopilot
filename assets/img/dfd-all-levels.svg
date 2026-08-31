@@ -3,27 +3,27 @@
   <desc id="d">Level 0 shows the gateway as a single process between the coding agent, the developer and the LLM provider. Level 1 expands it into six processes with two data stores. Level 2 expands the trim-context process into seven processes with one data store.</desc>
 
   <style>
-    .bg     { fill:#0b0b0e }
-    .band   { fill:#101015; stroke:#2a2620; stroke-width:1 }
-    .ent    { fill:#17151a; stroke:#ffc107; stroke-width:2 }
-    .proc   { fill:#1d1810; stroke:#ffc107; stroke-width:2.2 }
-    .store  { fill:#141821; stroke:#ffc107; stroke-width:1.8 }
-    .t      { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#f2ece0 }
-    .name   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#f2ece0; font-size:15px; font-weight:700 }
-    .sub    { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#9d958a; font-size:12px }
-    .num    { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#ffc107; font-size:13px; font-weight:700 }
-    .head   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#ffc107; font-size:21px; font-weight:700 }
-    .title  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#ffc107; font-size:28px; font-weight:700 }
-    .flow   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#c9c0b2; font-size:12px }
-    .arr    { stroke:#ffc107; stroke-width:1.8; fill:none }
-    .curve  { stroke:#ffc107; stroke-width:1.8; fill:none }
-    .dash   { stroke:#ffc107; stroke-width:1.7; fill:none; stroke-dasharray:7 6 }
-    .sep    { stroke:#2f2a22; stroke-width:1.5; stroke-dasharray:4 6 }
+    .bg     { fill:#ffffff }
+    .band   { fill:#fcfbf8; stroke:#d8d2c6; stroke-width:1.2 }
+    .ent    { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.8 }
+    .proc   { fill:#fff4d6; stroke:#1f2328; stroke-width:1.8 }
+    .store  { fill:#eef2f7; stroke:#1f2328; stroke-width:1.6 }
+    .t      { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111 }
+    .name   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:15px; font-weight:700 }
+    .sub    { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px }
+    .num    { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px; font-weight:700 }
+    .head   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:21px; font-weight:700 }
+    .title  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:28px; font-weight:700 }
+    .flow   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#333333; font-size:12px }
+    .arr    { stroke:#1f2328; stroke-width:1.6; fill:none }
+    .curve  { stroke:#1f2328; stroke-width:1.6; fill:none }
+    .dash   { stroke:#1f2328; stroke-width:1.6; fill:none; stroke-dasharray:7 6 }
+    .sep    { stroke:#d8d2c6; stroke-width:1.4; stroke-dasharray:4 6 }
   </style>
 
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#ffc107"/>
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2328"/>
     </marker>
   </defs>
 
@@ -131,7 +131,7 @@
   <text class="flow" x="672" y="650" text-anchor="middle">token count, has_code</text>
 
   <line class="arr" x1="575" y1="728" x2="575" y2="764" marker-end="url(#a)"/>
-  <text class="flow" x="610" y="750" text-anchor="middle">plan</text>
+  <text class="flow" x="618" y="750" text-anchor="middle">plan</text>
 
   <line class="arr" x1="575" y1="828" x2="575" y2="870" marker-end="url(#a)"/>
   <text class="flow" x="650" y="852" text-anchor="middle">miss: request</text>
@@ -160,10 +160,10 @@
 
   <!-- CURVED feedback flows: routed around the pipeline instead of through it -->
   <path class="dash" d="M440 797 C 330 797, 330 660, 322 626 S 300 604, 232 601" marker-end="url(#a)"/>
-  <text class="flow" x="356" y="706" text-anchor="middle" transform="rotate(-90 356 706)">hit: answer</text>
+  <text class="flow" x="378" y="712" text-anchor="middle" transform="rotate(-90 378 712)">hit: answer</text>
 
   <path class="curve" d="M440 993 C 280 993, 268 760, 268 640 C 268 606, 200 600, 232 610" marker-end="url(#a)"/>
-  <text class="flow" x="292" y="820" text-anchor="middle" transform="rotate(-90 292 820)">response</text>
+  <text class="flow" x="246" y="838" text-anchor="middle" transform="rotate(-90 246 838)">response</text>
 
   <line class="sep" x1="30" y1="1234" x2="1170" y2="1234"/>
 
@@ -243,7 +243,7 @@
 
   <!-- curved: the task text arcs over row 1 into 4.4, cutting nothing -->
   <path class="curve" d="M130 1368 C 130 1324, 600 1314, 1105 1334 C 1150 1348, 1142 1478, 1014 1514" marker-end="url(#a)"/>
-  <text class="flow" x="560" y="1334" text-anchor="middle">plain-text task</text>
+  <text class="flow" x="560" y="1310" text-anchor="middle">plain-text task</text>
 
   <!-- ================= LEGEND ================= -->
   <g transform="translate(60,1936)">
