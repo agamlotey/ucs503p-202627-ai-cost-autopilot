@@ -44,8 +44,7 @@
 \BvrSetLabInstructor{Dr. Raghav B. Venkataramaiyer}
 
 \BvrSubtitle{%
-  Project Proposal for UCS503P  \\
-  Submitted to: \BvrLabInstructorValue \\ \bfseries
+  Project Proposal for UCS503P  \\ \bfseries
   Thapar Institute of Engineering and Technology%
 }
 
@@ -66,7 +65,7 @@
 \begin{document}
 \maketitle
 
-\section{Higher-order goal \BvrHint{...secondary framing}}
+\section{Higher-order goal}
 
 This project aims to make AI-assisted software development economically
 sustainable by reducing the computation paid for on every request to a Large
@@ -75,7 +74,7 @@ team, the immediate engineering objective is to translate \emph{efficient
 context usage} into a measurable, deployable piece of software: a gateway that
 sits between a coding agent and the model it calls.
 
-\section{Time-to-value \BvrHint{...primary heuristic}}
+\section{Time-to-value}
 
 \begin{itemize}[noitemsep]
   \item We shall deliver meaningful increments quickly: a transparent
@@ -116,7 +115,7 @@ Common pain points include:
 is rising faster than any discipline for controlling their cost, and no standard
 layer exists between the developer's tool and the model to manage it.
 
-\section{Proposed Solution \BvrHint{...Software Proposition}}
+\section{Proposed Solution}
 
 \subsection{Overview}
 Build a \textbf{provider-agnostic gateway} that intercepts each request and
@@ -157,9 +156,9 @@ reduces its cost before forwarding it, with the following components:
         judgement, measurement discipline and safety, not a new algorithm.
 \end{itemize}
 
-\section{Solution Approach \BvrHint{...Engineering focus}}
+\section{Solution Approach}
 
-\subsection{Context reduction \BvrHint{...non-research}}
+\subsection{Context reduction}
 Reduction is deterministic and structural, not statistical. Source files are
 parsed into an Abstract Syntax Tree; a call graph is derived; the function the
 task concerns and the functions it depends on are retained in full, while every
@@ -188,7 +187,7 @@ modification to one module cannot silently break another. Every change reaches
 the main branch through a reviewed pull request. Project documentation is built
 and published automatically from the repository.
 
-\section{Evaluation Criterion \BvrHint{...measurable and attributable}}
+\section{Evaluation Criterion}
 
 \subsection{Primary evaluation metric}
 \textbf{Incremental token reduction at equal task outcome:} the percentage of
@@ -214,7 +213,7 @@ correctly.
         relative to the unmodified agent.
 \end{itemize}
 
-\subsection{Validation plan \BvrHint{...high-level}}
+\subsection{Validation plan}
 A single fixed workload is run through progressively more capable
 configurations, and the \emph{incremental} contribution of each is reported:
 (i)~the untouched request, as a control; (ii)~trivial textual cleanup;
@@ -225,7 +224,7 @@ what a trivial transformation would have achieved anyway. Each row is reported
 alongside its behavioural-equivalence result, so cost and correctness are never
 presented separately.
 
-\section{Scalability \BvrHint{...with foresight}}
+\section{Scalability}
 
 \begin{enumerate}[noitemsep]
   \item \textbf{Scalable (theoretically):} the gateway holds no per-request
@@ -252,9 +251,9 @@ design and measurement rather than infrastructure:
         publishing.
 \end{itemize}
 
-\section{Project scope and deliverables \BvrHint{...iteration-friendly}}
+\section{Project scope and deliverables}
 
-\subsection{Initial deliverable \BvrHint{...first iteration}}
+\subsection{Initial deliverable}
 \begin{itemize}[noitemsep]
   \item Gateway forwarding requests to a provider, with token and cost logging.
   \item Structural reduction for one language, preserving valid syntax.
