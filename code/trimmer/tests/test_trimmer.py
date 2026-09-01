@@ -5,6 +5,7 @@ from trimmer.trimmer import (
     collapse_python,
     build_call_graph,
     expand_focus,
+    merge_call_graphs,
 )
 
 SAMPLE = '''
@@ -163,6 +164,71 @@ def test_no_self_edges():
 def test_real_edges_still_resolved():
     g = build_call_graph(SUPER_SAMPLE)
     assert g["caller"] == {"helper"}
+
+
+# ---- cross-file dependencies ----
+
+FILE_A = '''
+def run(path):
+    """entry point"""
+    cfg = load(path)
+    return check(cfg)
+'''
+
+FILE_B = '''
+def load(p):
+    """read the file"""
+    return open(p).read()
+
+
+def check(cfg):
+    """validate it"""
+    return "name" in cfg
+
+
+def unrelated(z):
+    """nothing calls this"""
+    return z * 99
+'''
+
+
+def test_merge_call_graphs_links_across_sources():
+    graph, defined = merge_call_graphs([FILE_A, FILE_B])
+    assert defined == {"run", "load", "check", "unrelated"}
+    # the edge run -> load lives across a file boundary
+    assert graph["run"] == {"load", "check"}
+
+
+def test_dependency_in_another_message_is_kept():
+    """Regression: the focus function's dependencies may live in another file.
+
+    Building a call graph per message missed those edges, so the dependency was
+    collapsed to a signature -- dropping context the task needs.
+    """
+    msgs = [
+        {"role": "user", "content": "fix the run function"},
+        {"role": "user", "content": FILE_A},
+        {"role": "user", "content": FILE_B},
+    ]
+    out, stats = CodeTrimmer().trim(msgs, token_budget=5)
+    a, b = out[1]["content"], out[2]["content"]
+
+    assert "cfg = load(path)" in a          # focus kept
+    assert "return open(p).read()" in b     # dependency, other file
+    assert 'return "name" in cfg' in b      # dependency, other file
+    assert "z * 99" not in b                # unrelated -> collapsed
+    assert "def unrelated(z):" in b         # ...but its signature survives
+    assert stats["tokens_saved"] > 0
+
+
+def test_no_focus_still_collapses_everything():
+    out, _ = CodeTrimmer().trim(
+        [{"role": "user", "content": FILE_A}, {"role": "user", "content": FILE_B}],
+        token_budget=5,
+    )
+    assert "cfg = load(path)" not in out[0]["content"]
+    assert "return open(p).read()" not in out[1]["content"]
+    assert "def run(path):" in out[0]["content"]   # signatures remain
 
 
 # ---- realistic fixture ----

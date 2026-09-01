@@ -165,8 +165,14 @@ def _callee_name(fn_node, data: bytes) -> str:
     return ""
 
 
-def build_call_graph(source: str) -> dict[str, set[str]]:
-    """Map each function name to the set of (known) functions it calls."""
+def build_call_graph(source: str, known: set[str] | None = None) -> dict[str, set[str]]:
+    """Map each function defined in `source` to the functions it calls.
+
+    A call is only recorded when its target is a *known* function. By default
+    "known" means defined in this same source. Pass `known` to resolve calls
+    against a wider set — e.g. every function in the whole request — so that a
+    dependency living in another file is still recorded.
+    """
     try:
         parser = _get_parser()
     except Exception:
@@ -174,6 +180,8 @@ def build_call_graph(source: str) -> dict[str, set[str]]:
     data = source.encode("utf-8")
     tree = parser.parse(data)
     defined = _defined_functions(source)
+    if known is None:
+        known = defined
     graph: dict[str, set[str]] = {name: set() for name in defined}
 
     def calls_in(node) -> set[str]:
@@ -182,7 +190,7 @@ def build_call_graph(source: str) -> dict[str, set[str]]:
         def w(n):
             if n.type == "call":
                 name = _callee_name(n.child_by_field_name("function"), data)
-                if name in defined:
+                if name in known:
                     found.add(name)
             for c in n.children:
                 w(c)
@@ -227,15 +235,24 @@ def _looks_like_code(content: str) -> bool:
     return bool(_defined_functions(content))
 
 
-def _keep_for(code: str, focus_names: set[str], hops: int) -> set[str]:
-    """Which functions to leave fully intact in this code block."""
-    defined = _defined_functions(code)
-    if not defined:
-        return set()
-    focus = (focus_names & defined)
-    if not focus:
-        return set()  # no focus here -> collapse everything (v1 behaviour)
-    return expand_focus(focus, build_call_graph(code), hops) & defined
+def merge_call_graphs(sources: list[str]) -> tuple[dict[str, set[str]], set[str]]:
+    """Build ONE call graph spanning several sources.
+
+    A request usually arrives as several messages, one per file. Building a
+    graph per source would miss any call that crosses a file boundary, so the
+    dependency of a focus function living in another file would be collapsed
+    away — dropping context the task actually needs. Resolving every source
+    against the union of all defined names keeps those edges.
+    """
+    defined_all: set[str] = set()
+    for src in sources:
+        defined_all |= _defined_functions(src)
+
+    graph: dict[str, set[str]] = {}
+    for src in sources:
+        for caller, callees in build_call_graph(src, known=defined_all).items():
+            graph.setdefault(caller, set()).update(callees)
+    return graph, defined_all
 
 
 def _count_messages(messages: list) -> int:
@@ -262,27 +279,34 @@ class CodeTrimmer:
         ctx = ctx or {}
         hops = int(ctx.get("hops", 2))
 
-        # every function defined anywhere in the request
-        defined_all: set[str] = set()
-        for m in messages:
-            c = m.get("content")
-            if isinstance(c, str) and _looks_like_code(c):
-                defined_all |= _defined_functions(c)
+        # Parse each message once: its set of defined functions doubles as the
+        # "is this code?" test, so we avoid re-parsing the same text repeatedly.
+        contents = [
+            m["content"] if isinstance(m.get("content"), str) else None
+            for m in messages
+        ]
+        defined_per = [_defined_functions(c) if c is not None else set() for c in contents]
+
+        # ONE graph across every code message, so a call that crosses a file
+        # boundary is still an edge.
+        code_sources = [c for c, d in zip(contents, defined_per) if c is not None and d]
+        graph, defined_all = merge_call_graphs(code_sources)
 
         # focus = explicit ctx focus + function names mentioned in plain-text
         # (non-code) messages
         focus_names = set(ctx.get("focus", []))
-        for m in messages:
-            c = m.get("content")
-            if isinstance(c, str) and not _looks_like_code(c):
+        for c, d in zip(contents, defined_per):
+            if c is not None and not d:
                 focus_names |= {w for w in _WORD.findall(c) if w in defined_all}
 
+        # Expand once, globally; with no focus at all everything collapses.
+        focus = focus_names & defined_all
+        keep_all = expand_focus(focus, graph, hops) if focus else set()
+
         trimmed = []
-        for m in messages:
-            content = m.get("content")
-            if isinstance(content, str):
-                keep = _keep_for(content, focus_names, hops)
-                m = {**m, "content": collapse_python(content, keep)}
+        for m, content, defined in zip(messages, contents, defined_per):
+            if content is not None:
+                m = {**m, "content": collapse_python(content, keep_all & defined)}
             trimmed.append(m)
 
         after = _count_messages(trimmed)

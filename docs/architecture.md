@@ -6,21 +6,11 @@ gateway; it speaks the OpenAI/Anthropic API format, so no workflow changes.
 
 ## Request flow
 
-```
-Coding agent (Cursor / Claude Code / Codex)
-      |  POST /v1/chat/completions
-      v
-+-------------------- GATEWAY (FastAPI) --------------------+
-| 1. snapshot the original request                         |
-| 2. compute cheap signals (token count, has_code?)        |
-| 3. autopilot.decide(request, signals) -> plan            |
-| 4. if plan.use_cache -> cache.lookup() --hit--> return   |
-| 5. if plan.trim      -> trimmer.trim()                   |
-| 6. provider.forward() -> real LLM (or mock)              |
-| 7. cache.store(original, response)                       |
-| 8. return response                                       |
-+----------------------------------------------------------+
-```
+![Request flow: a coding agent posts to the gateway, which snapshots the
+request, computes signals, asks the autopilot for a plan, checks the cache
+(returning early on a hit), trims, forwards to the LLM, stores the response
+against the original request, and returns
+it.](assets/img/request-flow.svg){ width="820" }
 
 The cache always keys on the **original** request (before trimming), so a
 trimmed request can still be reused later.
