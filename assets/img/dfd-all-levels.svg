@@ -1,0 +1,265 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1980" width="1200" height="1980" role="img" aria-labelledby="t d">
+  <title id="t">Data Flow Diagram for AI Cost Autopilot — Levels 0, 1 and 2</title>
+  <desc id="d">Level 0 shows the gateway as a single process between the coding agent, the developer and the LLM provider. Level 1 expands it into six processes with two data stores. Level 2 expands the trim-context process into seven processes with one data store.</desc>
+
+  <style>
+    .bg     { fill:#ffffff }
+    .band   { fill:#fcfbf8; stroke:#d8d2c6; stroke-width:1.2 }
+    .ent    { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.8 }
+    .proc   { fill:#fff4d6; stroke:#1f2328; stroke-width:1.8 }
+    .store  { fill:#eef2f7; stroke:#1f2328; stroke-width:1.6 }
+    .t      { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111 }
+    .name   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:15px; font-weight:700 }
+    .sub    { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px }
+    .num    { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px; font-weight:700 }
+    .head   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:21px; font-weight:700 }
+    .title  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:28px; font-weight:700 }
+    .flow   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#333333; font-size:12px }
+    .arr    { stroke:#1f2328; stroke-width:1.6; fill:none }
+    .curve  { stroke:#1f2328; stroke-width:1.6; fill:none }
+    .dash   { stroke:#1f2328; stroke-width:1.6; fill:none; stroke-dasharray:7 6 }
+    .sep    { stroke:#d8d2c6; stroke-width:1.4; stroke-dasharray:4 6 }
+  </style>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f2328"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="1980"/>
+  <text class="title" x="600" y="52" text-anchor="middle">Data Flow Diagram — AI Cost Autopilot</text>
+  <text class="sub" x="600" y="76" text-anchor="middle" font-size="14">Levels 0, 1 and 2 · Gane–Sarson notation</text>
+
+  <!-- ================= LEVEL 0 ================= -->
+  <rect class="band" x="30" y="100" width="1140" height="330" rx="12"/>
+  <text class="head" x="60" y="136">Level 0 — Context</text>
+  <text class="sub"  x="60" y="158">the whole system as one process, and everything outside it</text>
+
+  <rect class="ent" x="70" y="210" width="180" height="76" rx="4"/>
+  <text class="name" x="160" y="242" text-anchor="middle">Coding Agent</text>
+  <text class="sub"  x="160" y="264" text-anchor="middle">Cursor / Claude Code</text>
+
+  <ellipse class="proc" cx="600" cy="248" rx="150" ry="68"/>
+  <text class="num"  x="600" y="234" text-anchor="middle" font-size="15">0</text>
+  <text class="name" x="600" y="258" text-anchor="middle">AI Cost Autopilot</text>
+  <text class="sub"  x="600" y="280" text-anchor="middle">gateway</text>
+
+  <rect class="ent" x="950" y="210" width="180" height="76" rx="4"/>
+  <text class="name" x="1040" y="242" text-anchor="middle">LLM Provider</text>
+  <text class="sub"  x="1040" y="264" text-anchor="middle">OpenAI / Anthropic</text>
+
+  <rect class="ent" x="510" y="346" width="180" height="66" rx="4"/>
+  <text class="name" x="600" y="374" text-anchor="middle">Developer</text>
+  <text class="sub"  x="600" y="394" text-anchor="middle">writes the task</text>
+
+  <line class="arr" x1="250" y1="230" x2="448" y2="230" marker-end="url(#a)"/>
+  <text class="flow" x="349" y="221" text-anchor="middle">request + code</text>
+  <line class="arr" x1="448" y1="268" x2="250" y2="268" marker-end="url(#a)"/>
+  <text class="flow" x="349" y="286" text-anchor="middle">completion</text>
+
+  <line class="arr" x1="752" y1="230" x2="948" y2="230" marker-end="url(#a)"/>
+  <text class="flow" x="850" y="221" text-anchor="middle">reduced request</text>
+  <line class="arr" x1="948" y1="268" x2="752" y2="268" marker-end="url(#a)"/>
+  <text class="flow" x="850" y="286" text-anchor="middle">completion</text>
+
+  <line class="arr" x1="566" y1="346" x2="566" y2="318" marker-end="url(#a)"/>
+  <text class="flow" x="470" y="334" text-anchor="middle">coding task</text>
+  <line class="arr" x1="640" y1="318" x2="640" y2="346" marker-end="url(#a)"/>
+  <text class="flow" x="742" y="334" text-anchor="middle">cost report</text>
+
+  <line class="sep" x1="30" y1="452" x2="1170" y2="452"/>
+
+  <!-- ================= LEVEL 1 ================= -->
+  <rect class="band" x="30" y="472" width="1140" height="740" rx="12"/>
+  <text class="head" x="60" y="508">Level 1 — Gateway (expansion of process 0)</text>
+  <text class="sub"  x="60" y="530">six processes and two data stores</text>
+
+  <rect class="ent" x="70" y="566" width="160" height="60" rx="4"/>
+  <text class="name" x="150" y="592" text-anchor="middle">Coding Agent</text>
+  <text class="sub"  x="150" y="612" text-anchor="middle">external entity</text>
+
+  <rect class="ent" x="850" y="962" width="180" height="60" rx="4"/>
+  <text class="name" x="940" y="988" text-anchor="middle">LLM Provider</text>
+  <text class="sub"  x="940" y="1008" text-anchor="middle">external entity</text>
+
+  <rect class="ent" x="70" y="1076" width="160" height="60" rx="4"/>
+  <text class="name" x="150" y="1102" text-anchor="middle">Developer</text>
+  <text class="sub"  x="150" y="1122" text-anchor="middle">external entity</text>
+
+  <!-- pipeline -->
+  <rect class="proc" x="440" y="566" width="270" height="62" rx="31"/>
+  <text class="num"  x="575" y="590" text-anchor="middle">1.0</text>
+  <text class="name" x="575" y="612" text-anchor="middle">Compute Signals</text>
+
+  <rect class="proc" x="440" y="666" width="270" height="62" rx="31"/>
+  <text class="num"  x="575" y="690" text-anchor="middle">2.0</text>
+  <text class="name" x="575" y="712" text-anchor="middle">Decide Plan</text>
+
+  <rect class="proc" x="440" y="766" width="270" height="62" rx="31"/>
+  <text class="num"  x="575" y="790" text-anchor="middle">3.0</text>
+  <text class="name" x="575" y="812" text-anchor="middle">Look Up Cache</text>
+
+  <rect class="proc" x="440" y="872" width="270" height="62" rx="31"/>
+  <text class="num"  x="575" y="896" text-anchor="middle">4.0</text>
+  <text class="name" x="575" y="918" text-anchor="middle">Trim Context</text>
+
+  <rect class="proc" x="440" y="962" width="270" height="62" rx="31"/>
+  <text class="num"  x="575" y="986" text-anchor="middle">5.0</text>
+  <text class="name" x="575" y="1008" text-anchor="middle">Forward Request</text>
+
+  <rect class="proc" x="440" y="1076" width="270" height="62" rx="31"/>
+  <text class="num"  x="575" y="1100" text-anchor="middle">6.0</text>
+  <text class="name" x="575" y="1122" text-anchor="middle">Record Metrics</text>
+
+  <!-- stores -->
+  <rect class="store" x="850" y="776" width="280" height="44"/>
+  <line class="arr" x1="896" y1="776" x2="896" y2="820" stroke-width="1.6"/>
+  <text class="num"  x="873" y="804" text-anchor="middle">D1</text>
+  <text class="name" x="1013" y="804" text-anchor="middle">Semantic Cache</text>
+
+  <rect class="store" x="850" y="1085" width="280" height="44"/>
+  <line class="arr" x1="896" y1="1085" x2="896" y2="1129" stroke-width="1.6"/>
+  <text class="num"  x="873" y="1113" text-anchor="middle">D2</text>
+  <text class="name" x="1013" y="1113" text-anchor="middle">Metrics Log</text>
+
+  <!-- straight pipeline flows -->
+  <line class="arr" x1="230" y1="580" x2="438" y2="580" marker-end="url(#a)"/>
+  <text class="flow" x="334" y="571" text-anchor="middle">request</text>
+
+  <line class="arr" x1="575" y1="628" x2="575" y2="664" marker-end="url(#a)"/>
+  <text class="flow" x="672" y="650" text-anchor="middle">token count, has_code</text>
+
+  <line class="arr" x1="575" y1="728" x2="575" y2="764" marker-end="url(#a)"/>
+  <text class="flow" x="618" y="750" text-anchor="middle">plan</text>
+
+  <line class="arr" x1="575" y1="828" x2="575" y2="870" marker-end="url(#a)"/>
+  <text class="flow" x="650" y="852" text-anchor="middle">miss: request</text>
+
+  <line class="arr" x1="575" y1="934" x2="575" y2="960" marker-end="url(#a)"/>
+  <text class="flow" x="668" y="950" text-anchor="middle">reduced request</text>
+
+  <line class="arr" x1="575" y1="1024" x2="575" y2="1074" marker-end="url(#a)"/>
+  <text class="flow" x="676" y="1052" text-anchor="middle">tokens before/after</text>
+
+  <line class="arr" x1="710" y1="788" x2="848" y2="788" marker-end="url(#a)"/>
+  <text class="flow" x="779" y="779" text-anchor="middle">key</text>
+  <line class="arr" x1="848" y1="810" x2="710" y2="810" marker-end="url(#a)"/>
+  <text class="flow" x="779" y="828" text-anchor="middle">stored answer</text>
+
+  <line class="arr" x1="710" y1="982" x2="848" y2="982" marker-end="url(#a)"/>
+  <text class="flow" x="779" y="973" text-anchor="middle">API call</text>
+  <line class="arr" x1="848" y1="1006" x2="710" y2="1006" marker-end="url(#a)"/>
+  <text class="flow" x="779" y="1024" text-anchor="middle">completion</text>
+
+  <line class="arr" x1="710" y1="1107" x2="848" y2="1107" marker-end="url(#a)"/>
+  <text class="flow" x="779" y="1098" text-anchor="middle">savings</text>
+
+  <line class="arr" x1="438" y1="1107" x2="232" y2="1107" marker-end="url(#a)"/>
+  <text class="flow" x="335" y="1098" text-anchor="middle">cost report</text>
+
+  <!-- CURVED feedback flows: routed around the pipeline instead of through it -->
+  <path class="dash" d="M440 797 C 350 797, 322 668, 300 626 C 288 608, 262 602, 238 602" marker-end="url(#a)"/>
+  <text class="flow" x="378" y="712" text-anchor="middle" transform="rotate(-90 378 712)">hit: answer</text>
+
+  <path class="curve" d="M440 993 C 300 993, 272 790, 268 672 C 266 640, 258 622, 238 620" marker-end="url(#a)"/>
+  <text class="flow" x="246" y="838" text-anchor="middle" transform="rotate(-90 246 838)">response</text>
+
+  <line class="sep" x1="30" y1="1234" x2="1170" y2="1234"/>
+
+  <!-- ================= LEVEL 2 ================= -->
+  <rect class="band" x="30" y="1254" width="1140" height="660" rx="12"/>
+  <text class="head" x="60" y="1290">Level 2 — Trim Context (expansion of process 4.0)</text>
+  <text class="sub"  x="60" y="1312">the compiler-aware trimmer, broken into its steps</text>
+
+  <rect class="ent" x="60" y="1370" width="140" height="58" rx="4"/>
+  <text class="name" x="130" y="1394" text-anchor="middle">from 3.0</text>
+  <text class="sub"  x="130" y="1414" text-anchor="middle">cache miss</text>
+
+  <!-- row 1 : left to right -->
+  <rect class="proc" x="240" y="1368" width="230" height="62" rx="31"/>
+  <text class="num"  x="355" y="1392" text-anchor="middle">4.1</text>
+  <text class="name" x="355" y="1414" text-anchor="middle">Parse to AST</text>
+
+  <rect class="proc" x="530" y="1368" width="230" height="62" rx="31"/>
+  <text class="num"  x="645" y="1392" text-anchor="middle">4.2</text>
+  <text class="name" x="645" y="1414" text-anchor="middle">Extract Functions</text>
+
+  <rect class="proc" x="820" y="1368" width="230" height="62" rx="31"/>
+  <text class="num"  x="935" y="1392" text-anchor="middle">4.3</text>
+  <text class="name" x="935" y="1414" text-anchor="middle">Build Call Graph</text>
+
+  <!-- row 2 : right to left -->
+  <rect class="proc" x="820" y="1518" width="230" height="62" rx="31"/>
+  <text class="num"  x="935" y="1542" text-anchor="middle">4.4</text>
+  <text class="name" x="935" y="1564" text-anchor="middle">Identify Focus</text>
+
+  <rect class="proc" x="530" y="1518" width="230" height="62" rx="31"/>
+  <text class="num"  x="645" y="1542" text-anchor="middle">4.5</text>
+  <text class="name" x="645" y="1564" text-anchor="middle">Expand Focus</text>
+
+  <rect class="proc" x="240" y="1518" width="230" height="62" rx="31"/>
+  <text class="num"  x="355" y="1542" text-anchor="middle">4.6</text>
+  <text class="name" x="355" y="1564" text-anchor="middle">Collapse Bodies</text>
+
+  <!-- row 3 -->
+  <rect class="proc" x="530" y="1668" width="230" height="62" rx="31"/>
+  <text class="num"  x="645" y="1692" text-anchor="middle">4.7</text>
+  <text class="name" x="645" y="1714" text-anchor="middle">Measure Tokens</text>
+
+  <rect class="store" x="820" y="1677" width="280" height="44"/>
+  <line class="arr" x1="866" y1="1677" x2="866" y2="1721" stroke-width="1.6"/>
+  <text class="num"  x="843" y="1705" text-anchor="middle">D3</text>
+  <text class="name" x="983" y="1705" text-anchor="middle">Trim Statistics</text>
+
+  <rect class="ent" x="180" y="1670" width="150" height="58" rx="4"/>
+  <text class="name" x="255" y="1694" text-anchor="middle">to 5.0</text>
+  <text class="sub"  x="255" y="1714" text-anchor="middle">forward</text>
+
+  <!-- level 2 flows -->
+  <line class="arr" x1="200" y1="1399" x2="238" y2="1399" marker-end="url(#a)"/>
+  <line class="arr" x1="470" y1="1399" x2="528" y2="1399" marker-end="url(#a)"/>
+  <text class="flow" x="499" y="1390" text-anchor="middle">tree</text>
+  <line class="arr" x1="760" y1="1399" x2="818" y2="1399" marker-end="url(#a)"/>
+  <text class="flow" x="789" y="1390" text-anchor="middle">names</text>
+
+  <line class="arr" x1="935" y1="1430" x2="935" y2="1516" marker-end="url(#a)"/>
+  <text class="flow" x="1010" y="1476" text-anchor="middle">merged graph</text>
+
+  <line class="arr" x1="818" y1="1549" x2="762" y2="1549" marker-end="url(#a)"/>
+  <text class="flow" x="790" y="1540" text-anchor="middle">focus</text>
+  <line class="arr" x1="528" y1="1549" x2="472" y2="1549" marker-end="url(#a)"/>
+  <text class="flow" x="500" y="1540" text-anchor="middle">keep set</text>
+
+  <!-- curved: 4.6 down to 4.7, avoiding a straight line through 4.5 -->
+  <path class="arr" d="M355 1580 L 355 1690 L 526 1690" marker-end="url(#a)"/>
+  <text class="flow" x="446" y="1678" text-anchor="middle">reduced source</text>
+
+  <line class="arr" x1="760" y1="1699" x2="818" y2="1699" marker-end="url(#a)"/>
+  <text class="flow" x="789" y="1690" text-anchor="middle">saved</text>
+
+  <line class="arr" x1="528" y1="1716" x2="332" y2="1716" marker-end="url(#a)"/>
+  <text class="flow" x="430" y="1738" text-anchor="middle">trimmed request</text>
+
+  <!-- curved: the task text arcs over row 1 into 4.4, cutting nothing -->
+  <rect class="ent" x="1070" y="1524" width="95" height="50" rx="4"/>
+  <text class="name" x="1117" y="1546" text-anchor="middle" font-size="13">task text</text>
+  <text class="sub"  x="1117" y="1564" text-anchor="middle" font-size="11">from 3.0</text>
+  <line class="arr" x1="1068" y1="1549" x2="1052" y2="1549" marker-end="url(#a)"/>
+
+  <!-- ================= LEGEND ================= -->
+  <g transform="translate(60,1936)">
+    <text class="name" x="0" y="0" font-size="13">Notation</text>
+    <rect class="ent" x="90" y="-13" width="26" height="17" rx="3"/>
+    <text class="sub" x="124" y="0">external entity</text>
+    <rect class="proc" x="238" y="-13" width="26" height="17" rx="8"/>
+    <text class="sub" x="272" y="0">process</text>
+    <rect class="store" x="356" y="-13" width="26" height="17"/>
+    <line class="arr" x1="364" y1="-13" x2="364" y2="4" stroke-width="1.3"/>
+    <text class="sub" x="390" y="0">data store</text>
+    <line class="arr" x1="500" y1="-5" x2="530" y2="-5" marker-end="url(#a)"/>
+    <text class="sub" x="538" y="0">data flow</text>
+    <path class="dash" d="M650 -5 L 680 -5" marker-end="url(#a)"/>
+    <text class="sub" x="688" y="0">early return (cache hit)</text>
+  </g>
+</svg>
