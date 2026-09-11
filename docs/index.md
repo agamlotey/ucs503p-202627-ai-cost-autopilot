@@ -38,9 +38,10 @@ automatically, with no change to how developers work.
 | Folder | Contents |
 |---|---|
 | `code/` | The gateway and the three components |
-| `docs/` | This site |
-| `journals/` | Weekly technical journals |
-| `project-proposal/` | Proposal report (LaTeX source and PDF) and presentation (PDF) |
+| `docs/` | This site, plus the diagrams (`docs/Diagrams/`), Gantt chart and presentation as PDF |
+| `journals/` | One `journal.md` per member with every weekly entry |
+| `project-proposal/` | Proposal report (LaTeX source and PDF) |
+| `project-report-prototype-stage/` | Prototype report (LaTeX source and PDF) |
 
 Clone it with:
 

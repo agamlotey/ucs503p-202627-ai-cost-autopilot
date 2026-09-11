@@ -4,29 +4,30 @@ Every item in the project evaluation, in one place, with a link to where it live
 
 ## Documentation
 
-| Item | Where |
-|---|---|
-| Use case diagram | [Design: use case diagram](design.md#use-case-diagram) |
-| Data flow diagram (levels 0, 1 and 2) | [Design: data flow diagram](design.md#data-flow-diagram) |
-| ER diagram | [Design: ER diagram](design.md#entity-relationship-diagram) |
-| Activity (swimlane) diagram | [Design: activity diagram](design.md#activity-diagram) |
-| Presentation (PDF) | [`ai-cost-autopilot-presentation.pdf`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-proposal/ai-cost-autopilot-presentation.pdf) |
-| Gantt chart | [Roadmap: Gantt chart](roadmap.md#gantt-chart) |
+| Item | PDF | On this site |
+|---|---|---|
+| Use case diagram | [UseCaseDiagram_AI_Cost_Autopilot.pdf](Diagrams/UseCaseDiagram_AI_Cost_Autopilot.pdf) | [Design](design.md#use-case-diagram) |
+| Data flow diagram (levels 0, 1 and 2) | [DataFlowDiagram_AI_Cost_Autopilot.pdf](Diagrams/DataFlowDiagram_AI_Cost_Autopilot.pdf) | [Design](design.md#data-flow-diagram) |
+| ER diagram | [AI_Cost_Autopilot_ER_Diagram.pdf](Diagrams/AI_Cost_Autopilot_ER_Diagram.pdf) | [Design](design.md#entity-relationship-diagram) |
+| Activity (swimlane) diagram | [AI_Cost_Autopilot_Swimlane.pdf](Diagrams/AI_Cost_Autopilot_Swimlane.pdf) | [Design](design.md#activity-diagram) |
+| Gantt chart | [AI_Cost_Autopilot_Gantt_Chart.pdf](AI_Cost_Autopilot_Gantt_Chart.pdf), [.xlsx](AI_Cost_Autopilot_Gantt_Chart.xlsx) | [Roadmap](roadmap.md#gantt-chart) |
+| Presentation | [AI_Cost_Autopilot_Proposal_ppt.pdf](AI_Cost_Autopilot_Proposal_ppt.pdf) | |
 
-The diagram source files are in
-[`assets/img/`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/tree/master/assets/img)
-as SVG.
+The diagram PDFs are in
+[`docs/Diagrams/`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/tree/master/docs/Diagrams),
+and their SVG sources in
+[`assets/img/`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/tree/master/assets/img).
 
 ## Journals
 
-One folder per team member, named by roll number and name, with one Markdown file
-per weekly entry.
+One folder per team member, named by roll number and name, holding a single
+`journal.md` with every weekly entry.
 
 | Member | Roll no. | Journal |
 |---|---|---|
-| Agampreet Kaur | 1024240033 | [journals/1024240033-agam](journals/1024240033-agam/index.md) |
-| Devansh Sharma | 1024240012 | [journals/1024240012-devansh](journals/1024240012-devansh/index.md) |
-| Furmaandeep Kaur | 1024240029 | [journals/1024240029-furmaan](journals/1024240029-furmaan/index.md) |
+| Agampreet Kaur | 1024240033 | [journals/1024240033-agam/journal.md](journals/1024240033-agam/journal.md) |
+| Devansh Sharma | 1024240012 | [journals/1024240012-devansh/journal.md](journals/1024240012-devansh/journal.md) |
+| Furmaandeep Kaur | 1024240029 | [journals/1024240029-furmaan/journal.md](journals/1024240029-furmaan/journal.md) |
 
 ## Code
 
@@ -39,15 +40,16 @@ the gateway and the three components, each with its own tests. See
 
 | File | Link |
 |---|---|
-| Proposal report (PDF) | [`ai-cost-autopilot.pdf`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-proposal/ai-cost-autopilot.pdf) |
-| Proposal source (LaTeX) | [`ai-cost-autopilot.tex`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-proposal/ai-cost-autopilot.tex) |
-| Presentation (PDF) | [`ai-cost-autopilot-presentation.pdf`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-proposal/ai-cost-autopilot-presentation.pdf) |
+| Proposal report (PDF) | [`AI_Cost_Autopilot_Proposal.pdf`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-proposal/AI_Cost_Autopilot_Proposal.pdf) |
+| Proposal source (LaTeX) | [`AI_Cost_Autopilot_Proposal.tex`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-proposal/AI_Cost_Autopilot_Proposal.tex) |
+| Presentation (PDF) | [`AI_Cost_Autopilot_Proposal_ppt.pdf`](AI_Cost_Autopilot_Proposal_ppt.pdf) |
 
 ## Prototype document
 
-Due at the prototype stage (week 7 on the [Roadmap](roadmap.md)). It will go in
-[`project-report-prototype-stage/`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/tree/master/project-report-prototype-stage)
-as a PDF and a presentation.
+| File | Link |
+|---|---|
+| Prototype report (PDF) | [`AI_Cost_Autopilot_Report_Prototype.pdf`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-report-prototype-stage/AI_Cost_Autopilot_Report_Prototype.pdf) |
+| Prototype report source (LaTeX) | [`AI_Cost_Autopilot_Report_Prototype.tex`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-report-prototype-stage/AI_Cost_Autopilot_Report_Prototype.tex) |
 
 ## GitHub Pages
 
