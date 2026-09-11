@@ -121,9 +121,9 @@ def test_real_embeddings_match_paraphrase_not_unrelated():
     assert c.lookup(_req("How do I sort a list in Python?")) is None
 
 
-def test_degrades_to_noop_when_embedder_unavailable(monkeypatch):
-    """If sentence-transformers isn't installed, the cache must not crash the
-    gateway: every lookup misses and store is dropped (safe passthrough)."""
+def test_exact_match_works_without_an_embedder(monkeypatch):
+    """Without sentence-transformers the cache must not crash AND must still do
+    EXACT-match reuse (identical request hits); only fuzzy prose is disabled."""
     import cache.cache as m
 
     def _boom():
@@ -131,8 +131,20 @@ def test_degrades_to_noop_when_embedder_unavailable(monkeypatch):
 
     monkeypatch.setattr(m, "_default_embedder", _boom)
     c = SemanticCache()  # no embed_fn -> tries the (now failing) default
-    c.store(_req("capital of France?"), {"a": "Paris"})   # dropped, no raise
-    assert c.lookup(_req("capital of France?")) is None    # safe miss
+    c.store(_req("capital of France?"), {"a": "Paris"})     # stored, no raise
+    assert c.lookup(_req("capital of France?")) == {"a": "Paris"}  # exact HIT
+    assert c.lookup(_req("France's capital?")) is None      # no fuzzy w/o model
+
+
+def test_code_exact_match_works_without_an_embedder(monkeypatch):
+    """Code caching is exact-match, so it must work with no embedder at all."""
+    import cache.cache as m
+    monkeypatch.setattr(m, "_default_embedder",
+                        lambda: (_ for _ in ()).throw(ImportError()))
+    c = SemanticCache()
+    req = {"model": "m", "messages": [{"role": "user", "content": "def f():\n    return 1"}]}
+    c.store(req, {"a": "code answer"})
+    assert c.lookup(req) == {"a": "code answer"}
 
 
 def test_repeated_store_overwrites_and_does_not_duplicate():

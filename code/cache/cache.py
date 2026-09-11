@@ -153,24 +153,28 @@ class SemanticCache:
             return None
         text = _semantic_text(request)
 
-        # CODE payloads: a one-operator change (`>` vs `>=`, `and` vs `or`) is
-        # textually near-identical, so cosine cannot tell opposite-meaning code
-        # apart (measured in benchmark/FINDINGS.md: such pairs score 0.92-0.99,
-        # above any usable threshold). For code we therefore require an EXACT
-        # text match and never reuse on mere similarity.
+        # 1) EXACT text match — always available, needs no embedder. Covers code
+        #    (which is exact-only) AND identical prose, so the cache still saves
+        #    money when sentence-transformers isn't installed.
+        for etext, _vec, resp in bucket:
+            if etext == text:
+                return copy.deepcopy(resp)
+
+        # 2) CODE never reuses on similarity: a one-operator change (`>` vs `>=`,
+        #    `and` vs `or`) is textually near-identical, so cosine cannot tell
+        #    opposite-meaning code apart (benchmark/FINDINGS.md: 0.92-0.99).
         if _looks_like_code(text):
-            for etext, _vec, resp in bucket:
-                if etext == text:
-                    return copy.deepcopy(resp)
             return None
 
-        # NATURAL-LANGUAGE payloads: semantic reuse above the threshold, which
-        # separates cleanly for prose (paraphrases ~0.9+, different <0.6).
+        # 3) NATURAL-LANGUAGE: semantic reuse above the threshold, which
+        #    separates cleanly for prose (paraphrases ~0.9+, different <0.6).
         query = self._embed(text)
-        if query is None:            # embedder unavailable -> safe miss
+        if query is None:            # embedder unavailable -> no fuzzy match
             return None
         best_score, best_resp = -1.0, None
-        for _text, vec, resp in bucket:
+        for _etext, vec, resp in bucket:
+            if vec is None:          # entry stored without an embedding
+                continue
             score = _cosine(query, vec)
             if score >= best_score:   # >= so the newest entry wins on a tie
                 best_score, best_resp = score, resp
@@ -183,9 +187,11 @@ class SemanticCache:
         (same hard key) is free. Stores a copy so later mutation of the caller's
         object doesn't change what's cached."""
         text = _semantic_text(request)
-        vec = self._embed(text)
-        if vec is None:              # embedder unavailable -> don't cache
-            return
+        # Embed ONLY for prose: code reuses by exact text, so its vector is never
+        # consulted (skipping it also saves the embedding cost). If the embedder
+        # is unavailable, vec stays None and the entry is still stored, so
+        # exact-match reuse keeps working without the ML dependency.
+        vec = None if _looks_like_code(text) else self._embed(text)
         bucket = self._buckets.setdefault(_hard_key(request), [])
         snapshot = copy.deepcopy(response)
         for i, (etext, _vec, _resp) in enumerate(bucket):
