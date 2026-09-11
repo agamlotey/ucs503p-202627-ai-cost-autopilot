@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1700 1460" width="1700" height="1460" role="img" aria-labelledby="t d" font-family='-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif'>
+  <title id="t">Entity relationship diagram for AI Cost Autopilot</title>
+  <desc id="d">Chen-notation conceptual data model. A Request is logged as one Metric Record, is forwarded to one LLM Model, may reuse one Cache Entry, and includes many Source Files. A Source File defines many Functions, and Functions call other Functions.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#1f2328"/></marker>
+  </defs>
+  <rect width="1700" height="1460" fill="#ffffff"/>
+  <text x="850.0" y="50.0" text-anchor="middle" font-size="26" fill="#111111" font-weight="700">Entity Relationship Diagram: AI Cost Autopilot</text>
+  <text x="850.0" y="80.0" text-anchor="middle" font-size="14" fill="#555555">Chen notation. Conceptual model of the gateway&#x27;s data stores and the trimmer&#x27;s code model.</text>
+  <rect x="750.0" y="261.0" width="180" height="58" fill="#f7f4ee" stroke="#1f2328" stroke-width="2"/>
+  <text x="840.0" y="296.0" text-anchor="middle" font-size="16" fill="#111111" font-weight="700">Metric Record</text>
+  <rect x="750.0" y="591.0" width="180" height="58" fill="#f7f4ee" stroke="#1f2328" stroke-width="2"/>
+  <text x="840.0" y="626.0" text-anchor="middle" font-size="16" fill="#111111" font-weight="700">Request</text>
+  <rect x="1330.0" y="591.0" width="180" height="58" fill="#f7f4ee" stroke="#1f2328" stroke-width="2"/>
+  <text x="1420.0" y="626.0" text-anchor="middle" font-size="16" fill="#111111" font-weight="700">LLM Model</text>
+  <rect x="170.0" y="591.0" width="180" height="58" fill="#f7f4ee" stroke="#1f2328" stroke-width="2"/>
+  <text x="260.0" y="626.0" text-anchor="middle" font-size="16" fill="#111111" font-weight="700">Cache Entry</text>
+  <rect x="750.0" y="931.0" width="180" height="58" fill="#f7f4ee" stroke="#1f2328" stroke-width="2"/>
+  <text x="840.0" y="966.0" text-anchor="middle" font-size="16" fill="#111111" font-weight="700">Source File</text>
+  <rect x="750.0" y="1241.0" width="180" height="58" fill="#f7f4ee" stroke="#1f2328" stroke-width="2"/>
+  <text x="840.0" y="1276.0" text-anchor="middle" font-size="16" fill="#111111" font-weight="700">Function</text>
+  <polygon points="840,419 914,455 840,491 766,455" fill="#fff4d6" stroke="#1f2328" stroke-width="2"/>
+  <text x="840.0" y="460.0" text-anchor="middle" font-size="13.5" fill="#111111">logged as</text>
+  <polygon points="1130,584 1212,620 1130,656 1048,620" fill="#fff4d6" stroke="#1f2328" stroke-width="2"/>
+  <text x="1130.0" y="625.0" text-anchor="middle" font-size="13.5" fill="#111111">forwarded to</text>
+  <polygon points="550,584 624,620 550,656 476,620" fill="#fff4d6" stroke="#1f2328" stroke-width="2"/>
+  <text x="550.0" y="625.0" text-anchor="middle" font-size="13.5" fill="#111111">reuses</text>
+  <polygon points="840,754 914,790 840,826 766,790" fill="#fff4d6" stroke="#1f2328" stroke-width="2"/>
+  <text x="840.0" y="795.0" text-anchor="middle" font-size="13.5" fill="#111111">includes</text>
+  <polygon points="840,1079 914,1115 840,1151 766,1115" fill="#fff4d6" stroke="#1f2328" stroke-width="2"/>
+  <text x="840.0" y="1120.0" text-anchor="middle" font-size="13.5" fill="#111111">defines</text>
+  <polygon points="1160,1234 1234,1270 1160,1306 1086,1270" fill="#fff4d6" stroke="#1f2328" stroke-width="2"/>
+  <text x="1160.0" y="1275.0" text-anchor="middle" font-size="13.5" fill="#111111">calls</text>
+  <path d="M840.0 319.0 L840.0 419.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="856.0" y="346.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">1</text>
+  <path d="M840.0 491.0 L840.0 591.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="856.0" y="578.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">1</text>
+  <path d="M930.0 620.0 L1048.0 620.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="950.0" y="609.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">N</text>
+  <path d="M1212.0 620.0 L1330.0 620.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="1312.0" y="609.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">1</text>
+  <path d="M750.0 620.0 L624.0 620.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="732.0" y="609.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">N</text>
+  <path d="M476.0 620.0 L350.0 620.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="368.0" y="609.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">1</text>
+  <path d="M840.0 649.0 L840.0 754.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="858.0" y="676.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">M</text>
+  <path d="M840.0 826.0 L840.0 931.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="858.0" y="918.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">N</text>
+  <path d="M840.0 989.0 L840.0 1079.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="856.0" y="1016.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">1</text>
+  <path d="M840.0 1151.0 L840.0 1241.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="858.0" y="1228.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">N</text>
+  <path d="M905.0 1241.0 L905.0 1195.0 L1160.0 1195.0 L1160.0 1234.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="921.0" y="1225.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">M</text>
+  <path d="M905.0 1299.0 L905.0 1345.0 L1160.0 1345.0 L1160.0 1306.0" fill="none" stroke="#1f2328" stroke-width="1.8"/>
+  <text x="921.0" y="1326.0" text-anchor="middle" font-size="15" fill="#111111" font-weight="700">N</text>
+  <text x="1032.0" y="1186.0" text-anchor="middle" font-size="13" fill="#555555" font-style="italic">caller</text>
+  <text x="1032.0" y="1366.0" text-anchor="middle" font-size="13" fill="#555555" font-style="italic">callee</text>
+  <ellipse cx="615" cy="215" rx="50.8" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="615.0" y="219.5" text-anchor="middle" font-size="13" fill="#111111" text-decoration="underline">record_id</text>
+  <path d="M753.0 261.0 L655.2 228.4" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="730" cy="150" rx="65.3" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="730.0" y="154.5" text-anchor="middle" font-size="13" fill="#111111">tokens_before</text>
+  <path d="M817.2 261.0 L746.7 171.3" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="950" cy="150" rx="61.7" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="950.0" y="154.5" text-anchor="middle" font-size="13" fill="#111111">tokens_after</text>
+  <path d="M862.8 261.0 L933.4 171.2" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1070" cy="215" rx="61.7" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="1070.0" y="219.5" text-anchor="middle" font-size="13" fill="#111111">tokens_saved</text>
+  <path d="M928.9 261.0 L1024.5 229.8" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="650" cy="510" rx="54.4" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="650.0" y="514.5" text-anchor="middle" font-size="13" fill="#111111" text-decoration="underline">request_id</text>
+  <path d="M789.9 591.0 L681.2 528.0" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1030" cy="510" rx="50.8" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1030.0" y="514.5" text-anchor="middle" font-size="13" fill="#111111">timestamp</text>
+  <path d="M890.1 591.0 L999.6 527.6" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="650" cy="730" rx="52.1" ry="27" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/><ellipse cx="650" cy="730" rx="47.1" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="650.0" y="734.5" text-anchor="middle" font-size="13" fill="#111111">messages</text>
+  <path d="M789.9 649.0 L679.6 712.9" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1030" cy="730" rx="58.0" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="1030.0" y="734.5" text-anchor="middle" font-size="13" fill="#111111">token_count</text>
+  <path d="M890.1 649.0 L998.2 711.6" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1420" cy="490" rx="54.4" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1420.0" y="494.5" text-anchor="middle" font-size="13" fill="#111111" text-decoration="underline">model_name</text>
+  <path d="M1420.0 591.0 L1420.0 512.0" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1600" cy="540" rx="47.1" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1600.0" y="544.5" text-anchor="middle" font-size="13" fill="#111111">provider</text>
+  <path d="M1485.2 591.0 L1565.9 555.2" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1420" cy="760" rx="46.0" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1420.0" y="764.5" text-anchor="middle" font-size="13" fill="#111111">price</text>
+  <path d="M1420.0 649.0 L1420.0 738.0" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1310" cy="870" rx="58.0" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1310.0" y="874.5" text-anchor="middle" font-size="13" fill="#111111">input_price</text>
+  <path d="M1400.2 779.8 L1330.6 849.4" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1535" cy="870" rx="61.7" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1535.0" y="874.5" text-anchor="middle" font-size="13" fill="#111111">output_price</text>
+  <path d="M1440.6 779.7 L1513.4 849.4" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="150" cy="495" rx="47.1" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="150.0" y="499.5" text-anchor="middle" font-size="13" fill="#111111" text-decoration="underline">hard_key</text>
+  <path d="M234.5 591.0 L167.9 515.3" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="365" cy="495" rx="65.3" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="365.0" y="499.5" text-anchor="middle" font-size="13" fill="#111111">semantic_text</text>
+  <path d="M284.4 591.0 L347.2 516.2" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="150" cy="745" rx="50.8" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="150.0" y="749.5" text-anchor="middle" font-size="13" fill="#111111">embedding</text>
+  <path d="M234.5 649.0 L168.1 724.4" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="365" cy="745" rx="47.1" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="365.0" y="749.5" text-anchor="middle" font-size="13" fill="#111111">response</text>
+  <path d="M284.4 649.0 L347.8 724.5" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="640" cy="960" rx="50.8" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="640.0" y="964.5" text-anchor="middle" font-size="13" fill="#111111" text-decoration="underline">file_path</text>
+  <path d="M750.0 960.0 L690.8 960.0" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1045" cy="915" rx="47.1" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1045.0" y="919.5" text-anchor="middle" font-size="13" fill="#111111">language</text>
+  <path d="M930.0 940.2 L1002.4 924.4" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="1045" cy="1005" rx="46.0" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="1045.0" y="1009.5" text-anchor="middle" font-size="13" fill="#111111">content</text>
+  <path d="M930.0 979.8 L1003.2 995.8" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="625" cy="1270" rx="69.0" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="625.0" y="1274.5" text-anchor="middle" font-size="13" fill="#111111" text-decoration="underline">qualified_name</text>
+  <path d="M750.0 1270.0 L694.0 1270.0" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="665" cy="1378" rx="50.8" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="665.0" y="1382.5" text-anchor="middle" font-size="13" fill="#111111">signature</text>
+  <path d="M793.0 1299.0 L694.2 1360.0" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <ellipse cx="820" cy="1405" rx="46.0" ry="22" fill="#ffffff" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="820.0" y="1409.5" text-anchor="middle" font-size="13" fill="#111111">body</text>
+  <path d="M835.7 1299.0 L823.3 1383.1" fill="none" stroke="#1f2328" stroke-width="1.5"/>
+  <rect x="40" y="890" width="440" height="330" rx="6" fill="#faf8f4" stroke="#c9c2b6" stroke-width="1.3"/>
+  <text x="60.0" y="922.0" text-anchor="start" font-size="15" fill="#111111" font-weight="700">Notation</text>
+  <rect x="68" y="948" width="68" height="28" fill="#f7f4ee" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="168.0" y="967.0" text-anchor="start" font-size="13.5" fill="#333333">Entity</text>
+  <polygon points="102,984 136,1000 102,1016 68,1000" fill="#fff4d6" stroke="#1f2328" stroke-width="1.6"/>
+  <text x="168.0" y="1005.0" text-anchor="start" font-size="13.5" fill="#333333">Relationship</text>
+  <ellipse cx="102" cy="1038" rx="34" ry="14" fill="#fff" stroke="#1f2328" stroke-width="1.5"/>
+  <text x="168.0" y="1043.0" text-anchor="start" font-size="13.5" fill="#333333">Attribute</text>
+  <ellipse cx="102" cy="1076" rx="34" ry="14" fill="#fff" stroke="#1f2328" stroke-width="1.5"/>
+  <text x="102.0" y="1080.0" text-anchor="middle" font-size="12" fill="#111111" text-decoration="underline">id</text>
+  <text x="168.0" y="1081.0" text-anchor="start" font-size="13.5" fill="#333333">Key attribute (underlined)</text>
+  <ellipse cx="102" cy="1114" rx="38" ry="16" fill="#fff" stroke="#1f2328" stroke-width="1.5"/><ellipse cx="102" cy="1114" rx="32" ry="11" fill="#fff" stroke="#1f2328" stroke-width="1.5"/>
+  <text x="168.0" y="1119.0" text-anchor="start" font-size="13.5" fill="#333333">Multivalued attribute</text>
+  <ellipse cx="102" cy="1152" rx="34" ry="14" fill="#fff" stroke="#1f2328" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="168.0" y="1157.0" text-anchor="start" font-size="13.5" fill="#333333">Derived attribute (computed)</text>
+  <ellipse cx="102" cy="1190" rx="34" ry="14" fill="#fff" stroke="#1f2328" stroke-width="1.5"/>
+  <line x1="136" y1="1190" x2="152" y2="1180" stroke="#1f2328" stroke-width="1.3"/><line x1="136" y1="1190" x2="152" y2="1200" stroke="#1f2328" stroke-width="1.3"/>
+  <text x="168.0" y="1195.0" text-anchor="start" font-size="13.5" fill="#333333">Composite: price has sub-parts</text>
+  <rect x="1255" y="965" width="415" height="190" rx="6" fill="#faf8f4" stroke="#c9c2b6" stroke-width="1.3"/>
+  <text x="1275.0" y="997.0" text-anchor="start" font-size="15" fill="#111111" font-weight="700">Cardinality in this model</text>
+  <text x="1277.0" y="1031.0" text-anchor="start" font-size="14" fill="#111111" font-weight="700">1 : 1</text>
+  <text x="1345.0" y="1031.0" text-anchor="start" font-size="13.5" fill="#333333">Request, Metric Record</text>
+  <text x="1277.0" y="1063.0" text-anchor="start" font-size="14" fill="#111111" font-weight="700">1 : N</text>
+  <text x="1345.0" y="1063.0" text-anchor="start" font-size="13.5" fill="#333333">Source File, Function</text>
+  <text x="1277.0" y="1095.0" text-anchor="start" font-size="14" fill="#111111" font-weight="700">N : 1</text>
+  <text x="1345.0" y="1095.0" text-anchor="start" font-size="13.5" fill="#333333">Request, Cache Entry / LLM Model</text>
+  <text x="1277.0" y="1127.0" text-anchor="start" font-size="14" fill="#111111" font-weight="700">M : N</text>
+  <text x="1345.0" y="1127.0" text-anchor="start" font-size="13.5" fill="#333333">Request, Source File; Function calls</text>
+</svg>

@@ -24,6 +24,12 @@
 | W16 | Improvements over second prototype | Refined build |
 | W17 | Final prototype, presentation, report | **Final deliverable (EST)** |
 
+## Gantt chart
+
+![Gantt chart of the semester plan from week 4 to week 17, with milestones at the
+proposal, the prototype demo, the second prototype and the final
+deliverable.](assets/img/gantt-chart.svg){ width="900" }
+
 ## Success criteria
 
 - **≥ 30%** token reduction on code-heavy, repetitive workloads
