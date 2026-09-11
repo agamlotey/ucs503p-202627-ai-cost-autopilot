@@ -1,6 +1,7 @@
 - [Home](index.md)
 - [The Problem](problem.md)
 - [Architecture](architecture.md)
+- [Design](design.md)
 - Components
     - [Compiler-Aware Trimmer](components/trimmer.md)
     - [Semantic Cache](components/cache.md)
@@ -8,6 +9,7 @@
 - [Usage](usage.md)
 - [Roadmap](roadmap.md)
 - [Team](team.md)
+- [Deliverables](deliverables.md)
 - Journals
     - [Agam](journals/1024240033-agam/index.md)
     - [Devansh](journals/1024240012-devansh/index.md)

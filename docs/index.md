@@ -21,13 +21,15 @@ automatically, with no change to how developers work.
 
 - [The Problem](problem.md) — why AI coding gets expensive
 - [Architecture](architecture.md) — the gateway and how it works
+- [Design](design.md): use case, DFD, ER and activity diagrams
 - Components:
     - [Compiler-Aware Trimmer](components/trimmer.md) *(Agam)*
     - [Semantic Cache](components/cache.md) *(Devansh)*
     - [Autopilot](components/autopilot.md) *(Furmaan)*
 - [Usage](usage.md) — run it locally
-- [Roadmap](roadmap.md) — milestones
+- [Roadmap](roadmap.md) — milestones and Gantt chart
 - [Team](team.md) — who's who
+- [Deliverables](deliverables.md): every evaluated item, with links
 
 ## Repository
 
@@ -38,7 +40,7 @@ automatically, with no change to how developers work.
 | `code/` | The gateway and the three components |
 | `docs/` | This site |
 | `journals/` | Weekly technical journals |
-| `project-proposal/` | Proposal report (LaTeX) |
+| `project-proposal/` | Proposal report (LaTeX source and PDF) and presentation (PDF) |
 
 Clone it with:
 
