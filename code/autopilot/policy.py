@@ -1,248 +1,128 @@
 """
-autopilot.py
--------------
-The "brain" of the gateway. For every incoming message it decides:
+Autopilot  —  OWNER: Furmaan
 
-  1. CACHE HIT   -> return the saved answer, cost = $0, no call to the LLM.
-  2. TRIM        -> the message is big/boilerplate-heavy, compress it, then call the LLM.
-  3. PASSTHROUGH -> message is small/normal, send it straight to the LLM.
+Goal: for each request, pick the cheapest SAFE path — reuse a cached answer,
+trim the request, or send it as-is. Does not blindly stack techniques,
+because trimming rewrites the prompt and lowers how often the cache matches.
 
-Drop this file in your `autopilot/` folder. It has no hard dependency on
-OpenAI's embeddings API — it will use them if OPENAI_API_KEY is set
-(better semantic matching), and otherwise falls back to a pure-Python
-similarity check (no external calls, no cost).
+Decision order (cheapest action first, see docs/components/autopilot.md):
+  1. Safety check   -> secrets/PII present?  -> never cache, never trim
+                        (trimming a message with a secret risks the trimmer
+                        splitting/duplicating it across a cached boundary,
+                        so the safest move is to send it through untouched).
+  2. Cache lookup   -> handled by the gateway using our `use_cache` flag;
+                        a hit is near-free.
+  3. Code-heavy and large enough to be worth the trimmer's overhead?
+                        -> trim.
+  4. Otherwise      -> pass through untouched.
 
-Usage:
-    from autopilot import Autopilot
-
-    pilot = Autopilot()
-    result = pilot.handle(user_message, call_llm_fn=my_llm_call)
-    print(result["answer"], result["route"], result["cost_estimate"])
+Everything here is self-contained inside the autopilot package — it does not
+require gateway/interfaces.py or gateway/app.py to change. The secrets check
+in particular does its own lightweight scan of the request, rather than
+depending on the gateway to have computed a `has_secrets` signal, so the
+safety guarantee holds even before the shared `compute_signals()` is
+extended to cover it.
 """
+from __future__ import annotations
 
-import difflib
-import hashlib
-import os
 import re
-import time
-from dataclasses import dataclass, field
-from typing import Callable, Optional
+from collections import Counter
+from typing import Any
+
+from gateway.interfaces import Request
 
 
-class Trimmer:
-    """Compress large or repetitive input while preserving important sections."""
-
-    PROTECTED_PATTERNS = [
-        r"```.*?```",
-        r"<instructions>.*?</instructions>",
-        r"<task>.*?</task>",
-    ]
-
-    def __init__(self, size_threshold_chars: int = 4000):
-        self.size_threshold_chars = size_threshold_chars
-
-    def should_trim(self, text: str) -> bool:
-        return len(text) >= self.size_threshold_chars
-
-    def trim(self, text: str) -> str:
-        protected = []
-
-        def _stash(match):
-            protected.append(match.group(0))
-            return f"__PROTECTED_{len(protected) - 1}__"
-
-        combined_pattern = "|".join(self.PROTECTED_PATTERNS)
-        stashed_text = re.sub(combined_pattern, _stash, text, flags=re.DOTALL)
-        stashed_text = re.sub(r"<[^>]+>", " ", stashed_text)
-        stashed_text = re.sub(r"[ \t]+", " ", stashed_text)
-        stashed_text = re.sub(r"\n{3,}", "\n\n", stashed_text)
-
-        seen = set()
-        deduped_lines = []
-        for line in stashed_text.split("\n"):
-            key = line.strip()
-            if key and key in seen:
-                continue
-            if key:
-                seen.add(key)
-            deduped_lines.append(line)
-        result = "\n".join(deduped_lines).strip()
-
-        for i, block in enumerate(protected):
-            result = result.replace(f"__PROTECTED_{i}__", block)
-
-        return result
-
-
-class SecretsFilter:
-    """Conservatively detect common secrets and personally identifying data."""
+# ----------------------------------------------------------------------
+# Safety check: secrets / PII detection
+# ----------------------------------------------------------------------
+class SecretsDetector:
+    """
+    Cheap, fast, regex-based check for obvious secrets/PII in a request.
+    Intentionally conservative (covers common patterns, not a full DLP
+    system) — good enough to guarantee "never cache a secret" without
+    adding latency to every request.
+    """
 
     PATTERNS = [
-        r"sk-[A-Za-z0-9]{20,}",
-        r"AIza[0-9A-Za-z\-_]{35}",
-        r"ghp_[A-Za-z0-9]{36}",
-        r"AKIA[0-9A-Z]{16}",
-        r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
-        r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+",
+        r"sk-(proj-|ant-api\d{2}-)?[A-Za-z0-9_-]{20,}",  # OpenAI (sk-..., sk-proj-...) and Anthropic (sk-ant-api03-...) keys
+        r"AIza[0-9A-Za-z\-_]{35}",                      # Google API keys
+        r"ghp_[A-Za-z0-9]{36}",                         # GitHub personal access tokens
+        r"AKIA[0-9A-Z]{16}",                            # AWS access key IDs
+        r"-----BEGIN [A-Z ]*PRIVATE KEY-----",          # PEM private keys
+        r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+",  # JWTs
         r"(?i)\b(password|passwd|pwd|api[_-]?key|secret|token)\s*[:=]\s*\S+",
-        r"\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b",
-        r"\b\d{3}-\d{2}-\d{4}\b",
+        r"\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b",      # credit-card-shaped
+        r"\b\d{3}-\d{2}-\d{4}\b",                        # SSN-shaped
     ]
 
-    def __init__(self):
-        self._compiled = [re.compile(pattern) for pattern in self.PATTERNS]
+    def __init__(self) -> None:
+        self._compiled = [re.compile(p) for p in self.PATTERNS]
 
-    def contains_secret(self, text: str) -> bool:
-        return any(pattern.search(text) for pattern in self._compiled)
-
-
-@dataclass
-class CacheEntry:
-    question: str
-    answer: str
-    embedding: Optional[list] = None
-    created_at: float = field(default_factory=time.time)
+    def scan(self, text: str) -> bool:
+        return any(p.search(text) for p in self._compiled)
 
 
-class SemanticCache:
-    """In-memory semantic cache with an optional OpenAI embedding backend."""
-
-    def __init__(self, similarity_threshold: float = 0.90):
-        self.entries: list[CacheEntry] = []
-        self.similarity_threshold = similarity_threshold
-        self._openai_client = self._init_openai_client()
-
-    def _init_openai_client(self):
-        if not os.environ.get("OPENAI_API_KEY"):
-            return None
-        try:
-            from openai import OpenAI
-            return OpenAI()
-        except ImportError:
-            return None
-
-    def _embed(self, text: str) -> Optional[list]:
-        if not self._openai_client:
-            return None
-        response = self._openai_client.embeddings.create(
-            model="text-embedding-3-small",
-            input=text,
-        )
-        return response.data[0].embedding
-
-    @staticmethod
-    def _cosine_sim(a: list, b: list) -> float:
-        dot = sum(x * y for x, y in zip(a, b))
-        norm_a = sum(x * x for x in a) ** 0.5
-        norm_b = sum(y * y for y in b) ** 0.5
-        if norm_a == 0 or norm_b == 0:
-            return 0.0
-        return dot / (norm_a * norm_b)
-
-    @staticmethod
-    def _text_sim(a: str, b: str) -> float:
-        return difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio()
-
-    def lookup(self, question: str) -> Optional[str]:
-        if not self.entries:
-            return None
-
-        if self._openai_client:
-            question_embedding = self._embed(question)
-            best, best_score = None, 0.0
-            for entry in self.entries:
-                if entry.embedding is None:
-                    entry.embedding = self._embed(entry.question)
-                score = self._cosine_sim(question_embedding, entry.embedding)
-                if score > best_score:
-                    best, best_score = entry, score
-        else:
-            best, best_score = None, 0.0
-            for entry in self.entries:
-                score = self._text_sim(question, entry.question)
-                if score > best_score:
-                    best, best_score = entry, score
-
-        if best and best_score >= self.similarity_threshold:
-            return best.answer
-        return None
-
-    def store(self, question: str, answer: str):
-        secret_filter = SecretsFilter()
-        if secret_filter.contains_secret(question) or secret_filter.contains_secret(answer):
-            return
-        embedding = self._embed(question) if self._openai_client else None
-        self.entries.append(
-            CacheEntry(question=question, answer=answer, embedding=embedding)
-        )
+def _extract_text(request: Request) -> str:
+    """Pulls all message content out of an OpenAI-style chat request body."""
+    if not isinstance(request, dict):
+        return ""
+    messages = request.get("messages", [])
+    return " ".join(
+        m.get("content", "")
+        for m in messages
+        if isinstance(m, dict) and isinstance(m.get("content"), str)
+    )
 
 
+# ----------------------------------------------------------------------
+# The Autopilot
+# ----------------------------------------------------------------------
 class Autopilot:
-    def __init__(
-        self,
-        size_threshold_chars: int = 4000,
-        cache_similarity_threshold: float = 0.90,
-    ):
-        self.trimmer = Trimmer(size_threshold_chars=size_threshold_chars)
-        self.cache = SemanticCache(similarity_threshold=cache_similarity_threshold)
-        self.secrets_filter = SecretsFilter()
+    """
+    Contract (frozen — see gateway/interfaces.py, do not change alone):
+        decide(request: Request, signals: dict) -> dict
+            e.g. {"use_cache": bool, "trim": bool}
+    """
 
-    def handle(self, message: str, call_llm_fn: Callable[[str], str]) -> dict:
-        """Route a message through the cache, trimmer, or LLM."""
-        if self.secrets_filter.contains_secret(message):
-            payload = message
-            if self.trimmer.should_trim(payload):
-                payload = self.trimmer.trim(payload)
-            answer = call_llm_fn(payload)
-            return {
-                "route": "sensitive_no_cache",
-                "answer": answer,
-                "cost_estimate": len(payload),
-                "sent_chars": len(payload),
-                "cached": False,
-            }
+    # Trimming a small request isn't worth the compiler-aware trimmer's
+    # parsing overhead — only worth it once a request is both code-heavy
+    # AND reasonably large. Threshold is tunable, see `stats()` below.
+    DEFAULT_TRIM_TOKEN_THRESHOLD = 1000
 
-        cached_answer = self.cache.lookup(message)
-        if cached_answer is not None:
-            return {
-                "route": "cache_hit",
-                "answer": cached_answer,
-                "cost_estimate": 0,
-                "sent_chars": 0,
-                "cached": True,
-            }
+    def __init__(self, trim_token_threshold: int = DEFAULT_TRIM_TOKEN_THRESHOLD):
+        self.trim_token_threshold = trim_token_threshold
+        self._secrets = SecretsDetector()
+        # Lightweight in-memory counters so we can measure/tune thresholds
+        # later (per "Measurement and tuning" in the component doc), without
+        # needing a separate logging system yet.
+        self._decision_counts: Counter[str] = Counter()
 
-        if self.trimmer.should_trim(message):
-            payload = self.trimmer.trim(message)
-            route = "trimmed"
-        else:
-            payload = message
-            route = "passthrough"
+    def decide(self, request: Request, signals: dict) -> dict:
+        # --- 1. Safety check: never cache a secret ---
+        has_secrets = signals.get("has_secrets")
+        if has_secrets is None:
+            # The shared compute_signals() in gateway/app.py doesn't compute
+            # this yet, so the autopilot does its own scan as a fallback.
+            # This keeps the safety guarantee independent of what the
+            # gateway currently passes in.
+            has_secrets = self._secrets.scan(_extract_text(request))
 
-        answer = call_llm_fn(payload)
-        self.cache.store(message, answer)
+        if has_secrets:
+            self._decision_counts["secrets_no_cache"] += 1
+            return {"use_cache": False, "trim": False, "reason": "secrets_detected"}
 
+        # --- 2 & 3. Cache is always attempted; trim only if it's worth it ---
+        has_code = bool(signals.get("has_code", False))
+        num_tokens_est = signals.get("num_tokens_est", 0)
+        should_trim = has_code and num_tokens_est > self.trim_token_threshold
+
+        self._decision_counts["trimmed" if should_trim else "cache_or_passthrough"] += 1
         return {
-            "route": route,
-            "answer": answer,
-            "cost_estimate": len(payload),
-            "sent_chars": len(payload),
-            "cached": True,
+            "use_cache": True,
+            "trim": should_trim,
+            "reason": "trim_code_heavy" if should_trim else "no_trim_needed",
         }
 
-
-if __name__ == "__main__":
-    def fake_llm(prompt: str) -> str:
-        return f"[LLM ANSWER for: {prompt[:40]}...]"
-
-    pilot = Autopilot(size_threshold_chars=50)
-    print(pilot.handle("What's the capital of India?", fake_llm))
-    print(pilot.handle("India's capital city?", fake_llm))
-    print(pilot.handle("x" * 200, fake_llm))
-    print(
-        pilot.handle(
-            "my api_key: sk-abc123XYZsecretvalue000000",
-            fake_llm,
-        )
-    )
-    print(len(pilot.cache.entries))
+    def stats(self) -> dict:
+        """Decision counts so far, for measurement/threshold tuning."""
+        return dict(self._decision_counts)
