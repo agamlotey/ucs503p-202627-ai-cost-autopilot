@@ -25,8 +25,13 @@ Design notes:
   - An identical request still hits (its text embeds to the same vector,
     cosine == 1.0 >= threshold), so semantic subsumes v1's exact match.
 
-TODO (later): never cache secrets/PII; add a TTL/eviction (the store below grows
-without bound); persist to a real vector store for the shared cloud cache.
+Bounds: a size cap (LRU eviction) and an optional TTL keep the store from
+growing without limit. The TTL is *sliding* — a hit refreshes an entry's timer —
+so it bounds memory but does not guarantee freshness (a hot entry can outlive
+`ttl_seconds`).
+
+TODO (later): never cache secrets/PII; persist to a real vector store for the
+shared cloud cache.
 """
 from __future__ import annotations
 
