@@ -191,3 +191,56 @@ def test_prose_still_uses_semantic_matching():
     c = _cache()  # the prose fake embedder from earlier
     c.store(_req("capital of France?"), {"a": "Paris"})
     assert c.lookup(_req("France's capital?")) == {"a": "Paris"}
+
+
+# --- TTL + size-cap eviction -------------------------------------------------
+
+class _Clock:
+    """A controllable clock so TTL tests don't have to sleep."""
+    def __init__(self): self.t = 1000.0
+    def __call__(self): return self.t
+    def advance(self, dt): self.t += dt
+
+
+def test_ttl_expires_stale_entries():
+    clk = _Clock()
+    c = SemanticCache(embed_fn=_fake_embed, ttl_seconds=60, _now=clk)
+    c.store(_req("capital of France?"), {"a": "Paris"})
+    assert c.lookup(_req("capital of France?")) == {"a": "Paris"}  # fresh -> hit
+    clk.advance(61)                                                # now stale
+    assert c.lookup(_req("capital of France?")) is None           # expired -> miss
+
+
+def test_a_hit_refreshes_the_ttl():
+    """Using an entry keeps it alive (LRU-style freshness)."""
+    clk = _Clock()
+    c = SemanticCache(embed_fn=_fake_embed, ttl_seconds=60, _now=clk)
+    c.store(_req("capital of France?"), {"a": "Paris"})
+    clk.advance(40); assert c.lookup(_req("capital of France?")) == {"a": "Paris"}
+    clk.advance(40)  # 80s since store, but only 40s since last use
+    assert c.lookup(_req("capital of France?")) == {"a": "Paris"}
+
+
+def test_size_cap_evicts_least_recently_used():
+    clk = _Clock()
+    c = SemanticCache(embed_fn=_fake_embed, max_entries=2, _now=clk)
+    # three DISTINCT code requests (exact-match only, so no fuzzy collision)
+    a = {"model": "m", "messages": [{"role": "user", "content": "def alpha(): pass"}]}
+    b = {"model": "m", "messages": [{"role": "user", "content": "def beta(): pass"}]}
+    d = {"model": "m", "messages": [{"role": "user", "content": "def delta(): pass"}]}
+    clk.advance(1); c.store(a, {"x": "A"})
+    clk.advance(1); c.store(b, {"x": "B"})
+    clk.advance(1); c.lookup(a)              # touch A so B is now the LRU
+    clk.advance(1); c.store(d, {"x": "D"})   # over cap -> evict LRU (B)
+    assert c.lookup(a) == {"x": "A"}         # kept (recently used)
+    assert c.lookup(d) == {"x": "D"}         # kept (just added)
+    assert c.lookup(b) is None               # evicted
+
+
+def test_unbounded_by_default_off():
+    """ttl defaults off and the cap is generous, so normal use is unaffected."""
+    c = SemanticCache(embed_fn=_fake_embed)     # defaults
+    for i in range(50):
+        c.store({"model": "m", "messages": [{"role": "user", "content": f"q{i}"}]},
+                {"x": i})
+    assert c.lookup({"model": "m", "messages": [{"role": "user", "content": "q0"}]}) == {"x": 0}
