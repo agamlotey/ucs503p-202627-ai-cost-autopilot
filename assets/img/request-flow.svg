@@ -44,6 +44,8 @@
   <!-- gateway container -->
   <rect class="dash" x="60" y="206" width="700" height="470" rx="14"/>
   <rect class="bg"  x="330" y="194" width="290" height="26"/>
+  <rect class="bg"  x="752" y="406" width="16" height="24"/>  <!-- gap: cache-hit arrow -->
+  <rect class="bg"  x="752" y="514" width="16" height="24"/>  <!-- gap: provider arrow -->
   <text class="head" x="400" y="214" font-size="19">GATEWAY <tspan class="sub" font-size="17" font-weight="400">(FastAPI)</tspan></text>
 
   <!-- steps -->
@@ -94,11 +96,10 @@
 
   <!-- cache hit branch -->
   <path class="dash" d="M730 418 L 800 418" marker-end="url(#arrow)"/>
-  <text class="tiny" x="781" y="409" text-anchor="middle">hit</text>
   <rect class="fill-amber" x="808" y="396" width="150" height="46" rx="9"/>
   <circle cx="832" cy="419" r="12" fill="#ffffff"/>
   <path d="M826 419 l4 5 l9 -10" stroke="#8a5200" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="852" y="415" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#3b2a00">HIT</text>
+  <text x="852" y="415" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#3b2a00">CACHE HIT</text>
   <text x="852" y="433" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#3b2a00">RETURN</text>
 
   <!-- provider branch -->
