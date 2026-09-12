@@ -5,6 +5,16 @@
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+\tikzset{
+  box/.style={rectangle, rounded corners=5pt, draw=black!75, line width=0.6pt,
+              align=center, font=\sffamily, inner sep=4pt},
+  flow/.style={-{Stealth[length=2.6mm]}, line width=0.7pt},
+  both/.style={{Stealth[length=2.6mm]}-{Stealth[length=2.6mm]}, line width=0.7pt},
+  lbl/.style={font=\small\sffamily, text=black!80},
+}
 
 % -----------------------------------------------------
 % bvraghav-tiet-ucs503p-article.sty
@@ -139,6 +149,7 @@ reduces its cost before forwarding it, with the following components:
 \end{itemize}
 
 \subsection{Core workflow}
+Figure~\ref{fig:pipeline} shows the path of one request.
 \begin{enumerate}[noitemsep]
   \item The coding agent issues a request to the gateway instead of the provider.
   \item The gateway computes cheap signals (token count, presence of code) and
@@ -150,6 +161,27 @@ reduces its cost before forwarding it, with the following components:
   \item The reduced request is forwarded to the provider; the answer is returned
         and recorded against the \emph{original} request.
 \end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[stage/.style={box, fill=blue!5, minimum width=4.4cm, minimum height=1.25cm}]
+  \node[stage] (s1) at (0,0)      {1. Agent Request};
+  \node[stage] (s2) at (6.4,0)    {2. Compute Signals};
+  \node[stage] (s3) at (6.4,-2.4) {3. Autopilot Plan};
+  \node[stage] (s4) at (0,-2.4)   {4. Cache Lookup};
+  \node[stage] (s5) at (0,-4.8)   {5. Compiler-Aware\\Trim};
+  \node[stage] (s6) at (6.4,-4.8) {6. Forward to LLM\\\& Store Answer};
+  \draw[flow] (s1) -- (s2);
+  \draw[flow] (s2) -- (s3);
+  \draw[flow] (s3) -- (s4);
+  \draw[flow] (s4) -- node[lbl, left] {miss} (s5);
+  \draw[flow] (s5) -- (s6);
+  \draw[flow, dashed] (s4.north) -- node[lbl, left] {hit: stored answer} (s1.south);
+\end{tikzpicture}
+\caption{AI Cost Autopilot request pipeline. On a cache hit (dashed) the stored
+answer is returned and the model is never called.}
+\label{fig:pipeline}
+\end{figure}
 
 \subsection{Operational constraints for an educational setting}
 \begin{itemize}[noitemsep]
@@ -163,7 +195,7 @@ reduces its cost before forwarding it, with the following components:
 \section{Solution Approach}
 
 \subsection{Context reduction}
-Reduction is deterministic and structural, not statistical. Source files are
+Reduction is deterministic and structural, not statistical (Figure~\ref{fig:trimmer}). Source files are
 parsed into an Abstract Syntax Tree; a call graph is derived; the function the
 task concerns and the functions it depends on are retained in full, while every
 other definition is reduced to its signature. Because edits are made at syntactic
@@ -172,8 +204,29 @@ resolved with confidence, the approximation deliberately retains \emph{more} tha
 necessary: an unnecessary retention costs savings, whereas an incorrect removal
 costs correctness.
 
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[std/.style={box, minimum width=3.7cm, minimum height=1.3cm}]
+  \node[std, fill=orange!7] (task)  at (0,1.1)    {Task Text\\(e.g.\ ``fix create\_note'')};
+  \node[std, fill=cyan!6]   (src)   at (0,-1.1)   {Source Files\\(one per message)};
+  \node[std, fill=blue!5]   (focus) at (4.9,1.1)  {Focus Detection\\(names in the task)};
+  \node[std, fill=blue!5]   (graph) at (4.9,-1.1) {tree-sitter Parser\\+ Call Graph};
+  \node[std, fill=black!8, minimum width=4.3cm] (core) at (10.3,0)
+        {\textbf{Compiler-Aware Trimmer}\\keep focus + callees};
+  \node[std, fill=green!8]  (out)   at (15.6,0)   {Reduced Request\\(still valid code)};
+  \draw[flow] (task) -- (focus);
+  \draw[flow] (src) -- (graph);
+  \draw[flow] (focus.east) -- (core.north west);
+  \draw[flow] (graph.east) -- (core.south west);
+  \draw[flow] (core) -- (out);
+\end{tikzpicture}}
+\caption{Compiler-aware context reduction.}
+\label{fig:trimmer}
+\end{figure}
+
 \subsection{System architecture}
-A three-tier arrangement:
+A three-tier arrangement (Figure~\ref{fig:architecture}):
 \begin{itemize}[noitemsep]
   \item \textbf{Interface:} an HTTP endpoint mirroring the provider API, so no
         client modification is required; streaming and tool-call structures pass
@@ -184,6 +237,29 @@ A three-tier arrangement:
   \item \textbf{Provider adapter:} forwards to the upstream model, with an
         offline mock so the whole pipeline can be exercised without an API key.
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[tier/.style={box, minimum height=1.35cm}]
+  \node[tier, fill=cyan!6, minimum width=5.4cm] (agent) at (-3.2,0)
+        {\textbf{Client Tier}\\Coding Agent (Cursor, Codex, \dots)};
+  \node[tier, fill=orange!7, minimum width=5.4cm] (llm) at (3.2,0)
+        {\textbf{Provider Tier}\\LLM (OpenAI, Anthropic) or mock};
+  \node[tier, fill=black!8, minimum width=11.8cm] (gw) at (0,-2.7)
+        {\textbf{Interface Tier}\\Gateway: FastAPI, OpenAI-compatible endpoint};
+  \node[tier, fill=blue!5, minimum width=3.5cm] (trim)  at (-4,-5.4) {\textbf{Trimmer}\\tree-sitter};
+  \node[tier, fill=blue!5, minimum width=3.5cm] (cache) at (0,-5.4)  {\textbf{Semantic Cache}\\embeddings};
+  \node[tier, fill=blue!5, minimum width=3.5cm] (auto)  at (4,-5.4)  {\textbf{Autopilot}\\policy};
+  \draw[both] (agent.south) -- node[lbl, left] {HTTPS} (agent.south |- gw.north);
+  \draw[both] (llm.south)   -- node[lbl, right] {httpx} (llm.south |- gw.north);
+  \draw[both] (trim.north  |- gw.south) -- node[lbl, left] {fixed interface} (trim.north);
+  \draw[both] (cache.north |- gw.south) -- (cache.north);
+  \draw[both] (auto.north  |- gw.south) -- (auto.north);
+\end{tikzpicture}
+\caption{Three-tier architecture. The optimisation modules sit behind fixed
+interfaces, so each can be built and tested on its own.}
+\label{fig:architecture}
+\end{figure}
 
 \subsection{CI/CD and fast delivery enabler}
 Continuous integration runs the full test suite on every change, so a

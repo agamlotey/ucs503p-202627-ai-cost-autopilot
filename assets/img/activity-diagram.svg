@@ -57,7 +57,8 @@
   <text x="670.0" y="496.5" text-anchor="middle" font-size="13.5" fill="#111111">Decide plan</text>
   <path d="M410.0 452.0 L410.0 492.0 L593.0 492.0" fill="none" stroke="#1f2328" stroke-width="1.6" marker-end="url(#arr)"/>
   <polygon points="670,556 694,580 670,604 646,580" fill="#ffffff" stroke="#1f2328" stroke-width="1.8"/>
-  <text x="638.0" y="585.0" text-anchor="end" font-size="13.5" fill="#111111" font-weight="700">use cache?</text>
+  <text x="638.0" y="576.0" text-anchor="end" font-size="13.5" fill="#111111" font-weight="700">use</text>
+  <text x="638.0" y="592.0" text-anchor="end" font-size="13.5" fill="#111111" font-weight="700">cache?</text>
   <path d="M670.0 514.0 L670.0 554.0" fill="none" stroke="#1f2328" stroke-width="1.6" marker-end="url(#arr)"/>
   <rect x="820.0" y="600.0" width="150.0" height="60" rx="14" fill="#fff4d6" stroke="#1f2328" stroke-width="1.8"/>
   <text x="895.0" y="626.0" text-anchor="middle" font-size="13.5" fill="#111111">Look up by</text>
@@ -74,7 +75,7 @@
   <text x="906.0" y="760.0" text-anchor="start" font-size="13" fill="#333333" font-style="italic">[no]</text>
   <path d="M871.0 712.0 L150.0 712.0 L150.0 1346.0" fill="none" stroke="#1f2328" stroke-width="1.6" marker-end="url(#arr)"/>
   <text x="820.0" y="703.0" text-anchor="middle" font-size="13" fill="#333333" font-style="italic">[yes]</text>
-  <text x="300.0" y="703.0" text-anchor="middle" font-size="13" fill="#333333" font-style="italic">stored response</text>
+  <text x="276.0" y="703.0" text-anchor="start" font-size="13" fill="#333333" font-style="italic">stored response</text>
   <polygon points="670,864 694,888 670,912 646,888" fill="#ffffff" stroke="#1f2328" stroke-width="1.8"/>
   <text x="638.0" y="893.0" text-anchor="end" font-size="13.5" fill="#111111" font-weight="700">trim?</text>
   <path d="M895.0 824.0 L895.0 850.0 L670.0 850.0 L670.0 862.0" fill="none" stroke="#1f2328" stroke-width="1.6" marker-end="url(#arr)"/>
