@@ -16,7 +16,10 @@ from autopilot.policy import Autopilot
 app = FastAPI(title="AI Cost Autopilot")
 
 trimmer = CodeTrimmer()      # Agam
-cache = SemanticCache()      # Devansh
+cache = SemanticCache(                       # Devansh
+    max_entries=config.CACHE_MAX_ENTRIES,
+    ttl_seconds=config.CACHE_TTL_SECONDS,
+)
 autopilot = Autopilot()      # Furmaan
 
 

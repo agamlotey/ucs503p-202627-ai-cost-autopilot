@@ -25,14 +25,20 @@ Design notes:
   - An identical request still hits (its text embeds to the same vector,
     cosine == 1.0 >= threshold), so semantic subsumes v1's exact match.
 
-TODO (later): never cache secrets/PII; add a TTL/eviction (the store below grows
-without bound); persist to a real vector store for the shared cloud cache.
+Bounds: a size cap (LRU eviction) and an optional TTL keep the store from
+growing without limit. The TTL is *sliding* — a hit refreshes an entry's timer —
+so it bounds memory but does not guarantee freshness (a hot entry can outlive
+`ttl_seconds`).
+
+TODO (later): never cache secrets/PII; persist to a real vector store for the
+shared cloud cache.
 """
 from __future__ import annotations
 
 import copy
 import hashlib
 import json
+import time
 from typing import Callable, Optional
 
 from gateway.interfaces import Request, Response
@@ -113,20 +119,27 @@ class SemanticCache:
         self,
         embed_fn: Optional[Callable[[str], Vector]] = None,
         threshold: float = DEFAULT_THRESHOLD,
+        max_entries: Optional[int] = 10_000,
+        ttl_seconds: Optional[float] = None,
+        _now: Callable[[], float] = time.time,
     ) -> None:
-        # buckets: hard_key -> list of (vector, stored_response). We only ever
-        # compare within one bucket, preserving v1's exact-match-on-settings
-        # safety while matching meaning on the text.
-        # bucket entry = (semantic_text, vector, response). Text is kept so a
-        # re-store of the SAME request overwrites instead of appending.
-        self._buckets: dict[str, list[tuple[str, Vector, Response]]] = {}
+        # buckets: hard_key -> list of entries. Each entry is a mutable list
+        # [semantic_text, vector, response, last_used_ts]. We only compare within
+        # one bucket, preserving exact-match-on-settings safety while matching
+        # meaning on the text. `last_used_ts` is set on store and refreshed on a
+        # hit; it drives TTL expiry and LRU eviction so a long-running gateway
+        # can't grow without limit.
+        self._buckets: dict[str, list[list]] = {}
         self._threshold = threshold
         self._embedder: Optional[Callable[[str], Vector]] = embed_fn
-        # If the embedding library is missing we can't do semantic matching, so
-        # the cache turns into a safe no-op (every lookup misses, store is
-        # dropped) and the gateway keeps running — same graceful degradation as
-        # the trimmer without tree-sitter.
         self._disabled = False
+        # Bounds (both optional):
+        #   max_entries : hard cap on total cached answers; least-recently-used
+        #                 entries are evicted once the cap is exceeded.
+        #   ttl_seconds : an entry not used within this many seconds is dropped.
+        self._max_entries = max_entries
+        self._ttl = ttl_seconds
+        self._now = _now
 
     def _embed(self, text: str) -> Optional[Vector]:
         # Build the real embedder on first use (so importing the module is cheap
@@ -142,23 +155,65 @@ class SemanticCache:
                 return None
         return self._embedder(text)
 
+    # ---- expiry / eviction ------------------------------------------------
+
+    def _drop_expired(self, bucket: list) -> None:
+        if self._ttl is None:
+            return
+        cutoff = self._now() - self._ttl
+        bucket[:] = [e for e in bucket if e[3] >= cutoff]
+
+    def _total(self) -> int:
+        return sum(len(b) for b in self._buckets.values())
+
+    def _evict(self) -> None:
+        # First expire stale entries everywhere, then evict least-recently-used
+        # entries until we are back under the size cap.
+        if self._ttl is not None:
+            for key in list(self._buckets):
+                self._drop_expired(self._buckets[key])
+                if not self._buckets[key]:
+                    del self._buckets[key]
+        if self._max_entries is None:
+            return
+        while self._total() > self._max_entries:
+            oldest_key = oldest_i = None
+            oldest_ts = None
+            for key, b in self._buckets.items():
+                for i, e in enumerate(b):
+                    if oldest_ts is None or e[3] < oldest_ts:
+                        oldest_key, oldest_i, oldest_ts = key, i, e[3]
+            if oldest_key is None:
+                break
+            del self._buckets[oldest_key][oldest_i]
+            if not self._buckets[oldest_key]:
+                del self._buckets[oldest_key]
+
+    # ---- contract ---------------------------------------------------------
+
     def lookup(self, request: Request) -> Optional[Response]:
         """Return a saved answer whose request has the same hard key AND whose
-        text is semantically close enough (cosine >= threshold), else None.
-
-        Returns a copy so a caller mutating the response can't corrupt the cache.
-        """
-        bucket = self._buckets.get(_hard_key(request))
+        text matches (exact for code, semantic >= threshold for prose), else
+        None. Expired entries are skipped. Returns a copy so a caller mutating
+        the response can't corrupt the cache."""
+        key = _hard_key(request)
+        bucket = self._buckets.get(key)
         if not bucket:
             return None
+        self._drop_expired(bucket)
+        if not bucket:
+            del self._buckets[key]
+            return None
         text = _semantic_text(request)
+        now = self._now()
 
         # 1) EXACT text match — always available, needs no embedder. Covers code
-        #    (which is exact-only) AND identical prose, so the cache still saves
-        #    money when sentence-transformers isn't installed.
-        for etext, _vec, resp in bucket:
-            if etext == text:
-                return copy.deepcopy(resp)
+        #    (exact-only) AND identical prose, so the cache still saves money
+        #    when sentence-transformers isn't installed.
+        for entry in bucket:
+            if entry[0] == text:
+                entry[3] = now          # LRU touch
+                return copy.deepcopy(entry[2])
 
         # 2) CODE never reuses on similarity: a one-operator change (`>` vs `>=`,
         #    `and` vs `or`) is textually near-identical, so cosine cannot tell
@@ -166,36 +221,37 @@ class SemanticCache:
         if _looks_like_code(text):
             return None
 
-        # 3) NATURAL-LANGUAGE: semantic reuse above the threshold, which
-        #    separates cleanly for prose (paraphrases ~0.9+, different <0.6).
+        # 3) NATURAL-LANGUAGE: semantic reuse above the threshold.
         query = self._embed(text)
-        if query is None:            # embedder unavailable -> no fuzzy match
+        if query is None:               # embedder unavailable -> no fuzzy match
             return None
-        best_score, best_resp = -1.0, None
-        for _etext, vec, resp in bucket:
-            if vec is None:          # entry stored without an embedding
+        best_score, best = -1.0, None
+        for entry in bucket:
+            if entry[1] is None:        # entry stored without an embedding
                 continue
-            score = _cosine(query, vec)
-            if score >= best_score:   # >= so the newest entry wins on a tie
-                best_score, best_resp = score, resp
-        if best_resp is not None and best_score >= self._threshold:
-            return copy.deepcopy(best_resp)
+            score = _cosine(query, entry[1])
+            if score >= best_score:     # >= so the newest entry wins on a tie
+                best_score, best = score, entry
+        if best is not None and best_score >= self._threshold:
+            best[3] = now               # LRU touch
+            return copy.deepcopy(best[2])
         return None
 
     def store(self, request: Request, response: Response) -> None:
         """Remember this request -> response so a future same-meaning request
-        (same hard key) is free. Stores a copy so later mutation of the caller's
-        object doesn't change what's cached."""
+        (same hard key) is free. Stores a copy, then enforces the TTL and
+        size cap."""
         text = _semantic_text(request)
         # Embed ONLY for prose: code reuses by exact text, so its vector is never
-        # consulted (skipping it also saves the embedding cost). If the embedder
-        # is unavailable, vec stays None and the entry is still stored, so
-        # exact-match reuse keeps working without the ML dependency.
+        # consulted. If the embedder is unavailable, vec stays None and the entry
+        # is still stored, so exact-match reuse works without the ML dependency.
         vec = None if _looks_like_code(text) else self._embed(text)
         bucket = self._buckets.setdefault(_hard_key(request), [])
         snapshot = copy.deepcopy(response)
-        for i, (etext, _vec, _resp) in enumerate(bucket):
-            if etext == text:        # same request -> refresh in place, don't append
-                bucket[i] = (text, vec, snapshot)
+        now = self._now()
+        for entry in bucket:
+            if entry[0] == text:        # same request -> refresh in place
+                entry[1], entry[2], entry[3] = vec, snapshot, now
                 return
-        bucket.append((text, vec, snapshot))
+        bucket.append([text, vec, snapshot, now])
+        self._evict()
