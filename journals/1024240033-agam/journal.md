@@ -206,3 +206,165 @@ approximation towards the harmless one.
 When matching identifiers from an AST, the node's *name* is not its *target*.
 `super().__init__()` and `self.__init__()` produce the same attribute text and
 mean completely different things — the receiver has to be part of the decision.
+
+---
+
+## Week 4: A toy fixture hid a cross-file dependency bug
+
+### Context
+Until now every trimmer test ran on `sample_project`: two files, four functions,
+43 lines. The trimmer's whole job is *selective* retention, keeping the functions
+a task needs and collapsing the rest. To measure that honestly I built a realistic
+fixture, `notes_api`: a small notes service with 10 files, 45 functions and
+3,277 tokens, split into handlers, validators, serializers, auth, db and utils,
+with real imports between them.
+
+### Problem
+The first run on the new fixture, with the task "fix create_note", kept
+`create_note` in full but collapsed `validate_note` to its signature. That is
+the one function the fix is most likely to need:
+
+```python
+# handlers/notes.py
+def create_note(headers, payload):
+    """Validate and store a new note for the current user."""
+    user_id = current_user(headers)
+    clean = validate_note(payload)      # defined in validators.py
+    ...
+```
+
+### Key Observation
+A coding agent sends one file per message, and I built one call graph **per
+message**. When resolving calls, "known" meant "defined in this same file", so
+`validate_note(...)` inside `handlers/notes.py` matched nothing and the edge was
+never recorded. The toy project could not catch this: with 4 functions in 2 files
+nearly everything was reachable anyway, so a missing edge changed nothing. The
+test input was too small to fail.
+
+### Solution
+Build **one** graph across every code message, resolving each call against the
+union of all names defined anywhere in the request:
+
+```python
+def merge_call_graphs(sources):
+    defined_all = set()
+    for src in sources:
+        defined_all |= _defined_functions(src)
+    graph = {}
+    for src in sources:
+        for caller, callees in build_call_graph(src, known=defined_all).items():
+            graph.setdefault(caller, set()).update(callees)
+    return graph, defined_all
+```
+
+`CodeTrimmer.trim()` now expands the focus once over this merged graph, then
+collapses each message with the functions that message defines. A regression
+test puts the focus function and its dependency in separate messages and checks
+that the dependency keeps its body.
+
+### Takeaway
+The size and shape of a fixture are part of the test. A bug that only appears
+when code is spread across files will never appear in a two-file project, so
+realistic inputs are not optional for a component whose purpose is to be
+selective.
+
+---
+
+## Week 5: Getting «include» and «extend» the right way round
+
+### Context
+This week I drew the design diagrams: a data flow diagram with levels 0, 1 and 2
+in one figure, and a UML use case diagram. The use case diagram has one base
+flow (a coding agent sends a request) and several behaviours that only happen
+sometimes.
+
+### Problem
+My first version was wrong in two ways. I used «extend» for steps that happen on
+every request, and I pointed the «extend» arrows from the base use case to the
+optional one, the same direction as «include». It also looked messy: some arrow
+heads finished inside the ellipses, and labels sat on top of other arrows.
+
+### Key Observation
+The two relationships differ in *who depends on whom*:
+
+- **«include»**: the base use case **always** performs the included one and
+  cannot finish without it. The arrow goes **base → included**. "Send coding
+  request" always includes "Reduce token cost", which always includes "Select
+  cheapest safe action".
+- **«extend»**: optional behaviour that runs only under a condition. The base is
+  complete without it and does not even know it exists, so the arrow goes
+  **extension → base**. "Reuse past answer" (on a cache hit), "Reduce code
+  context" (over the token budget) and "Obtain completion" (on a miss) each
+  extend "Select cheapest safe action".
+
+The quick test: *can the base use case finish without this?* If not, it is an
+include. If yes, and it only sometimes happens, it is an extend.
+
+### Solution
+I redrew the include chain as a vertical column and moved the three extensions
+to the right, each pointing back at the base. To stop arrow heads ending inside a
+bubble, I computed each end point on the ellipse boundary instead of guessing.
+For the base ellipse (centre 500, 470; radii 115 and 36), the point
+(545, 437) satisfies
+
+```
+((545 - 500) / 115)^2 + ((437 - 470) / 36)^2 = 0.153 + 0.840 ≈ 1
+```
+
+so the arrow stops exactly on the edge. I also checked the label positions
+against the arrow lines numerically, after finding that an «include» label sat
+exactly where an «extend» diagonal crossed it.
+
+### Takeaway
+In UML the direction of an arrow carries meaning, not decoration. «include» and
+«extend» look alike, but they say opposite things about which use case depends on
+which, and the "can it finish without it?" test settles it every time.
+
+---
+
+## Week 6: A correctness fix that cut our headline number
+
+### Context
+For the prototype report I re-measured the trimmer on `notes_api` against simple
+baselines, for the task "fix create_note". Earlier I had quoted a saving of about
+52% from a measurement taken on the same fixture.
+
+### Problem
+The fresh measurement gave **31.9%**, not ~52%. My first guess was a measurement
+mistake, so I ran the trimmer from just before the Week 4 cross-file fix on the
+same input:
+
+| Trimmer version | Saved | `validate_note` body kept? |
+|---|---|---|
+| Before the cross-file fix | 51.8% | no |
+| Current | 31.9% | yes |
+
+### Key Observation
+The old number was not a better trimmer; it was the bug. Part of the "saving"
+was `validate_note`, the code the fix needed. A reduction that removes something
+the task depends on is not a saving, it is a wrong answer that happens to be
+cheaper. Collapsing every function body shows the same trap in its extreme form:
+57.0% "saved", but the function being fixed is gone.
+
+Measuring the baselines had a trap of its own. My first script for "strip
+comments and docstrings" reported **broken** Python, because deleting a docstring
+that is a function's only statement leaves an empty body. The baseline has to
+insert `pass` there, or the comparison is against something no one would use.
+
+### Solution
+I report every variant with a validity check next to it:
+
+| Variant | Saved | Output |
+|---|---|---|
+| Strip indentation and blank lines | 9.0% | broken |
+| Strip comments and docstrings | 20.5% | valid |
+| Collapse every function body | 57.0% | valid, but drops the focus |
+| **Trimmer (focus + callees, 2 hops)** | **31.9%** | **valid** |
+
+The trimmer keeps 18 of the 45 functions in full (including `validate_note` from
+another file) and collapses the other 27.
+
+### Takeaway
+Re-measure after every correctness fix, and never report a saving without the
+check that the result is still correct. The honest number is smaller, but it is
+the one that holds up when someone asks how it was measured.
