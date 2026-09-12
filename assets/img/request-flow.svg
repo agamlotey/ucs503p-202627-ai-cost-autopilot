@@ -94,7 +94,7 @@
 
   <!-- cache hit branch -->
   <path class="dash" d="M730 418 L 800 418" marker-end="url(#arrow)"/>
-  <text class="tiny" x="742" y="410">hit</text>
+  <text class="tiny" x="781" y="409" text-anchor="middle">hit</text>
   <rect class="fill-amber" x="808" y="396" width="150" height="46" rx="9"/>
   <circle cx="832" cy="419" r="12" fill="#ffffff"/>
   <path d="M826 419 l4 5 l9 -10" stroke="#8a5200" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>

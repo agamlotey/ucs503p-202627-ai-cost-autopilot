@@ -14,6 +14,20 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+\tikzset{
+  blk/.style={rectangle, rounded corners=4pt, line width=0.8pt, align=center,
+              font=\sffamily\small, inner sep=5pt},
+  blueb/.style={blk, draw=blue!70!black, fill=blue!6},
+  tealb/.style={blk, draw=teal!70!black, fill=teal!6},
+  orangeb/.style={blk, draw=orange!80!black, fill=orange!9},
+  redb/.style={blk, draw=red!70!black, fill=red!6},
+  greenb/.style={blk, draw=green!50!black, fill=green!7},
+  pipe/.style={-{Stealth[length=2.4mm]}, line width=0.8pt, draw=black!80},
+  steplbl/.style={font=\sffamily\scriptsize\bfseries, fill=white, draw=black!25,
+                  line width=0.4pt, inner sep=2pt, rounded corners=1.5pt},
+}
 
 \graphicspath{{figures/}}
 \setlist{itemsep=2pt, topsep=4pt}
@@ -190,10 +204,25 @@ provider. Each request goes through the same pipeline
 \end{enumerate}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\textwidth]{architecture}
-    \caption{Request flow through the gateway.}
-    \label{fig:architecture}
+\centering
+\begin{tikzpicture}[w/.style={minimum width=9.2cm, minimum height=1.05cm}]
+  \node[blueb, w]   (agent) at (0,0)   {\textbf{Coding Agent}\\{\scriptsize\bfseries Cursor $\bullet$ Claude Code $\bullet$ Codex}};
+  \node[blueb, w]   (gw)    at (0,-2)  {\textbf{Gateway \& Autopilot}\\{\scriptsize\bfseries FastAPI endpoint $\bullet$ Snapshot $\bullet$ Signals $\bullet$ Plan}};
+  \node[tealb, w]   (cache) at (0,-4)  {\textbf{Semantic Cache}\\{\scriptsize\bfseries Exact match for code $\bullet$ Similarity for prose}};
+  \node[orangeb, w] (trim)  at (0,-6)  {\textbf{Compiler-Aware Trimmer}\\{\scriptsize\bfseries tree-sitter $\bullet$ Call graph $\bullet$ Focus + callees}};
+  \node[redb, w]    (llm)   at (0,-8)  {\textbf{LLM Provider}\\{\scriptsize\bfseries OpenAI / Anthropic $\bullet$ Offline mock}};
+  \node[greenb, w]  (resp)  at (0,-10) {\textbf{Response to Agent}\\{\scriptsize\bfseries Stored in the cache under the original request}};
+  \draw[pipe] (agent) -- node[steplbl, right=3pt] {[1] Chat request} (gw);
+  \draw[pipe] (gw)    -- node[steplbl, right=3pt] {[2] Original request} (cache);
+  \draw[pipe] (cache) -- node[steplbl, right=3pt] {[3] Miss: trim if over budget} (trim);
+  \draw[pipe] (trim)  -- node[steplbl, right=3pt] {[4] Reduced request} (llm);
+  \draw[pipe] (llm)   -- node[steplbl, right=3pt] {[5] Completion} (resp);
+  \draw[pipe, dashed] (cache.east) -- ++(0.9,0) |- (resp.east)
+        node[steplbl, pos=0.25, right=3pt] {Hit: stored answer};
+\end{tikzpicture}
+\caption{High-level request path through the gateway. On a cache hit (dashed)
+the stored answer is returned and the model is never called.}
+\label{fig:architecture}
 \end{figure}
 
 The three components are developed independently against interfaces frozen early
@@ -314,7 +343,24 @@ another file was missed. On a realistic fixture, asking to ``fix
 \code{create\_note}'' kept \code{create\_note} but collapsed \code{validate\_note},
 which lives in a different file and is exactly what the fix needs. The trimmer now
 merges one call graph across every code message in the request, resolving calls
-against all functions defined anywhere in it.
+against all functions defined anywhere in it. Figure~\ref{fig:trimmer} shows the
+whole pipeline.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[s/.style={minimum width=4.0cm, minimum height=1.05cm}]
+  \node[tealb, s] (a) at (0,0)      {\textbf{Source Files}\\{\scriptsize\bfseries one per message}};
+  \node[tealb, s] (b) at (5.1,0)    {\textbf{tree-sitter Parser}\\{\scriptsize\bfseries syntax tree per file}};
+  \node[tealb, s] (c) at (10.2,0)   {\textbf{Call Graph}\\{\scriptsize\bfseries merged across files}};
+  \node[orangeb, s] (d) at (10.2,-2.1) {\textbf{Focus Expansion}\\{\scriptsize\bfseries task names, 2 hops}};
+  \node[redb, s] (e) at (5.1,-2.1)  {\textbf{Collapse Other Bodies}\\{\scriptsize\bfseries signature + docstring kept}};
+  \node[greenb, s] (f) at (0,-2.1)    {\textbf{Reduced Request}\\{\scriptsize\bfseries still valid Python}};
+  \draw[pipe] (a) -- (b); \draw[pipe] (b) -- (c); \draw[pipe] (c) -- (d);
+  \draw[pipe] (d) -- (e); \draw[pipe] (e) -- (f);
+\end{tikzpicture}
+\caption{Compiler-aware trimming pipeline.}
+\label{fig:trimmer}
+\end{figure}
 
 \subsection{Module 2: Semantic Cache}
 
@@ -337,7 +383,24 @@ Within a hard key, lookup works in three steps:
 \end{enumerate}
 Storing the same request again replaces the old entry instead of adding a
 duplicate. If sentence-transformers is not installed, exact matching still works
-and only similarity matching is disabled.
+and only similarity matching is disabled. Figure~\ref{fig:cache} shows the lookup
+flow.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[s/.style={minimum width=4.0cm, minimum height=1.05cm}]
+  \node[orangeb, s] (a) at (0,0)      {\textbf{Incoming Request}\\{\scriptsize\bfseries original, untrimmed}};
+  \node[orangeb, s] (b) at (5.1,0)    {\textbf{Hard Key}\\{\scriptsize\bfseries model, parameters, roles}};
+  \node[orangeb, s] (c) at (10.2,0)   {\textbf{Exact Text Match}\\{\scriptsize\bfseries code and prose}};
+  \node[redb, s] (d) at (10.2,-2.1) {\textbf{Code Gate}\\{\scriptsize\bfseries code: exact match only}};
+  \node[blueb, s] (e) at (5.1,-2.1)  {\textbf{Prose Similarity}\\{\scriptsize\bfseries MiniLM, cosine $\geq$ 0.90}};
+  \node[greenb, s] (f) at (0,-2.1)    {\textbf{Stored Answer or Miss}\\{\scriptsize\bfseries a miss goes on to the trimmer}};
+  \draw[pipe] (a) -- (b); \draw[pipe] (b) -- (c); \draw[pipe] (c) -- (d);
+  \draw[pipe] (d) -- (e); \draw[pipe] (e) -- (f);
+\end{tikzpicture}
+\caption{Semantic cache lookup flow.}
+\label{fig:cache}
+\end{figure}
 
 \subsection{Module 3: Autopilot}
 
@@ -368,6 +431,22 @@ The test suite has 44 tests: 19 for the trimmer, 17 for the cache, 1 for the
 autopilot and 7 for the gateway, most of which send real HTTP requests through the
 whole pipeline using the mock provider. At the time of writing, 43 pass and 1 is skipped
 (the test that needs the real embedding model, which is not installed in CI).
+Figure~\ref{fig:testing} shows how the suites feed continuous integration.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[t/.style={minimum width=4.3cm, minimum height=1.05cm}]
+  \node[blueb, t]   (u) at (0,0)     {\textbf{Trimmer Tests (19)}\\{\scriptsize\bfseries collapse, call graph, cross-file}};
+  \node[tealb, t]   (c) at (5.0,0)   {\textbf{Cache Tests (17)}\\{\scriptsize\bfseries keys, reuse, no embedder}};
+  \node[orangeb, t] (g) at (10.0,0)  {\textbf{Gateway + Autopilot (8)}\\{\scriptsize\bfseries HTTP pipeline, mock provider}};
+  \node[greenb, t]  (ci) at (5.0,-2.1) {\textbf{GitHub Actions CI}\\{\scriptsize\bfseries every pull request and push to master}};
+  \draw[pipe] (u.south) |- (ci.west);
+  \draw[pipe] (c.south) -- (ci.north);
+  \draw[pipe] (g.south) |- (ci.east);
+\end{tikzpicture}
+\caption{Test suites and continuous integration.}
+\label{fig:testing}
+\end{figure}
 
 Measurements use a realistic fixture, \code{notes\_api}: a small but genuine
 service with 10 files, 45 functions and 3,277 tokens, with real imports between
@@ -435,9 +514,10 @@ uses similarity for prose only and exact matching for code.
 
 \subsection{Cache: savings depend on repetition}
 
-We replayed a short coding session (the workload from the cache savings benchmark)
-through the gateway logic and varied how many requests were exact repeats of
-earlier ones (Table~\ref{tab:repeat}).
+The cache savings benchmark (\code{cache/benchmark/savings.py}) replays sessions
+of 20 requests through the gateway logic, varying how many requests repeat an
+earlier one exactly, and averages 25 seeded sessions per repeat rate
+(Table~\ref{tab:repeat}).
 
 \begin{table}[H]
 \centering
@@ -447,9 +527,10 @@ Requests that are repeats & Input tokens saved \\
 \midrule
 0\%  & 0.0\% \\
 20\% & 21.2\% \\
-33\% & 41.9\% \\
-50\% & 50.0\% \\
-60\% & 63.2\% \\
+40\% & 38.6\% \\
+50\% & 49.4\% \\
+60\% & 53.2\% \\
+80\% & 74.4\% \\
 \bottomrule
 \end{tabular}
 \caption{Cache savings against the share of repeated requests.}
