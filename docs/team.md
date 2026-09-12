@@ -26,4 +26,5 @@ pull-request review across the team.
 ## Journals
 
 Each member keeps a weekly technical journal in the `journals/` folder of the
-repository, documenting problems solved during development.
+repository, documenting problems solved during development. Each journal is a
+single `journal.md` file with one section per week.

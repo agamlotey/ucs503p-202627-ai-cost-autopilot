@@ -1,6 +1,7 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{hyperref}
+\hypersetup{hidelinks}  % no red boxes around links
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -13,8 +14,7 @@
 \makeatletter \newcommand{\BvrSetLabInstructor}[1]{%
   \gdef\Bvr@LabInstructor{#1}}
 % default
-\newcommand{\Bvr@LabInstructor}{Dr. Raghav %
-  B. Venkataramaiyer}
+\newcommand{\Bvr@LabInstructor}{Dr. Jeelani Asif}
 % public accessor
 \newcommand{\BvrLabInstructorValue}{\Bvr@LabInstructor}
 \makeatother
@@ -41,10 +41,14 @@
 \title{AI Cost Autopilot: A Compiler-Aware Gateway for
   Token-Cost Optimisation in LLM Coding Agents}
 
-\BvrSetLabInstructor{Dr. Raghav B. Venkataramaiyer}
+\BvrSetLabInstructor{Dr. Jeelani Asif}
+
+% Fixed to the submission date so recompiling does not change it.
+\date{August 31, 2026}
 
 \BvrSubtitle{%
-  Project Proposal for UCS503P  \\ \bfseries
+  Project Proposal for UCS503P  \\
+  Submitted to: \BvrLabInstructorValue \\ \bfseries
   Thapar Institute of Engineering and Technology%
 }
 

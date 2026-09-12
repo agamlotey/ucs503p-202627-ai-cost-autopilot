@@ -11,6 +11,6 @@
 - [Team](team.md)
 - [Deliverables](deliverables.md)
 - Journals
-    - [Agam](journals/1024240033-agam/index.md)
-    - [Devansh](journals/1024240012-devansh/index.md)
-    - [Furmaan](journals/1024240029-furmaan/index.md)
+    - [Agam](journals/1024240033-agam/journal.md)
+    - [Devansh](journals/1024240012-devansh/journal.md)
+    - [Furmaan](journals/1024240029-furmaan/journal.md)
