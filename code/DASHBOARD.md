@@ -18,6 +18,12 @@ dashboard update.
 
 ## What it shows
 
+- **Try it:** a prompt box at the top. Type a question and press Send (or
+  ⌘/Ctrl+Enter); it goes through the gateway to the model and the answer appears
+  below, tagged with what happened — `cache hit` / `trimmed` / `forwarded` — plus
+  tokens in, tokens sent, tokens saved and the round-trip time. Ask the same
+  thing twice to watch it flip to a cache hit. No second terminal needed.
+
 - **KPIs:** requests, cache hit-rate, tokens saved, % reduction, and an
   estimated dollar figure (at ~$0.15 / 1M input tokens, for illustration).
 - **Sent vs. saved bar:** the share of tokens that reached the provider versus

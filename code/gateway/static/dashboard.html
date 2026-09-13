@@ -72,6 +72,26 @@
            border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 12px; }
   button:hover { color: var(--text); border-color: var(--muted); }
   footer { color: var(--muted); font-size: 12px; padding: 0 32px 30px; }
+
+  .try { background: var(--panel); border: 1px solid var(--accent); border-radius: 12px;
+         padding: 16px 18px; margin: 14px 0 6px; }
+  .try-title { color: var(--accent); font-size: 12px; text-transform: uppercase;
+               letter-spacing: .6px; margin-bottom: 10px; font-weight: 700; }
+  .try-row { display: flex; gap: 10px; align-items: stretch; }
+  textarea { flex: 1; background: #0f0f14; color: var(--text); border: 1px solid var(--line);
+             border-radius: 8px; padding: 10px 12px; font: inherit; resize: vertical; }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #111; border: 0; font-weight: 700;
+                   padding: 0 22px; font-size: 14px; }
+  button.primary:hover { filter: brightness(1.08); color: #111; }
+  button.primary:disabled { opacity: .55; cursor: wait; }
+  .try-hint { color: var(--muted); font-size: 11px; margin-top: 6px; }
+  .resp-meta { margin: 12px 0 6px; color: var(--muted); font-size: 13px; display: flex;
+               gap: 12px; align-items: center; flex-wrap: wrap; }
+  .resp { margin: 0; background: #0f0f14; border: 1px solid var(--line); border-radius: 8px;
+          padding: 12px 14px; white-space: pre-wrap; word-break: break-word; max-height: 260px;
+          overflow: auto; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .resp.thinking { color: var(--muted); font-style: italic; }
 </style>
 </head>
 <body>
@@ -84,6 +104,19 @@
 </header>
 
 <main>
+  <section class="try">
+    <div class="try-title">Try it — type a prompt, it goes through the gateway to the model</div>
+    <div class="try-row">
+      <textarea id="prompt" rows="3" placeholder="Ask anything… then ask the same thing again to see a cache hit. Paste a block of code to see the trimmer."></textarea>
+      <button id="send" class="primary">Send</button>
+    </div>
+    <div class="try-hint">Tip: ⌘/Ctrl + Enter to send</div>
+    <div id="resp-wrap" hidden>
+      <div id="resp-meta" class="resp-meta"></div>
+      <pre id="resp" class="resp"></pre>
+    </div>
+  </section>
+
   <section class="kpis">
     <div class="kpi"><div class="label">Requests</div><div class="value" id="k-req">0</div><div class="hint">through the gateway</div></div>
     <div class="kpi"><div class="label">Cache hit rate</div><div class="value green" id="k-hit">0%</div><div class="hint" id="k-hit-h">0 served free</div></div>
@@ -143,6 +176,51 @@
   }
 
   $('reset').onclick = async () => { await fetch('/stats/reset', { method: 'POST' }); refresh(); };
+
+  // --- "Try it": send a prompt through the gateway and show what happened ---
+  async function send() {
+    const msg = $('prompt').value.trim();
+    if (!msg) return;
+    const btn = $('send');
+    btn.disabled = true;
+    $('resp-wrap').hidden = false;
+    $('resp').className = 'resp thinking';
+    $('resp').textContent = 'thinking… (the first prose request loads the embedding model, ~7s)';
+    $('resp-meta').innerHTML = '';
+    const t0 = performance.now();
+    try {
+      const r = await fetch('/v1/chat/completions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: msg }] }),
+      });
+      const j = await r.json();
+      const ms = Math.round(performance.now() - t0);
+      $('resp').className = 'resp';
+      $('resp').textContent = j?.choices?.[0]?.message?.content ?? JSON.stringify(j, null, 2);
+      // the gateway recorded this request as recent[0] — show what it did
+      const s = await (await fetch('/stats', { cache: 'no-store' })).json();
+      const last = s.recent[0];
+      if (last) {
+        $('resp-meta').innerHTML =
+          `<span class="badge ${last.outcome}">${label[last.outcome] || last.outcome}</span>` +
+          `<span>${n(last.baseline)} tokens in</span><span>·</span>` +
+          `<span>${n(last.sent)} sent to model</span><span>·</span>` +
+          `<span style="color:${last.saved > 0 ? 'var(--green)' : 'var(--muted)'}">saved ${n(last.saved)}</span>` +
+          `<span>·</span><span>${ms} ms</span>`;
+      }
+      refresh();
+    } catch (e) {
+      $('resp').className = 'resp';
+      $('resp').textContent = 'error: ' + e;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  $('send').onclick = send;
+  $('prompt').addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); send(); }
+  });
+
   refresh();
   setInterval(refresh, 1500);
 </script>
