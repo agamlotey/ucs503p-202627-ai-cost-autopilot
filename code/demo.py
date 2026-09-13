@@ -15,7 +15,7 @@ from gateway import app as gw
 from gateway import provider
 from trimmer.trimmer import count_tokens
 
-BIG_FILE = "def " + "\n".join(
+BIG_FILE = "\n".join(
     f"def helper_{i}(x):\n    \"\"\"helper {i}\"\"\"\n    return x + {i}" for i in range(520)
 )  # a large file so the trimmer has something to cut
 
@@ -45,7 +45,7 @@ def main():
 
     print(f"\n  AI Cost Autopilot — prototype demo  (mock provider, no API key)\n")
     print(f"  {'#':>2}  {'request':<34}{'original':>9}{'sent':>7}  {'what happened'}")
-    baseline = total_sent = 0
+    baseline = total_sent = cache_saved = trim_saved = 0
     for i, (ask, code) in enumerate(SESSION, 1):
         content = ask if code is None else f"{ask}:\n{code}"
         body = {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": content}]}
@@ -55,8 +55,10 @@ def main():
         resp = client.post("/v1/chat/completions", json=body).json()
         if sent["tokens"] == -1:                       # provider never called
             got, what = 0, "CACHE HIT (free)"
+            cache_saved += orig_tokens
         elif sent["tokens"] < orig_tokens:
             got, what = sent["tokens"], f"trimmed {orig_tokens}->{sent['tokens']}"
+            trim_saved += orig_tokens - got
         else:
             got, what = sent["tokens"], "forwarded"
         baseline += orig_tokens
@@ -68,9 +70,12 @@ def main():
     print("\n  " + "-" * 58)
     print(f"  tokens the app would have sent : {baseline}")
     print(f"  tokens the gateway actually sent: {total_sent}")
-    print(f"  SAVED                          : {saved}  ({100*saved/baseline:.0f}% less)\n")
-    print("  Every request still got an answer — the savings come from reusing")
-    print("  repeats and trimming bulky code, with no change to the coding tool.\n")
+    print(f"    saved by cache (reuse)       : {cache_saved}")
+    print(f"    saved by trimmer (bulk code) : {trim_saved}")
+    print(f"  SAVED on this scripted session : {saved}  ({100*saved/baseline:.0f}% less)\n")
+    print("  Every request still got an answer. The headline % depends on this")
+    print("  script's mix of repeats and code size — see cache/benchmark/ for the")
+    print("  savings-vs-repeat-rate curve behind it.\n")
 
 
 if __name__ == "__main__":
