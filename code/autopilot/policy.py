@@ -6,10 +6,9 @@ trim the request, or send it as-is. Does not blindly stack techniques,
 because trimming rewrites the prompt and lowers how often the cache matches.
 
 Decision order (cheapest action first, see docs/components/autopilot.md):
-  1. Safety check   -> secrets/PII present?  -> never cache, never trim
-                        (trimming a message with a secret risks the trimmer
-                        splitting/duplicating it across a cached boundary,
-                        so the safest move is to send it through untouched).
+  1. Safety check   -> secrets/PII present?  -> never cache
+                        (trimming does not write to the cache, and can reduce
+                        the amount of code sent to the provider).
   2. Cache lookup   -> handled by the gateway using our `use_cache` flag;
                         a hit is near-free.
   3. Code-heavy and large enough to be worth the trimmer's overhead?
@@ -44,13 +43,13 @@ class SecretsDetector:
     """
 
     PATTERNS = [
-        r"sk-(proj-|ant-api\d{2}-)?[A-Za-z0-9_-]{20,}",  # OpenAI (sk-..., sk-proj-...) and Anthropic (sk-ant-api03-...) keys
+        r"\bsk-(proj-|ant-api\d{2}-)?[A-Za-z0-9_]{20,}",  # OpenAI (sk-..., sk-proj-...) and Anthropic (sk-ant-api03-...) keys
         r"AIza[0-9A-Za-z\-_]{35}",                      # Google API keys
         r"ghp_[A-Za-z0-9]{36}",                         # GitHub personal access tokens
         r"AKIA[0-9A-Z]{16}",                            # AWS access key IDs
         r"-----BEGIN [A-Z ]*PRIVATE KEY-----",          # PEM private keys
         r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+",  # JWTs
-        r"(?i)\b(password|passwd|pwd|api[_-]?key|secret|token)\s*[:=]\s*\S+",
+        r"(?i)\b(password|token|secret|api[_-]?key)\s*[:=]\s*[\"'][^\"'\s]{8,}[\"']",
         r"\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b",      # credit-card-shaped
         r"\b\d{3}-\d{2}-\d{4}\b",                        # SSN-shaped
     ]
@@ -67,11 +66,22 @@ def _extract_text(request: Request) -> str:
     if not isinstance(request, dict):
         return ""
     messages = request.get("messages", [])
-    return " ".join(
-        m.get("content", "")
-        for m in messages
-        if isinstance(m, dict) and isinstance(m.get("content"), str)
-    )
+    text_parts = []
+    for message in messages:
+        if not isinstance(message, dict):
+            continue
+        content = message.get("content", "")
+        if isinstance(content, str):
+            text_parts.append(content)
+        elif isinstance(content, list):
+            text_parts.extend(
+                part["text"]
+                for part in content
+                if isinstance(part, dict)
+                and part.get("type") == "text"
+                and isinstance(part.get("text"), str)
+            )
+    return " ".join(text_parts)
 
 
 # ----------------------------------------------------------------------
@@ -109,7 +119,14 @@ class Autopilot:
 
         if has_secrets:
             self._decision_counts["secrets_no_cache"] += 1
-            return {"use_cache": False, "trim": False, "reason": "secrets_detected"}
+            has_code = bool(signals.get("has_code", False))
+            num_tokens_est = signals.get("num_tokens_est", 0)
+            should_trim = has_code and num_tokens_est > self.trim_token_threshold
+            return {
+                "use_cache": False,
+                "trim": should_trim,
+                "reason": "secrets_detected",
+            }
 
         # --- 2 & 3. Cache is always attempted; trim only if it's worth it ---
         has_code = bool(signals.get("has_code", False))

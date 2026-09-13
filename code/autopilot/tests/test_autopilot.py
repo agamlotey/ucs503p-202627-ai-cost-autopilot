@@ -30,12 +30,12 @@ def test_does_not_trim_non_code_request():
     assert plan["use_cache"] is True
 
 
-def test_secrets_in_signals_block_cache_and_trim():
+def test_secrets_in_signals_block_cache_but_allow_trimming():
     a = Autopilot()
     request = {"messages": [{"role": "user", "content": "hello"}]}
     plan = a.decide(request, {"has_code": True, "num_tokens_est": 5000, "has_secrets": True})
     assert plan["use_cache"] is False
-    assert plan["trim"] is False
+    assert plan["trim"] is True
 
 
 def test_own_secrets_scan_used_when_signal_missing():
@@ -68,12 +68,52 @@ def test_detects_anthropic_key_format():
     a = Autopilot()
     request = {
         "messages": [
-            {"role": "user", "content": "ANTHROPIC_API_KEY=sk-ant-api03-AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-AbCdEfGh"}
+            {"role": "user", "content": "ANTHROPIC_API_KEY=sk-ant-api03-AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_AbCdEfGh"}
         ]
     }
     plan = a.decide(request, {"has_code": False, "num_tokens_est": 10})
     assert plan["use_cache"] is False
     assert plan["trim"] is False
+
+
+def test_auth_variable_assignment_is_not_flagged_as_a_secret():
+    a = Autopilot()
+    request = {
+        "messages": [
+            {"role": "user", "content": 'password = payload.get("password")'}
+        ]
+    }
+    plan = a.decide(request, {"has_code": True, "num_tokens_est": 5000})
+    assert plan["use_cache"] is True
+    assert plan["trim"] is True
+
+
+def test_kebab_case_text_is_not_flagged_as_an_sk_key():
+    a = Autopilot()
+    request = {
+        "messages": [
+            {"role": "user", "content": "task-management-dashboard-api disk-usage-monitoring-service"}
+        ]
+    }
+    plan = a.decide(request, {"has_code": False, "num_tokens_est": 10})
+    assert plan["use_cache"] is True
+
+
+def test_multipart_text_content_is_scanned_for_secrets():
+    a = Autopilot()
+    request = {
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "api_key: sk-abc123XYZsecretvalue000000"},
+                    {"type": "image_url", "image_url": {"url": "https://example.com/image.png"}},
+                ],
+            }
+        ]
+    }
+    plan = a.decide(request, {"has_code": False, "num_tokens_est": 10})
+    assert plan["use_cache"] is False
 
 
 def test_stats_tracks_decisions():
