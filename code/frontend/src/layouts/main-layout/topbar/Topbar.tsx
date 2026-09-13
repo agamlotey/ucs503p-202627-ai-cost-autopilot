@@ -5,23 +5,21 @@ import { rootPaths } from 'routes/paths';
 import sitemap from 'routes/sitemap';
 import Logo from 'components/icons/Logo';
 import IconifyIcon from 'components/base/IconifyIcon';
-import Search from 'components/common/Search';
 import ElevationScroll from './ElevationScroll';
-import AccountDropdown from './AccountDropdown';
-import LanguageDropdown from './LanguageDropdown';
-import Notification from './Notification';
 
 interface TopbarProps {
   drawerWidth: number;
   onHandleDrawerToggle: () => void;
 }
 
+// The template's search box, language flag, notification bell and stock
+// profile photo were decorative placeholders with no function — removed.
 const Topbar = ({ drawerWidth, onHandleDrawerToggle }: TopbarProps) => {
   const location = useLocation();
 
   const pageTitle = useMemo(() => {
     const navItem = sitemap.find((navItem) => location.pathname === navItem.path);
-    return navItem!.name;
+    return navItem?.name ?? 'Dashboard';
   }, [location]);
 
   return (
@@ -54,13 +52,6 @@ const Topbar = ({ drawerWidth, onHandleDrawerToggle }: TopbarProps) => {
             <IconButton color="inherit" aria-label="open drawer" onClick={onHandleDrawerToggle}>
               <IconifyIcon icon="mdi:hamburger-menu" sx={{ fontSize: { xs: 24, sm: 32 } }} />
             </IconButton>
-
-            <IconButton aria-label="search-icon" sx={{ display: { md: 'none' } }}>
-              <IconifyIcon
-                icon="gravity-ui:magnifier"
-                sx={{ color: 'primary.main', fontSize: { xs: 24, sm: 32 } }}
-              />
-            </IconButton>
           </Stack>
 
           <Typography
@@ -71,24 +62,13 @@ const Topbar = ({ drawerWidth, onHandleDrawerToggle }: TopbarProps) => {
             {pageTitle}
           </Typography>
 
-          <Stack
-            direction="row"
-            justifyContent="flex-end"
-            alignItems="center"
-            spacing={{ xs: 1, sm: 2, xl: 5.25 }}
-            width={1}
+          <Typography
+            variant="subtitle1"
+            color="text.secondary"
+            sx={{ display: { xs: 'none', md: 'block' } }}
           >
-            <Search
-              sx={{
-                display: { xs: 'none', md: 'block' },
-                minWidth: 300,
-                maxWidth: 550,
-              }}
-            />
-            <LanguageDropdown />
-            <Notification />
-            <AccountDropdown />
-          </Stack>
+            AI Cost Autopilot · live savings
+          </Typography>
         </Toolbar>
       </AppBar>
     </ElevationScroll>
