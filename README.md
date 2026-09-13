@@ -89,7 +89,7 @@ Configuration is read from environment variables in [`code/gateway/config.py`](c
 
 | Variable | Purpose |
 |---|---|
-| `TOKEN_BUDGET` | Token budget for trimming. Default: `8000`. |
+| `TOKEN_BUDGET` | The trimmer only cuts requests larger than this. Default: `1000`, matching the autopilot's trim threshold. |
 | `MOCK_PROVIDER` | Use a canned local completion when `1`, `true`, or `yes`. Mock mode also activates when no provider API key is set. |
 | `CACHE_MAX_ENTRIES` | Maximum cache entries. Default: `10000`. |
 | `CACHE_TTL_SECONDS` | Sliding TTL in seconds. Empty by default, which disables expiry. |

@@ -417,9 +417,11 @@ over 1000 tokens; a secret does not stop trimming, because trimming caches nothi
 and sends less code to the provider. The autopilot also counts its decisions, as
 the basis for tuning its thresholds later.
 
-The trimmer applies its own 8000-token budget on top of the autopilot's
-1000-token threshold, so for requests in between the plan asks for trimming that
-does not happen. Aligning the two thresholds is next-stage work.
+The trimmer's token budget is set to the same 1000 tokens, so whenever the
+autopilot asks for trimming, trimming happens. An earlier default of 8000 meant a
+realistic 3,000-token coding request was planned for trimming but forwarded
+untouched; the live dashboard exposed this, because it showed zero savings for
+such requests.
 
 \section{Development Process}
 
@@ -615,11 +617,11 @@ predicting savings on other workloads.
           same question asked again on the third turn of a conversation did not
           hit. This limits the cache on real agent traffic.
     \item \textbf{The token budget decides whether the trimmer runs.} The trimmer
-          only acts above the 8000-token budget. The \code{notes\_api} request
-          (3,277 tokens) is below it, so the measurements above set the budget
-          explicitly. The autopilot asks for trimming above 1000 estimated
-          tokens, so the two thresholds disagree; choosing one budget is part of
-          the next stage.
+          only acts above its budget, now 1000 tokens to match the autopilot. At
+          the earlier 8000, the \code{notes\_api} request (3,277 tokens) was not
+          trimmed at all through the gateway. With the aligned budget, sending it
+          through the running gateway trims it from 3,348 to 2,237 tokens, the
+          same saving the benchmark reports.
 \end{itemize}
 
 % =========================================================================
@@ -654,9 +656,8 @@ measurement.
 \begin{itemize}
     \item Only Python is supported.
     \item The autopilot's thresholds are fixed; tuning them from measured
-          savings is not built yet, and its trim threshold is not yet aligned
-          with the trimmer's budget.
-    \item Metrics (DFD process 6.0) are designed but not yet stored by the gateway.
+          savings is not built yet.
+    \item Metrics (DFD process 6.0) are recorded in memory for the live dashboard, but not yet persisted.
     \item Calls to a class, such as \code{raise ConfigError(...)}, do not yet
           create call-graph edges, so the class's constructor can be collapsed.
     \item The trimmer's savings are measured on one fixture (four tasks) so far.
@@ -669,7 +670,7 @@ measurement.
           across several tasks and fixtures, and a principled choice of token
           budget.
     \item A second language (TypeScript) for the trimmer.
-    \item Autopilot threshold tuning from measured savings, with one shared trim threshold.
+    \item Autopilot threshold tuning from measured savings.
     \item A metrics store and a savings report for developers.
     \item For multi-turn traffic, caching at the level of the conversation prefix
           rather than the whole request, and evaluating a code-aware embedding model.

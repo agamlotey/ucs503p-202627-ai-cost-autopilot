@@ -39,7 +39,7 @@ separately in the cache tests and the threshold benchmark, not here.)
   collide and return each other's answers. A safer direction is prefix caching
   (reuse the shared leading turns) or the provider's own prompt caching — a
   future change, not done here.
-- **These payloads sit under the 8000-token trim budget**, so the trimmer never
+- **These payloads sit under the 1000-token trim budget**, so the trimmer never
   fires; every saving here is cache-driven. The trimmer's contribution needs
   large whole-repo requests, best measured on the `notes_api` fixture (PR #19)
   as a full ablation (baseline → +trim → +cache).
