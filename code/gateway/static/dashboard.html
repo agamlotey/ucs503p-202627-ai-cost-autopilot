@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Cost Autopilot — Live Savings</title>
+<style>
+  :root {
+    --bg: #0b0b0e; --panel: #131318; --line: #26262e;
+    --text: #f2ece0; --muted: #9d958a; --accent: #ffc107;
+    --green: #4ade80; --blue: #60a5fa; --grey: #8b8b95;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 22px 32px 6px;
+  }
+  h1 { margin: 0; font-size: 22px; letter-spacing: .2px; }
+  h1 span { color: var(--accent); }
+  .sub { color: var(--muted); font-size: 13px; }
+  .live { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+          background: var(--green); margin-right: 6px; box-shadow: 0 0 8px var(--green); }
+  main { padding: 10px 32px 40px; max-width: 1180px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+          gap: 14px; margin: 14px 0 22px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+         padding: 16px 18px; }
+  .kpi .label { color: var(--muted); font-size: 12px; text-transform: uppercase;
+                letter-spacing: .6px; }
+  .kpi .value { font-size: 30px; font-weight: 700; margin-top: 4px;
+                font-variant-numeric: tabular-nums; }
+  .kpi .value.accent { color: var(--accent); }
+  .kpi .value.green { color: var(--green); }
+  .kpi .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  .bar-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+              padding: 16px 18px; margin-bottom: 22px; }
+  .bar-title { color: var(--muted); font-size: 12px; text-transform: uppercase;
+               letter-spacing: .6px; margin-bottom: 10px; }
+  .bar { position: relative; height: 26px; background: #1d1d24; border-radius: 8px;
+         overflow: hidden; }
+  .bar .sent { position: absolute; left: 0; top: 0; bottom: 0; background: var(--grey);
+               transition: width .4s; }
+  .bar .saved { position: absolute; top: 0; bottom: 0; background: var(--green);
+                transition: left .4s, width .4s; }
+  .legend { display: flex; gap: 18px; margin-top: 8px; color: var(--muted); font-size: 12px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+              margin-right: 6px; vertical-align: -1px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel);
+          border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line);
+           font-variant-numeric: tabular-nums; }
+  th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px;
+       font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { text-align: right; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px;
+           font-weight: 600; }
+  .badge.cache { background: rgba(74,222,128,.15); color: var(--green); }
+  .badge.trim { background: rgba(96,165,250,.15); color: var(--blue); }
+  .badge.forward { background: rgba(139,139,149,.18); color: var(--grey); }
+  .preview { color: var(--text); max-width: 420px; overflow: hidden;
+             text-overflow: ellipsis; white-space: nowrap; }
+  .empty { color: var(--muted); text-align: center; padding: 28px; }
+  button { background: transparent; color: var(--muted); border: 1px solid var(--line);
+           border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 12px; }
+  button:hover { color: var(--text); border-color: var(--muted); }
+  footer { color: var(--muted); font-size: 12px; padding: 0 32px 30px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>AI Cost Autopilot <span>· Live Savings</span></h1>
+    <div class="sub"><span class="live"></span>polling <code>/stats</code> · what the gateway did with each request</div>
+  </div>
+  <button id="reset" title="Clear the counters">reset counters</button>
+</header>
+
+<main>
+  <section class="kpis">
+    <div class="kpi"><div class="label">Requests</div><div class="value" id="k-req">0</div><div class="hint">through the gateway</div></div>
+    <div class="kpi"><div class="label">Cache hit rate</div><div class="value green" id="k-hit">0%</div><div class="hint" id="k-hit-h">0 served free</div></div>
+    <div class="kpi"><div class="label">Tokens saved</div><div class="value accent" id="k-saved">0</div><div class="hint" id="k-saved-h">of 0 that would have been sent</div></div>
+    <div class="kpi"><div class="label">Reduction</div><div class="value accent" id="k-red">0%</div><div class="hint">fewer tokens reach the provider</div></div>
+    <div class="kpi"><div class="label">Est. saved</div><div class="value green" id="k-usd">$0.0000</div><div class="hint">at ~$0.15 / 1M input tokens</div></div>
+  </section>
+
+  <section class="bar-wrap">
+    <div class="bar-title">Tokens: sent vs. saved</div>
+    <div class="bar"><div class="sent" id="b-sent" style="width:0%"></div><div class="saved" id="b-saved" style="left:0%;width:0%"></div></div>
+    <div class="legend"><span><i style="background:var(--grey)"></i>sent to provider</span><span><i style="background:var(--green)"></i>saved (cache + trim)</span></div>
+  </section>
+
+  <table>
+    <thead><tr><th>Time</th><th>Request</th><th>Outcome</th><th class="num">Original</th><th class="num">Sent</th><th class="num">Saved</th></tr></thead>
+    <tbody id="feed"><tr><td colspan="6" class="empty">No requests yet — send one to <code>/v1/chat/completions</code> (or run <code>python demo.py</code>).</td></tr></tbody>
+  </table>
+</main>
+<footer>Every request still gets an answer. Savings come from reusing repeats (cache) and collapsing bulky code (trimmer); numbers depend on how repetitive the traffic is.</footer>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const pct = x => (x * 100).toFixed(x >= 0.1 ? 0 : 1) + '%';
+  const n = x => x.toLocaleString();
+  const label = { cache: 'cache hit', trim: 'trimmed', forward: 'forwarded' };
+
+  async function refresh() {
+    let s;
+    try { s = await (await fetch('/stats', { cache: 'no-store' })).json(); }
+    catch { return; }
+    $('k-req').textContent = n(s.requests);
+    $('k-hit').textContent = pct(s.hit_rate);
+    $('k-hit-h').textContent = `${n(s.cache_hits)} served free`;
+    $('k-saved').textContent = n(s.saved_tokens);
+    $('k-saved-h').textContent = `of ${n(s.baseline_tokens)} that would have been sent`;
+    $('k-red').textContent = pct(s.reduction);
+    $('k-usd').textContent = '$' + s.saved_usd.toFixed(4);
+
+    const total = s.baseline_tokens || 1;
+    const sentW = (s.sent_tokens / total) * 100;
+    $('b-sent').style.width = sentW + '%';
+    $('b-saved').style.left = sentW + '%';
+    $('b-saved').style.width = (100 - sentW) * (s.baseline_tokens ? 1 : 0) + '%';
+
+    const feed = $('feed');
+    if (!s.recent.length) return;
+    feed.innerHTML = s.recent.map(r => `
+      <tr>
+        <td>${r.time}</td>
+        <td class="preview" title="${r.preview.replace(/"/g,'&quot;')}">${r.preview || '<span style="color:var(--muted)">(no text)</span>'}</td>
+        <td><span class="badge ${r.outcome}">${label[r.outcome] || r.outcome}</span></td>
+        <td class="num">${n(r.baseline)}</td>
+        <td class="num">${n(r.sent)}</td>
+        <td class="num" style="color:${r.saved > 0 ? 'var(--green)' : 'var(--muted)'}">${r.saved > 0 ? '−' + n(r.saved) : '0'}</td>
+      </tr>`).join('');
+  }
+
+  $('reset').onclick = async () => { await fetch('/stats/reset', { method: 'POST' }); refresh(); };
+  refresh();
+  setInterval(refresh, 1500);
+</script>
+</body>
+</html>
