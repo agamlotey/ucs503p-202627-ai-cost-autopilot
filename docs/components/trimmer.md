@@ -66,9 +66,38 @@ messages, stats = CodeTrimmer().trim(messages, token_budget, ctx)
 Token counts are measured with `tiktoken`. If `tree-sitter` is unavailable, the
 trimmer degrades gracefully to a safe pass-through.
 
+## Measured results
+
+On the `notes_api` fixture (10 files, 45 functions, 3,277 tokens), for the task
+"fix create_note". Every variant is measured on the same file contents and
+checked to still compile.
+
+| Variant | Tokens | Saved | Output |
+|---|---:|---:|---|
+| raw (no gateway) | 3,277 | 0.0% | valid |
+| strip indentation + blank lines | 2,982 | 9.0% | **broken** |
+| strip comments + docstrings | 2,606 | 20.5% | valid |
+| collapse every function body | 1,410 | 57.0% | valid, drops the focus |
+| **trimmer (focus + callees, 2 hops)** | **2,166** | **33.9%** | **valid**, 18 of 45 functions kept in full |
+
+The trimmer beats the simplest safe trick while keeping everything the task
+depends on, including `validate_note` from another file. Collapsing every body
+saves more only because it throws away the function being fixed. On other tasks
+against the same fixture the trimmer saves 47% to 55%; "fix create_note" is the
+hardest case because it is the most connected function.
+
+Reproduce it from `code/`:
+
+``` shell
+python -m trimmer.benchmark.baselines
+python -m trimmer.benchmark.baselines --task "fix delete_note"
+```
+
 ## Status and next steps
 
 - [x] Collapse Python function/method bodies to signatures
 - [x] Call graph + focus expansion
-- [ ] Cross-file dependency resolution
+- [x] Cross-file dependency resolution
+- [x] Benchmark against simple baselines (`trimmer/benchmark/`)
+- [ ] Class instantiation edges (`raise ConfigError(...)` does not yet link to its constructor)
 - [ ] A second language (TypeScript)
