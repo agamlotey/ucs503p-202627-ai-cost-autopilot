@@ -48,10 +48,14 @@ from gateway.interfaces import Request, Response
 # the hard key, so an unknown param fails toward a MISS, never a wrong HIT.
 _IGNORED_FIELDS = frozenset({"user"})
 
-# Conservative default. all-MiniLM cosine: identical ~1.0, close paraphrase
-# ~0.9+, loosely related ~0.6-0.8. Start high to avoid wrong answers; tune DOWN
-# later with real benchmark numbers (that measurement is the ML deliverable).
-DEFAULT_THRESHOLD = 0.90
+# Prose threshold. Measured with all-MiniLM on natural-language pairs:
+# genuine paraphrases score ~0.87-0.94 ("what is the capital of france?" vs
+# "which city is the capital of france" = 0.867), while genuinely different
+# questions score <= 0.61 ("capital of Japan" = 0.47). 0.85 sits in that gap
+# with ~0.25 of margin below it. Only prose uses this — code is exact-match
+# (benchmark/FINDINGS.md), so the value never affects code reuse. Tunable via
+# CACHE_THRESHOLD in the gateway config.
+DEFAULT_THRESHOLD = 0.85
 
 # Sentinel type for an embedding vector: a list[float] (kept plain so the module
 # imports even when numpy isn't installed; numpy is only needed for the default

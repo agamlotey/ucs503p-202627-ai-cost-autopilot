@@ -244,3 +244,14 @@ def test_unbounded_by_default_off():
         c.store({"model": "m", "messages": [{"role": "user", "content": f"q{i}"}]},
                 {"x": i})
     assert c.lookup({"model": "m", "messages": [{"role": "user", "content": "q0"}]}) == {"x": 0}
+
+
+def test_real_model_natural_paraphrase_hits_at_default_threshold():
+    """The pair that motivated lowering the default to 0.85: it scores ~0.867,
+    which the old 0.90 bar wrongly rejected. Different questions stay <= ~0.61,
+    so 0.85 keeps a wide safety margin (benchmark/FINDINGS.md)."""
+    pytest.importorskip("sentence_transformers")
+    c = SemanticCache()  # real embedder, DEFAULT_THRESHOLD
+    c.store(_req("what is the capital of france?"), {"a": "Paris"})
+    assert c.lookup(_req("which city is the capital of france")) == {"a": "Paris"}
+    assert c.lookup(_req("what is the capital of japan?")) is None   # still rejected

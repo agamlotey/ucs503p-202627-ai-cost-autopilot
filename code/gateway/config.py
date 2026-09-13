@@ -12,6 +12,9 @@ TOKEN_BUDGET = int(os.getenv("TOKEN_BUDGET", "1000"))
 
 # Cache bounds so the store can't grow without limit. CACHE_TTL_SECONDS="" (the
 # default) disables expiry; set e.g. "3600" to drop entries unused for an hour.
+# Prose similarity threshold for semantic reuse (see cache.py). Lower = looser.
+_thr = os.getenv("CACHE_THRESHOLD", "").strip()
+CACHE_THRESHOLD = float(_thr) if _thr else 0.85
 _max = os.getenv("CACHE_MAX_ENTRIES", "").strip()
 CACHE_MAX_ENTRIES = int(_max) if _max else 10000
 _ttl = os.getenv("CACHE_TTL_SECONDS", "").strip()

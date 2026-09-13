@@ -20,6 +20,7 @@ app = FastAPI(title="AI Cost Autopilot")
 
 trimmer = CodeTrimmer()      # Agam
 cache = SemanticCache(                       # Devansh
+    threshold=config.CACHE_THRESHOLD,
     max_entries=config.CACHE_MAX_ENTRIES,
     ttl_seconds=config.CACHE_TTL_SECONDS,
 )
