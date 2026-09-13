@@ -330,14 +330,14 @@ baselines, for the task "fix create_note". Earlier I had quoted a saving of abou
 52% from a measurement taken on the same fixture.
 
 ### Problem
-The fresh measurement gave **31.9%**, not ~52%. My first guess was a measurement
+The fresh measurement gave **33.9%**, not ~52%. My first guess was a measurement
 mistake, so I ran the trimmer from just before the Week 4 cross-file fix on the
 same input:
 
 | Trimmer version | Saved | `validate_note` body kept? |
 |---|---|---|
-| Before the cross-file fix | 51.8% | no |
-| Current | 31.9% | yes |
+| Before the cross-file fix | 53.8% | no |
+| Current | 33.9% | yes |
 
 ### Key Observation
 The old number was not a better trimmer; it was the bug. Part of the "saving"
@@ -346,10 +346,14 @@ the task depends on is not a saving, it is a wrong answer that happens to be
 cheaper. Collapsing every function body shows the same trap in its extreme form:
 57.0% "saved", but the function being fixed is gone.
 
-Measuring the baselines had a trap of its own. My first script for "strip
+Measuring the baselines had two traps of its own. My first script for "strip
 comments and docstrings" reported **broken** Python, because deleting a docstring
 that is a function's only statement leaves an empty body. The baseline has to
 insert `pass` there, or the comparison is against something no one would use.
+The second trap was unfair input: the request builder puts a `# file: <path>` line
+on top of each file, and I had counted those 56 tokens for the trimmer but not for
+the baselines. Measured on the same file contents for every variant, the trimmer's
+saving went from 31.9% to 33.9%.
 
 ### Solution
 I report every variant with a validity check next to it:
@@ -359,10 +363,12 @@ I report every variant with a validity check next to it:
 | Strip indentation and blank lines | 9.0% | broken |
 | Strip comments and docstrings | 20.5% | valid |
 | Collapse every function body | 57.0% | valid, but drops the focus |
-| **Trimmer (focus + callees, 2 hops)** | **31.9%** | **valid** |
+| **Trimmer (focus + callees, 2 hops)** | **33.9%** | **valid** |
 
 The trimmer keeps 18 of the 45 functions in full (including `validate_note` from
-another file) and collapses the other 27.
+another file) and collapses the other 27. The table now comes from
+`python -m trimmer.benchmark.baselines`, and a CI test checks the relationships
+it shows, so the numbers can be reproduced with one command.
 
 ### Takeaway
 Re-measure after every correctness fix, and never report a saving without the
