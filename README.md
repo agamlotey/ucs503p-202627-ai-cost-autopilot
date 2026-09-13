@@ -16,19 +16,22 @@ AI coding agents repeatedly send large prompts, often including source code that
 ## How it works
 
 ```mermaid
-flowchart LR
-    A[Coding agent] --> B[Gateway]
-    B --> C[Snapshot request and compute signals]
-    C --> D[Autopilot plan]
-    D --> E{Cache lookup}
-    E -->|Hit| F[Return stored answer]
-    F --> A
-    E -->|Miss| G{Trim?}
-    G -->|Yes| H[Compiler-aware trimmer]
-    G -->|No| I[LLM provider]
-    H --> I
-    I --> J[Store answer]
-    J --> A
+flowchart TB
+    A["<b>Coding agent</b><br/>Cursor, Claude Code, Codex"]
+    B["<b>Gateway</b><br/>snapshot request, compute signals"]
+    C["<b>Autopilot</b><br/>check secrets, decide plan"]
+    D{"Cache hit?"}
+    E["<b>Return stored answer</b><br/>LLM never called"]
+    F["<b>Compiler-aware trimmer</b><br/>keeps focus + callees,<br/>collapses the rest"]
+    G["<b>LLM provider</b><br/>OpenAI-compatible or mock"]
+    H["<b>Store answer</b><br/>under the original request"]
+    I["<b>Response to the agent</b>"]
+
+    A --> B --> C --> D
+    D -- yes --> E
+    D -- no --> F
+    F --> G --> H --> I
+    E --> I
 ```
 
 ![Request flow](assets/img/request-flow.svg)
