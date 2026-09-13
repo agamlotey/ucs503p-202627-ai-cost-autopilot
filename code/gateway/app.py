@@ -5,11 +5,14 @@ Flow:  request -> signals -> autopilot.decide -> (cache.lookup) ->
        (trimmer.trim) -> provider.forward -> cache.store -> response
 """
 import copy
+import os
 
 from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 
 from . import provider, config
-from trimmer.trimmer import CodeTrimmer
+from .metrics import metrics
+from trimmer.trimmer import CodeTrimmer, count_tokens
 from cache.cache import SemanticCache
 from autopilot.policy import Autopilot
 
@@ -36,6 +39,43 @@ def compute_signals(body: dict) -> dict:
     }
 
 
+def _tokens(messages: list) -> int:
+    """Billable tokens in a message list."""
+    text = "\n".join(m["content"] for m in messages
+                     if isinstance(m.get("content"), str))
+    return count_tokens(text) if text else 0
+
+
+def _preview(body: dict, n: int = 60) -> str:
+    """First line of the last user message, for the activity feed."""
+    for m in reversed(body.get("messages", [])):
+        if m.get("role") == "user" and isinstance(m.get("content"), str):
+            return m["content"].strip().splitlines()[0][:n]
+    return ""
+
+
+_DASHBOARD = os.path.join(os.path.dirname(__file__), "static", "dashboard.html")
+
+
+@app.get("/", response_class=HTMLResponse)
+def dashboard():
+    """The live savings dashboard (same origin as /stats, so no CORS)."""
+    with open(_DASHBOARD, encoding="utf-8") as f:
+        return f.read()
+
+
+@app.get("/stats")
+def stats():
+    """Running totals + recent activity for the dashboard."""
+    return metrics.snapshot()
+
+
+@app.post("/stats/reset")
+def stats_reset():
+    metrics.reset()
+    return {"status": "reset"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -49,6 +89,9 @@ async def chat_completions(req: Request):
     # *original* request for both lookup and store — otherwise the response gets
     # stored under the trimmed key and the next identical request never hits.
     original = copy.deepcopy(body)
+    baseline = _tokens(original.get("messages", []))
+    model = original.get("model", config.DEFAULT_MODEL)
+    preview = _preview(original)
 
     signals = compute_signals(original)
     plan = autopilot.decide(original, signals)
@@ -56,6 +99,8 @@ async def chat_completions(req: Request):
     if plan.get("use_cache"):
         hit = cache.lookup(original)
         if hit is not None:
+            metrics.record(baseline=baseline, sent=0, outcome="cache",
+                           model=model, preview=preview)
             return hit
 
     if plan.get("trim"):
@@ -67,4 +112,9 @@ async def chat_completions(req: Request):
 
     if plan.get("use_cache"):
         cache.store(original, response)
+
+    sent = _tokens(body.get("messages", []))
+    outcome = "trim" if sent < baseline else "forward"
+    metrics.record(baseline=baseline, sent=sent, outcome=outcome,
+                   model=model, preview=preview)
     return response
