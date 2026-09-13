@@ -64,6 +64,17 @@ def test_detects_openai_project_key_format():
     assert plan["trim"] is False
 
 
+def test_detects_hyphenated_openai_key_body():
+    a = Autopilot()
+    request = {
+        "messages": [
+            {"role": "user", "content": "key: sk-proj-AbCdEfGh-IjKlMnOpQrStUvWxYz0123456789"}
+        ]
+    }
+    plan = a.decide(request, {"has_code": False, "num_tokens_est": 10})
+    assert plan["use_cache"] is False
+
+
 def test_detects_anthropic_key_format():
     a = Autopilot()
     request = {

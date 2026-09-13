@@ -43,7 +43,7 @@ class SecretsDetector:
     """
 
     PATTERNS = [
-        r"\bsk-(proj-|ant-api\d{2}-)?[A-Za-z0-9_]{20,}",  # OpenAI (sk-..., sk-proj-...) and Anthropic (sk-ant-api03-...) keys
+        r"\bsk-(proj-|ant-api\d{2}-)?[A-Za-z0-9_-]{20,}",  # OpenAI (sk-..., sk-proj-...) and Anthropic (sk-ant-api03-...) keys
         r"AIza[0-9A-Za-z\-_]{35}",                      # Google API keys
         r"ghp_[A-Za-z0-9]{36}",                         # GitHub personal access tokens
         r"AKIA[0-9A-Z]{16}",                            # AWS access key IDs
