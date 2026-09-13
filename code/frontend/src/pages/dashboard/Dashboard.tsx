@@ -4,6 +4,7 @@ import TryIt from 'components/sections/dashboard/try-it/TryIt';
 import Kpis from 'components/sections/dashboard/kpis/Kpis';
 import TokensChart from 'components/sections/dashboard/tokens-chart/TokensChart';
 import Activity from 'components/sections/dashboard/activity/Activity';
+import Results from 'components/sections/dashboard/results/Results';
 
 /**
  * AI Cost Autopilot — live savings dashboard.
@@ -28,6 +29,10 @@ const Dashboard = () => {
       </Grid>
       <Grid item xs={12} xl={7}>
         <Activity stats={stats} />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Results />
       </Grid>
     </Grid>
   );

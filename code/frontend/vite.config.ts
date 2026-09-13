@@ -32,6 +32,8 @@ export default defineConfig({
       '/stats': GATEWAY,
       '/v1': GATEWAY,
       '/health': GATEWAY,
+      '/benchmarks': GATEWAY,
+      '/demo': GATEWAY,
     },
   },
   base: '/',

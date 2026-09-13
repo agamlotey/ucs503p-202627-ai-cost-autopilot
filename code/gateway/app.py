@@ -47,11 +47,16 @@ def _tokens(messages: list) -> int:
 
 
 def _preview(body: dict, n: int = 60) -> str:
-    """First line of the last user message, for the activity feed."""
-    for m in reversed(body.get("messages", [])):
-        if m.get("role") == "user" and isinstance(m.get("content"), str):
-            return m["content"].strip().splitlines()[0][:n]
-    return ""
+    """First line of the latest user message that is not code, for the activity
+    feed. A coding agent sends the task and then one message per file, so the
+    last message is usually a file; the task is the useful label."""
+    users = [m["content"] for m in body.get("messages", [])
+             if m.get("role") == "user" and isinstance(m.get("content"), str)]
+    if not users:
+        return ""
+    prose = [t for t in users if not compute_signals({"messages": [{"content": t}]})["has_code"]]
+    lines = (prose or users)[-1].strip().splitlines()
+    return (lines or [""])[0][:n]              # an empty message must not crash
 
 
 _DASHBOARD = os.path.join(os.path.dirname(__file__), "static", "dashboard.html")
@@ -74,6 +79,25 @@ def stats():
 def stats_reset():
     metrics.reset()
     return {"status": "reset"}
+
+
+@app.get("/benchmarks")
+def benchmarks():
+    """Measured results (trimmer vs baselines, cache curve, secret detection,
+    latency) for the dashboard. Computed once per process, then cached."""
+    from .benchmarks import all_results
+    return all_results()
+
+
+@app.get("/demo/example-request")
+def example_request():
+    """A realistic coding request: a task plus the 10 files of the notes_api
+    fixture, one message per file, the way a coding agent sends them. A typed
+    one-line prompt has no code to trim; this shows what the trimmer does."""
+    from trimmer.fixtures.loader import as_messages
+    task = "fix create_note"
+    messages = as_messages(task)
+    return {"task": task, "files": len(messages) - 1, "messages": messages}
 
 
 @app.get("/health")

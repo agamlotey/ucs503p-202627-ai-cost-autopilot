@@ -143,6 +143,10 @@
   const pct = x => (x * 100).toFixed(x >= 0.1 ? 0 : 1) + '%';
   const n = x => x.toLocaleString();
   const label = { cache: 'cache hit', trim: 'trimmed', forward: 'forwarded' };
+  // Request text is user input (often pasted code): escape it before it goes
+  // into innerHTML, or `<div>` breaks the table and `<img onerror=…>` runs.
+  const esc = s => String(s).replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   async function refresh() {
     let s;
@@ -166,9 +170,9 @@
     if (!s.recent.length) return;
     feed.innerHTML = s.recent.map(r => `
       <tr>
-        <td>${r.time}</td>
-        <td class="preview" title="${r.preview.replace(/"/g,'&quot;')}">${r.preview || '<span style="color:var(--muted)">(no text)</span>'}</td>
-        <td><span class="badge ${r.outcome}">${label[r.outcome] || r.outcome}</span></td>
+        <td>${esc(r.time)}</td>
+        <td class="preview" title="${esc(r.preview)}">${r.preview ? esc(r.preview) : '<span style="color:var(--muted)">(no text)</span>'}</td>
+        <td><span class="badge ${esc(r.outcome)}">${esc(label[r.outcome] || r.outcome)}</span></td>
         <td class="num">${n(r.baseline)}</td>
         <td class="num">${n(r.sent)}</td>
         <td class="num" style="color:${r.saved > 0 ? 'var(--green)' : 'var(--muted)'}">${r.saved > 0 ? '−' + n(r.saved) : '0'}</td>

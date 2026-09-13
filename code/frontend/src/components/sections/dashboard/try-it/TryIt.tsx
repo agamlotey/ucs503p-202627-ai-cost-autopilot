@@ -1,9 +1,24 @@
 import { Box, Button, Chip, Paper, Stack, TextField, Typography } from '@mui/material';
 import IconifyIcon from 'components/base/IconifyIcon';
 import { KeyboardEvent, useState } from 'react';
-import { PromptResult, outcomeLabel, sendPrompt } from 'api/gateway';
+import {
+  PromptResult,
+  fetchExampleRequest,
+  outcomeLabel,
+  sendMessages,
+  sendPrompt,
+} from 'api/gateway';
 
 const outcomeColor = { cache: 'success', trim: 'info', forward: 'default' } as const;
+
+// Must match the gateway's TOKEN_BUDGET (code/gateway/config.py).
+const TRIM_THRESHOLD = 1000;
+
+/** Why a request went through without savings, so "saved 0" never looks like a bug. */
+const forwardReason = (baseline: number) =>
+  baseline <= TRIM_THRESHOLD
+    ? `under ${TRIM_THRESHOLD.toLocaleString()} tokens, too small to be worth trimming`
+    : 'no function bodies that could be trimmed';
 
 interface TryItProps {
   onSent?: () => void; // let the page refresh KPIs/feed right away
@@ -32,6 +47,23 @@ const TryIt = ({ onSent }: TryItProps) => {
     }
   };
 
+  /** Send the realistic example: a task plus 10 project files, like a coding agent. */
+  const sendExample = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    setResult(null);
+    try {
+      const example = await fetchExampleRequest();
+      setResult(await sendMessages(example.messages));
+      onSent?.();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -48,8 +80,9 @@ const TryIt = ({ onSent }: TryItProps) => {
         </Typography>
       </Stack>
       <Typography variant="subtitle1" color="primary.lighter" mb={2}>
-        Type a prompt — it goes through the gateway to the model. Ask the same thing twice to see a
-        cache hit; paste a block of code to see the trimmer.
+        Type a prompt and it goes through the gateway to the model. Ask the same thing twice to see
+        a cache hit. The trimmer needs real code over {TRIM_THRESHOLD.toLocaleString()} tokens: use
+        the example below, which sends a task plus 10 project files the way a coding agent does.
       </Typography>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="stretch">
@@ -74,6 +107,16 @@ const TryIt = ({ onSent }: TryItProps) => {
           {busy ? 'Sending' : 'Send'}
         </Button>
       </Stack>
+
+      <Button
+        variant="outlined"
+        onClick={sendExample}
+        disabled={busy}
+        startIcon={<IconifyIcon icon="solar:code-file-linear" />}
+        sx={{ mt: 1.5 }}
+      >
+        Send a real coding request: “fix create_note” + 10 project files
+      </Button>
 
       {busy && (
         <Typography variant="body2" color="text.secondary" mt={2}>
@@ -112,6 +155,11 @@ const TryIt = ({ onSent }: TryItProps) => {
                 · {result.ms.toLocaleString()} ms
               </Typography>
             </Stack>
+          )}
+          {result.last?.outcome === 'forward' && (
+            <Typography variant="body2" color="text.secondary" mb={1.25}>
+              Forwarded as-is: {forwardReason(result.last.baseline)}.
+            </Typography>
           )}
           <Box
             sx={{

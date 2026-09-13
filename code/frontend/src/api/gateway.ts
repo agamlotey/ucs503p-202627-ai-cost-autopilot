@@ -59,13 +59,39 @@ export interface PromptResult {
   last?: RecentEntry; // what the gateway recorded for this request
 }
 
+export interface ChatMessage {
+  role: string;
+  content: string;
+}
+
 /** Send a prompt through the gateway and report what happened to it. */
 export async function sendPrompt(content: string, model = 'gpt-4o-mini'): Promise<PromptResult> {
+  return sendMessages([{ role: 'user', content }], model);
+}
+
+/** A realistic coding request (a task + 10 project files), served by the gateway. */
+export interface ExampleRequest {
+  task: string;
+  files: number;
+  messages: ChatMessage[];
+}
+
+export async function fetchExampleRequest(): Promise<ExampleRequest> {
+  const r = await fetch('/demo/example-request');
+  if (!r.ok) throw new Error(`example request ${r.status}`);
+  return r.json();
+}
+
+/** Send any message list through the gateway and report what happened to it. */
+export async function sendMessages(
+  messages: ChatMessage[],
+  model = 'gpt-4o-mini',
+): Promise<PromptResult> {
   const t0 = performance.now();
   const r = await fetch('/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, messages: [{ role: 'user', content }] }),
+    body: JSON.stringify({ model, messages }),
   });
   const j = await r.json();
   const ms = Math.round(performance.now() - t0);
@@ -85,3 +111,29 @@ export const outcomeLabel: Record<Outcome, string> = {
   trim: 'trimmed',
   forward: 'forwarded',
 };
+
+/* ---- measured results (GET /benchmarks) ---- */
+
+export interface TrimmerRow {
+  variant: string;
+  tokens: number;
+  saved_pct: number;
+  valid: boolean;
+  note: string;
+}
+
+export interface Benchmarks {
+  trimmer: { task: string; fixture: string; rows: TrimmerRow[]; command: string };
+  cache: {
+    points: { repeat_rate_pct: number; reduction_pct: number; avg_hits: number }[];
+    command: string;
+  };
+  secrets: { keys_tested: number; missed: number };
+  latency: { rows: { case: string; latency: string }[]; source: string; note: string };
+}
+
+export async function fetchBenchmarks(): Promise<Benchmarks> {
+  const r = await fetch('/benchmarks');
+  if (!r.ok) throw new Error(`benchmarks ${r.status}`);
+  return r.json();
+}

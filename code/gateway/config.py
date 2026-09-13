@@ -3,7 +3,12 @@ import os
 PROVIDER_BASE_URL = os.getenv("PROVIDER_BASE_URL", "https://api.openai.com/v1")
 PROVIDER_API_KEY = os.getenv("PROVIDER_API_KEY", "")
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4o-mini")
-TOKEN_BUDGET = int(os.getenv("TOKEN_BUDGET", "8000"))
+# The trimmer only cuts a request larger than this many tokens. It matches the
+# autopilot's trim threshold (Autopilot.DEFAULT_TRIM_TOKEN_THRESHOLD), so when
+# the autopilot asks for trimming, trimming actually happens. The old default of
+# 8000 meant a realistic ~3,000-token coding request was planned for trimming
+# but forwarded untouched.
+TOKEN_BUDGET = int(os.getenv("TOKEN_BUDGET", "1000"))
 
 # Cache bounds so the store can't grow without limit. CACHE_TTL_SECONDS="" (the
 # default) disables expiry; set e.g. "3600" to drop entries unused for an hour.
