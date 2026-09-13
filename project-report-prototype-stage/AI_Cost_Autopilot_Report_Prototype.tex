@@ -404,11 +404,22 @@ flow.
 
 \subsection{Module 3: Autopilot}
 
-At this stage the autopilot is a baseline rule: always try the cache, and trim
-when the request contains code. The trimmer itself leaves requests under the token
-budget (8000 tokens by default) unchanged. The planned policy adds a safety check
-that skips caching when a request contains secrets or personal data, and tunes the
-trimming thresholds from measurements.
+The autopilot turns the signals into a plan, in order of cost. First, a
+\textbf{safety check}: if the request contains a secret it is never cached,
+neither read from the cache nor written to it. The scan covers API keys in their
+current formats (OpenAI \code{sk-proj-}, Anthropic \code{sk-ant-}, Google, GitHub,
+AWS), private keys, tokens, and quoted password or key literals, and it reads
+multipart messages as well as plain text. It deliberately ignores ordinary code
+such as \code{password = payload.get("password")}, which would otherwise switch
+off caching for any code that handles logins. Second, the cache is always tried.
+Third, trimming is requested when the request contains code and is estimated at
+over 1000 tokens; a secret does not stop trimming, because trimming caches nothing
+and sends less code to the provider. The autopilot also counts its decisions, as
+the basis for tuning its thresholds later.
+
+The trimmer applies its own 8000-token budget on top of the autopilot's
+1000-token threshold, so for requests in between the plan asks for trimming that
+does not happen. Aligning the two thresholds is next-stage work.
 
 \section{Development Process}
 
@@ -427,18 +438,18 @@ Each member keeps a weekly technical journal in the repository.
 
 \section{Testing Methodology}
 
-The test suite has 44 tests: 19 for the trimmer, 17 for the cache, 1 for the
+The test suite has 65 tests: 24 for the trimmer, 21 for the cache, 13 for the
 autopilot and 7 for the gateway, most of which send real HTTP requests through the
-whole pipeline using the mock provider. At the time of writing, 43 pass and 1 is skipped
+whole pipeline using the mock provider. At the time of writing, 64 pass and 1 is skipped
 (the test that needs the real embedding model, which is not installed in CI).
 Figure~\ref{fig:testing} shows how the suites feed continuous integration.
 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[t/.style={minimum width=4.3cm, minimum height=1.05cm}]
-  \node[blueb, t]   (u) at (0,0)     {\textbf{Trimmer Tests (19)}\\{\scriptsize\bfseries collapse, call graph, cross-file}};
-  \node[tealb, t]   (c) at (5.0,0)   {\textbf{Cache Tests (17)}\\{\scriptsize\bfseries keys, reuse, no embedder}};
-  \node[orangeb, t] (g) at (10.0,0)  {\textbf{Gateway + Autopilot (8)}\\{\scriptsize\bfseries HTTP pipeline, mock provider}};
+  \node[blueb, t]   (u) at (0,0)     {\textbf{Trimmer Tests (24)}\\{\scriptsize\bfseries collapse, call graph, benchmark}};
+  \node[tealb, t]   (c) at (5.0,0)   {\textbf{Cache Tests (21)}\\{\scriptsize\bfseries keys, reuse, TTL, size cap}};
+  \node[orangeb, t] (g) at (10.0,0)  {\textbf{Gateway + Autopilot (20)}\\{\scriptsize\bfseries HTTP pipeline, secrets}};
   \node[greenb, t]  (ci) at (5.0,-2.1) {\textbf{GitHub Actions CI}\\{\scriptsize\bfseries every pull request and push to master}};
   \draw[pipe] (u.south) |- (ci.west);
   \draw[pipe] (c.south) -- (ci.north);
@@ -460,8 +471,10 @@ counted with tiktoken~\cite{tiktoken} (\code{cl100k\_base}).
 \subsection{Trimmer against simple baselines}
 
 Table~\ref{tab:trimmer} compares the trimmer with simpler ways of shrinking the
-same request, for the task ``fix \code{create\_note}''. ``Valid'' means every
-output file still compiles as Python.
+same request, for the task ``fix \code{create\_note}''. Every variant is measured
+on the same file contents, and ``valid'' means every output file still compiles
+as Python. The table is produced by \code{python -m trimmer.benchmark.baselines},
+and CI checks the relationships it shows.
 
 \begin{table}[H]
 \centering
@@ -473,7 +486,7 @@ Raw request (no gateway)                         & 3,277 & --      & valid \\
 Strip indentation and blank lines                & 2,982 & 9.0\%  & \textbf{broken} \\
 Strip comments and docstrings                    & 2,606 & 20.5\% & valid \\
 Collapse every function body                     & 1,410 & 57.0\% & valid, but drops the focus \\
-\textbf{Trimmer (focus and callees, 2 hops)}     & \textbf{2,232} & \textbf{31.9\%} & \textbf{valid} \\
+\textbf{Trimmer (focus and callees, 2 hops)}     & \textbf{2,166} & \textbf{33.9\%} & \textbf{valid} \\
 \bottomrule
 \end{tabular}
 \caption{Token reduction on the \code{notes\_api} fixture.}
@@ -481,7 +494,9 @@ Collapse every function body                     & 1,410 & 57.0\% & valid, but d
 \end{table}
 
 The trimmer kept 18 of the 45 functions in full, including \code{validate\_note}
-from another file, and collapsed the other 27 to their signatures.
+from another file, and collapsed the other 27 to their signatures. ``Fix
+\code{create\_note}'' is the hardest task on this fixture because it is the most
+connected function; on three other tasks the trimmer saves between 47\% and 55\%.
 
 \subsection{Cache: can similarity be trusted for code?}
 \label{sec:cache-results}
@@ -537,15 +552,55 @@ Requests that are repeats & Input tokens saved \\
 \label{tab:repeat}
 \end{table}
 
+\subsection{Cache: added latency}
+
+The latency benchmark (\code{cache/benchmark/latency.py}, median of 200 runs, with
+the embedding model installed) measures the time the cache adds to a request
+(Table~\ref{tab:latency}). Exact matches, which include every code request, cost
+almost nothing. Only prose that is not an exact repeat pays for an embedding, and
+a miss pays twice, once in the lookup and once when the answer is stored.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+Case & Added latency \\
+\midrule
+Hit, exact repeat or code (no embedding)    & about 0.003 ms \\
+Hit, prose paraphrase (one embedding)       & about 4.6 ms \\
+Miss, prose (lookup and store, two embeddings) & about 8.4 ms \\
+Cold start (one-time model load)            & about 7.5 s \\
+\bottomrule
+\end{tabular}
+\caption{Latency added by the cache.}
+\label{tab:latency}
+\end{table}
+
+\subsection{Autopilot: secret detection}
+
+Against 4,000 randomly generated keys in the current OpenAI (\code{sk-proj-}) and
+Anthropic (\code{sk-ant-}) formats, the secret scan missed none. It does not flag
+the \code{notes\_api} fixture, ordinary authentication code, or kebab-case text,
+so it does not switch off savings on normal requests.
+
+\subsection{End-to-end demonstration}
+
+The demo script (\code{python demo.py}) replays a scripted session of six requests
+through the real gateway with the mock provider. The gateway sent 7,309 of 19,824
+tokens (63\% fewer): 9,916 tokens were saved by cache hits and 2,599 by trimming a
+large file, and every request was answered. This figure depends on the script,
+which repeats a large request, so it illustrates the pipeline rather than
+predicting savings on other workloads.
+
 \section{Analysis}
 
 \begin{itemize}
     \item \textbf{The trimmer beats text stripping and stays correct.} Stripping
           comments and docstrings, the simplest safe change, saves 20.5\%. The
-          trimmer saves 31.9\% while keeping everything the task depends on.
+          trimmer saves 33.9\% while keeping everything the task depends on.
           Removing indentation looks like a cheap win but produces broken Python.
     \item \textbf{Correctness costs savings, and that is the right trade.} Before
-          the cross-file fix, the trimmer saved 51.8\% on the same task, but only
+          the cross-file fix, the trimmer saved 53.8\% on the same task, but only
           because it collapsed \code{validate\_note}, which the fix needed. The
           realistic fixture is what exposed this; the toy project could not.
           Collapsing every body saves 57.0\% for the same reason: it throws away
@@ -562,7 +617,9 @@ Requests that are repeats & Input tokens saved \\
     \item \textbf{The token budget decides whether the trimmer runs.} The trimmer
           only acts above the 8000-token budget. The \code{notes\_api} request
           (3,277 tokens) is below it, so the measurements above set the budget
-          explicitly. Choosing the budget is part of the next stage.
+          explicitly. The autopilot asks for trimming above 1000 estimated
+          tokens, so the two thresholds disagree; choosing one budget is part of
+          the next stage.
 \end{itemize}
 
 % =========================================================================
@@ -575,14 +632,14 @@ Requests that are repeats & Input tokens saved \\
 The prototype runs end to end: an OpenAI-compatible gateway with a mock provider,
 a compiler-aware trimmer for Python that follows dependencies across files, a
 cache that reuses exact repeats and prose paraphrases while refusing similarity
-matches for code, and a baseline autopilot. It has 44 automated tests running in
+matches for code, and an autopilot that never caches secrets. It has 65 automated tests running in
 CI, design documentation on the project site, and a realistic fixture for
 measurement.
 
 \section{Key Findings}
 
 \begin{enumerate}
-    \item On a realistic request, the trimmer cuts 31.9\% of tokens and the output
+    \item On a realistic request, the trimmer cuts 33.9\% of tokens and the output
           is always valid code, against 20.5\% for the best simple safe baseline.
     \item A realistic fixture is essential: it exposed a dependency bug that had
           been inflating the trimmer's savings.
@@ -596,12 +653,13 @@ measurement.
 
 \begin{itemize}
     \item Only Python is supported.
-    \item The autopilot is a baseline rule; its safety check and tuning are not
-          built yet.
+    \item The autopilot's thresholds are fixed; tuning them from measured
+          savings is not built yet, and its trim threshold is not yet aligned
+          with the trimmer's budget.
     \item Metrics (DFD process 6.0) are designed but not yet stored by the gateway.
     \item Calls to a class, such as \code{raise ConfigError(...)}, do not yet
           create call-graph edges, so the class's constructor can be collapsed.
-    \item The trimmer's savings are measured on one fixture and one task so far.
+    \item The trimmer's savings are measured on one fixture (four tasks) so far.
 \end{itemize}
 
 \section{Future Work and Recommendations}
@@ -611,7 +669,7 @@ measurement.
           across several tasks and fixtures, and a principled choice of token
           budget.
     \item A second language (TypeScript) for the trimmer.
-    \item The full autopilot policy, including secret and personal-data detection.
+    \item Autopilot threshold tuning from measured savings, with one shared trim threshold.
     \item A metrics store and a savings report for developers.
     \item For multi-turn traffic, caching at the level of the conversation prefix
           rather than the whole request, and evaluating a code-aware embedding model.
