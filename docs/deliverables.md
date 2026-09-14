@@ -50,6 +50,7 @@ the gateway and the three components, each with its own tests. See
 |---|---|
 | Prototype report (PDF) | [`AI_Cost_Autopilot_Report_Prototype.pdf`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-report-prototype-stage/AI_Cost_Autopilot_Report_Prototype.pdf) |
 | Prototype report source (LaTeX) | [`AI_Cost_Autopilot_Report_Prototype.tex`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-report-prototype-stage/AI_Cost_Autopilot_Report_Prototype.tex) |
+| Prototype presentation (PDF) | [`AI_Cost_Autopilot_Prototype_ppt.pdf`](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/blob/master/project-report-prototype-stage/AI_Cost_Autopilot_Prototype_ppt.pdf) |
 
 ## GitHub Pages
 

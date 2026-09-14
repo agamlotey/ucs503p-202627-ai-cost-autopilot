@@ -145,7 +145,7 @@ Next work includes autopilot threshold tuning, a metrics store, TypeScript suppo
 ├── docs/                         # Documentation site, component notes, and diagram PDFs
 ├── journals/                     # One journal.md folder per team member
 ├── project-proposal/             # Proposal source and PDF
-├── project-report-prototype-stage/ # Prototype report source, PDF, and figures
+├── project-report-prototype-stage/ # Prototype report (source, PDF, figures) and presentation
 ├── project-report-final/         # Final report workspace
 └── assets/                       # README and documentation images
 ```
@@ -163,4 +163,5 @@ Lab instructor: Dr. Jeelani Asif.
 - [Documentation site](https://agamlotey.github.io/ucs503p-202627-ai-cost-autopilot/)
 - [Project proposal PDF](project-proposal/AI_Cost_Autopilot_Proposal.pdf)
 - [Prototype report PDF](project-report-prototype-stage/AI_Cost_Autopilot_Report_Prototype.pdf)
+- [Prototype presentation PDF](project-report-prototype-stage/AI_Cost_Autopilot_Prototype_ppt.pdf)
 - [Contribution guide](code/CONTRIBUTING.md)
