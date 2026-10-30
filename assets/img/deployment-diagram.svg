@@ -247,7 +247,7 @@
   <text class="small" x="60" y="994">•  Environment: the code reads settings with os.getenv and does not load .env by itself; export them or pass uvicorn --env-file .env.</text>
   <text class="small" x="60" y="1018">•  Offline fallbacks: with no tiktoken download, count_tokens falls back to len/4. Without sentence-transformers, the cache still matches exact text and only prose similarity is off.</text>
   <text class="small" x="60" y="1042">•  demo.py runs in process through FastAPI TestClient with the mock provider, so it needs no running server and is not a separate deployment.</text>
-  <text class="small" x="60" y="1066">•  Not deployed: docs/architecture.md lists SQLite/FAISS as the vector store, but the code does not use them. No Dockerfile, compose file or hosted gateway exists in the repository.</text>
+  <text class="small" x="60" y="1066">•  Not deployed: the cache uses no database or vector store such as SQLite or FAISS; entries stay in process memory. No Dockerfile, compose file or hosted gateway exists in the repository.</text>
   <text class="bold" x="60" y="1122">Notation</text>
   <path class="plain" d="M130 1112 l6 -6 h24 v14 l-6 6 Z"/>
   <rect class="plain" x="130" y="1112" width="24" height="14"/>
