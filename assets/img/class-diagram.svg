@@ -1,0 +1,308 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1680 1480" width="1680" height="1480" role="img" aria-labelledby="t d">
+  <title id="t">UML class diagram for AI Cost Autopilot</title>
+  <desc id="d">The gateway module owns one CodeTrimmer, one SemanticCache, one Autopilot and one Metrics instance, and depends on the provider, config and benchmarks modules. The three concrete components structurally implement the frozen Trimmer, Cache and Autopilot protocols from gateway/interfaces.py. Autopilot owns a SecretsDetector, SemanticCache holds cache entries and Metrics holds up to 30 recent entries.</desc>
+
+  <style>
+    .bg    { fill:#ffffff }
+    .box   { fill:#fff4d6; stroke:#1f2328; stroke-width:1.6 }
+    .ext   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.6 }
+    .plain { fill:#ffffff; stroke:#1f2328; stroke-width:1.6 }
+    .frame { fill:none; stroke:#1f2328; stroke-width:1.4 }
+    .tag   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.4 }
+    .sep   { stroke:#1f2328; stroke-width:1.2; fill:none }
+    .line  { stroke:#1f2328; stroke-width:1.5; fill:none }
+    .dash  { stroke:#1f2328; stroke-width:1.5; fill:none; stroke-dasharray:7 5 }
+    .life  { stroke:#6b7280; stroke-width:1.2; fill:none; stroke-dasharray:5 5 }
+    .bar   { fill:#ffffff; stroke:#1f2328; stroke-width:1.3 }
+    .panel { fill:#f7f4ee; stroke:#d8d3c7; stroke-width:1.2 }
+    .note  { fill:#fffdf5; stroke:#1f2328; stroke-width:1.1 }
+    .wash  { fill:#ffffff; opacity:.93 }
+    .head  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:25px; font-weight:700 }
+    .subt  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:14px }
+    .name  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:14px; font-weight:700 }
+    .ste   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px; font-style:italic }
+    .mem   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .txt   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px }
+    .small { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px }
+    .lbl   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:12px; font-style:italic }
+    .msg   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .bold  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px; font-weight:700 }
+  </style>
+
+  <defs>
+    <marker id="open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1.5 1.5 L10.5 6 L1.5 10.5" fill="none" stroke="#1f2328" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="fill" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+    <marker id="tri" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="14" markerHeight="14" orient="auto-start-reverse">
+      <path d="M1 1.5 L15 8 L1 14.5 Z" fill="#ffffff" stroke="#1f2328" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="dia" viewBox="0 0 20 12" refX="19" refY="6" markerWidth="16" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1680" height="1480"/>
+  <text class="head" x="840.0" y="48" text-anchor="middle">Class Diagram — AI Cost Autopilot</text>
+  <text class="subt" x="840.0" y="74" text-anchor="middle">Python backend in code/. Names, signatures and visibility match the source; plain dicts and module-level functions are shown as stereotyped classifiers.</text>
+
+  <!-- ================= row 1: helper modules and owned parts ================= -->
+  <rect class="box" x="40" y="104" width="500" height="139"/>
+  <text class="ste" x="290.0" y="122" text-anchor="middle">«module»</text>
+  <text class="name" x="290.0" y="138" text-anchor="middle">trimmer.trimmer</text>
+  <path class="sep" d="M40 148 L540 148"/>
+  <path class="sep" d="M40 148 L540 148"/>
+  <text class="mem" x="48" y="164">+ count_tokens(text: str): int</text>
+  <text class="mem" x="48" y="181">+ collapse_python(source: str, keep: set[str] | None): str</text>
+  <text class="mem" x="48" y="198">+ build_call_graph(source: str, known: set[str] | None): dict</text>
+  <text class="mem" x="48" y="215">+ merge_call_graphs(sources: list[str]): tuple[dict, set]</text>
+  <text class="mem" x="48" y="232">+ expand_focus(focus: set, graph: dict, hops: int = 2): set</text>
+  <rect class="box" x="600" y="104" width="250" height="139"/>
+  <text class="ste" x="725.0" y="122" text-anchor="middle">«module»</text>
+  <text class="name" x="725.0" y="138" text-anchor="middle">cache.cache</text>
+  <path class="sep" d="M600 148 L850 148"/>
+  <path class="sep" d="M600 148 L850 148"/>
+  <text class="mem" x="608" y="164">- _hard_key(request): str</text>
+  <text class="mem" x="608" y="181">- _semantic_text(request): str</text>
+  <text class="mem" x="608" y="198">- _looks_like_code(text): bool</text>
+  <text class="mem" x="608" y="215">- _default_embedder(): Callable</text>
+  <text class="mem" x="608" y="232">- _cosine(a, b): float</text>
+  <rect class="box" x="866" y="104" width="244" height="122"/>
+  <text class="ste" x="988.0" y="122" text-anchor="middle">«list» one bucket item</text>
+  <text class="name" x="988.0" y="138" text-anchor="middle">CacheEntry</text>
+  <path class="sep" d="M866 148 L1110 148"/>
+  <text class="mem" x="874" y="164">[0] text: str</text>
+  <text class="mem" x="874" y="181">[1] vector: list[float]|None</text>
+  <text class="mem" x="874" y="198">[2] response: Response</text>
+  <text class="mem" x="874" y="215">[3] last_used_ts: float</text>
+  <rect class="box" x="1150" y="104" width="300" height="99"/>
+  <text class="name" x="1300.0" y="122" text-anchor="middle">SecretsDetector</text>
+  <path class="sep" d="M1150 132 L1450 132"/>
+  <text class="mem" x="1158" y="148">+ PATTERNS: list[str] {static}</text>
+  <text class="mem" x="1158" y="165">- _compiled: list[re.Pattern]</text>
+  <path class="sep" d="M1150 176 L1450 176"/>
+  <text class="mem" x="1158" y="192">+ scan(text: str): bool</text>
+
+  <!-- ================= row 2: components and frozen contracts ================= -->
+  <rect class="box" x="40" y="340" width="300" height="99"/>
+  <text class="name" x="190.0" y="358" text-anchor="middle">CodeTrimmer</text>
+  <path class="sep" d="M40 368 L340 368"/>
+  <path class="sep" d="M40 378 L340 378"/>
+  <text class="mem" x="48" y="394">+ trim(messages: list,</text>
+  <text class="mem" x="48" y="411">    token_budget: int,</text>
+  <text class="mem" x="48" y="428">    ctx: dict | None): tuple</text>
+  <rect class="ext" x="390" y="340" width="170" height="115"/>
+  <text class="ste" x="475.0" y="358" text-anchor="middle">«interface»</text>
+  <text class="name" x="475.0" y="374" text-anchor="middle">interfaces.Trimmer</text>
+  <path class="sep" d="M390 384 L560 384"/>
+  <path class="sep" d="M390 394 L560 394"/>
+  <text class="mem" x="398" y="410">+ trim(messages,</text>
+  <text class="mem" x="398" y="427">    token_budget,</text>
+  <text class="mem" x="398" y="444">    ctx): tuple</text>
+  <rect class="box" x="600" y="340" width="300" height="269"/>
+  <text class="name" x="750.0" y="358" text-anchor="middle">SemanticCache</text>
+  <path class="sep" d="M600 368 L900 368"/>
+  <text class="mem" x="608" y="384">- _buckets: dict[str, list]</text>
+  <text class="mem" x="608" y="401">- _threshold: float</text>
+  <text class="mem" x="608" y="418">- _embedder: Callable | None</text>
+  <text class="mem" x="608" y="435">- _disabled: bool</text>
+  <text class="mem" x="608" y="452">- _max_entries: int | None</text>
+  <text class="mem" x="608" y="469">- _ttl: float | None</text>
+  <text class="mem" x="608" y="486">- _now: Callable</text>
+  <path class="sep" d="M600 497 L900 497"/>
+  <text class="mem" x="608" y="513">+ lookup(request): Response|None</text>
+  <text class="mem" x="608" y="530">+ store(request, response): None</text>
+  <text class="mem" x="608" y="547">- _embed(text): Vector | None</text>
+  <text class="mem" x="608" y="564">- _drop_expired(bucket): None</text>
+  <text class="mem" x="608" y="581">- _total(): int</text>
+  <text class="mem" x="608" y="598">- _evict(): None</text>
+  <rect class="ext" x="950" y="340" width="160" height="115"/>
+  <text class="ste" x="1030.0" y="358" text-anchor="middle">«interface»</text>
+  <text class="name" x="1030.0" y="374" text-anchor="middle">interfaces.Cache</text>
+  <path class="sep" d="M950 384 L1110 384"/>
+  <path class="sep" d="M950 394 L1110 394"/>
+  <text class="mem" x="958" y="410">+ lookup(request)</text>
+  <text class="mem" x="958" y="427">+ store(request,</text>
+  <text class="mem" x="958" y="444">    response)</text>
+  <rect class="box" x="1150" y="340" width="300" height="167"/>
+  <text class="name" x="1300.0" y="358" text-anchor="middle">Autopilot</text>
+  <path class="sep" d="M1150 368 L1450 368"/>
+  <text class="mem" x="1158" y="384">+ DEFAULT_TRIM_TOKEN_THRESHOLD:</text>
+  <text class="mem" x="1158" y="401">    int = 1000 {static}</text>
+  <text class="mem" x="1158" y="418">+ trim_token_threshold: int</text>
+  <text class="mem" x="1158" y="435">- _secrets: SecretsDetector</text>
+  <text class="mem" x="1158" y="452">- _decision_counts: Counter[str]</text>
+  <path class="sep" d="M1150 463 L1450 463"/>
+  <text class="mem" x="1158" y="479">+ decide(request, signals): dict</text>
+  <text class="mem" x="1158" y="496">+ stats(): dict</text>
+  <rect class="ext" x="1490" y="340" width="160" height="98"/>
+  <text class="ste" x="1570.0" y="358" text-anchor="middle">«interface»</text>
+  <text class="name" x="1570.0" y="374" text-anchor="middle">interfaces.Autopilot</text>
+  <path class="sep" d="M1490 384 L1650 384"/>
+  <path class="sep" d="M1490 394 L1650 394"/>
+  <text class="mem" x="1498" y="410">+ decide(request,</text>
+  <text class="mem" x="1498" y="427">    signals): dict</text>
+  <path class="dash" d="M340 410 L390 410" marker-end="url(#tri)"/>
+  <path class="dash" d="M900 410 L950 410" marker-end="url(#tri)"/>
+  <path class="dash" d="M1450 410 L1490 410" marker-end="url(#tri)"/>
+
+  <!-- ================= row 3: the gateway, the only place the components meet ================= -->
+  <rect class="box" x="40" y="716" width="1610" height="164"/>
+  <text class="ste" x="845" y="734" text-anchor="middle">«module»</text>
+  <text class="name" x="845" y="751" text-anchor="middle">gateway.app</text>
+  <path class="sep" d="M40 760 L1650 760"/>
+  <path class="sep" d="M420 760 L420 880"/>
+  <path class="sep" d="M1000 760 L1000 880"/>
+  <text class="mem" x="48" y="778">+ app: FastAPI</text>
+  <text class="mem" x="48" y="795">+ trimmer: CodeTrimmer</text>
+  <text class="mem" x="48" y="812">+ cache: SemanticCache</text>
+  <text class="mem" x="48" y="829">+ autopilot: Autopilot</text>
+  <text class="mem" x="48" y="846">- _DASHBOARD: str</text>
+  <text class="mem" x="428" y="778">+ chat_completions(req: Request): dict {async}</text>
+  <text class="mem" x="428" y="795">    POST /v1/chat/completions</text>
+  <text class="mem" x="428" y="812">+ compute_signals(body: dict): dict</text>
+  <text class="mem" x="428" y="829">- _tokens(messages: list): int</text>
+  <text class="mem" x="428" y="846">- _preview(body: dict, n: int = 60): str</text>
+  <text class="mem" x="1008" y="778">+ dashboard(): str             GET /</text>
+  <text class="mem" x="1008" y="795">+ stats(): dict                GET /stats</text>
+  <text class="mem" x="1008" y="812">+ stats_reset(): dict          POST /stats/reset</text>
+  <text class="mem" x="1008" y="829">+ benchmarks(): dict           GET /benchmarks</text>
+  <text class="mem" x="1008" y="846">+ example_request(): dict      GET /demo/example-request</text>
+  <text class="mem" x="1008" y="863">+ health(): dict               GET /health</text>
+
+  <!-- ================= row 4: supporting classes and modules ================= -->
+  <rect class="box" x="40" y="972" width="330" height="234"/>
+  <text class="ste" x="205.0" y="990" text-anchor="middle">«singleton» metrics</text>
+  <text class="name" x="205.0" y="1006" text-anchor="middle">Metrics</text>
+  <path class="sep" d="M40 1016 L370 1016"/>
+  <text class="mem" x="48" y="1032">+ requests: int</text>
+  <text class="mem" x="48" y="1049">+ cache_hits: int</text>
+  <text class="mem" x="48" y="1066">+ trimmed: int</text>
+  <text class="mem" x="48" y="1083">+ baseline_tokens: int</text>
+  <text class="mem" x="48" y="1100">+ sent_tokens: int</text>
+  <text class="mem" x="48" y="1117">+ recent: deque[dict]</text>
+  <path class="sep" d="M40 1128 L370 1128"/>
+  <text class="mem" x="48" y="1144">+ record(*, baseline, sent, outcome,</text>
+  <text class="mem" x="48" y="1161">    model, preview): None</text>
+  <text class="mem" x="48" y="1178">+ snapshot(): dict</text>
+  <text class="mem" x="48" y="1195">+ reset(): None</text>
+  <rect class="box" x="440" y="972" width="170" height="173"/>
+  <text class="ste" x="525.0" y="990" text-anchor="middle">«dict»</text>
+  <text class="name" x="525.0" y="1006" text-anchor="middle">RecentEntry</text>
+  <path class="sep" d="M440 1016 L610 1016"/>
+  <text class="mem" x="448" y="1032">+ time: str</text>
+  <text class="mem" x="448" y="1049">+ model: str</text>
+  <text class="mem" x="448" y="1066">+ preview: str</text>
+  <text class="mem" x="448" y="1083">+ baseline: int</text>
+  <text class="mem" x="448" y="1100">+ sent: int</text>
+  <text class="mem" x="448" y="1117">+ saved: int</text>
+  <text class="mem" x="448" y="1134">+ outcome: str</text>
+  <rect class="box" x="640" y="972" width="300" height="122"/>
+  <text class="ste" x="790.0" y="990" text-anchor="middle">«module»</text>
+  <text class="name" x="790.0" y="1006" text-anchor="middle">gateway.provider</text>
+  <path class="sep" d="M640 1016 L940 1016"/>
+  <path class="sep" d="M640 1016 L940 1016"/>
+  <text class="mem" x="648" y="1032">- _text_of(message: dict): str</text>
+  <text class="mem" x="648" y="1049">- _last_user_text(request): str</text>
+  <text class="mem" x="648" y="1066">+ mock_response(request): dict</text>
+  <text class="mem" x="648" y="1083">+ forward(request): dict {async}</text>
+  <rect class="box" x="990" y="972" width="310" height="190"/>
+  <text class="ste" x="1145.0" y="990" text-anchor="middle">«module»</text>
+  <text class="name" x="1145.0" y="1006" text-anchor="middle">gateway.config</text>
+  <path class="sep" d="M990 1016 L1300 1016"/>
+  <text class="mem" x="998" y="1032">+ PROVIDER_BASE_URL: str</text>
+  <text class="mem" x="998" y="1049">+ PROVIDER_API_KEY: str</text>
+  <text class="mem" x="998" y="1066">+ DEFAULT_MODEL: str</text>
+  <text class="mem" x="998" y="1083">+ TOKEN_BUDGET: int = 1000</text>
+  <text class="mem" x="998" y="1100">+ CACHE_THRESHOLD: float = 0.85</text>
+  <text class="mem" x="998" y="1117">+ CACHE_MAX_ENTRIES: int = 10000</text>
+  <text class="mem" x="998" y="1134">+ CACHE_TTL_SECONDS: float | None</text>
+  <text class="mem" x="998" y="1151">+ MOCK_PROVIDER: bool</text>
+  <rect class="box" x="1340" y="972" width="310" height="139"/>
+  <text class="ste" x="1495.0" y="990" text-anchor="middle">«module»</text>
+  <text class="name" x="1495.0" y="1006" text-anchor="middle">gateway.benchmarks</text>
+  <path class="sep" d="M1340 1016 L1650 1016"/>
+  <path class="sep" d="M1340 1016 L1650 1016"/>
+  <text class="mem" x="1348" y="1032">- _trimmer_table(): dict</text>
+  <text class="mem" x="1348" y="1049">- _cache_curve(): dict</text>
+  <text class="mem" x="1348" y="1066">- _secret_detection(n=1000): dict</text>
+  <text class="mem" x="1348" y="1083">- _latency(): dict</text>
+  <text class="mem" x="1348" y="1100">+ all_results(): dict {lru_cache}</text>
+
+  <!-- ================= relationships ================= -->
+  <path class="line" d="M190 716 L190 439" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <rect class="wash" x="194" y="670" width="71" height="16"/>
+  <text class="lbl" x="198" y="682">trimmer  1</text>
+  <path class="line" d="M750 716 L750 609" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <rect class="wash" x="754" y="692" width="58" height="16"/>
+  <text class="lbl" x="758" y="704">cache  1</text>
+  <path class="line" d="M1300 716 L1300 507" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <rect class="wash" x="1304" y="670" width="84" height="16"/>
+  <text class="lbl" x="1308" y="682">autopilot  1</text>
+  <path class="line" d="M205 880 L205 972" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <rect class="wash" x="209" y="898" width="71" height="16"/>
+  <text class="lbl" x="213" y="910">metrics  1</text>
+  <path class="dash" d="M575 716 L575 164 L540 164" marker-end="url(#open)"/>
+  <rect class="wash" x="579" y="670" width="121" height="16"/>
+  <text class="lbl" x="583" y="682">«use» count_tokens</text>
+  <path class="dash" d="M190 340 L190 243" marker-end="url(#open)"/>
+  <rect class="wash" x="194" y="288" width="40" height="16"/>
+  <text class="lbl" x="198" y="300">«use»</text>
+  <path class="dash" d="M700 340 L700 243" marker-end="url(#open)"/>
+  <rect class="wash" x="704" y="288" width="40" height="16"/>
+  <text class="lbl" x="708" y="300">«use»</text>
+  <path class="line" d="M880 340 L880 226" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <rect class="wash" x="884" y="288" width="96" height="16"/>
+  <text class="lbl" x="888" y="300">_buckets  0..*</text>
+  <path class="line" d="M1300 340 L1300 203" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <rect class="wash" x="1304" y="288" width="77" height="16"/>
+  <text class="lbl" x="1308" y="300">_secrets  1</text>
+  <path class="line" d="M370 1042 L440 1042" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <text class="lbl" x="384" y="1034">0..30</text>
+  <path class="dash" d="M790 880 L790 972" marker-end="url(#open)"/>
+  <rect class="wash" x="794" y="898" width="102" height="16"/>
+  <text class="lbl" x="798" y="910">«use» forward()</text>
+  <path class="dash" d="M1145 880 L1145 972" marker-end="url(#open)"/>
+  <rect class="wash" x="1149" y="898" width="40" height="16"/>
+  <text class="lbl" x="1153" y="910">«use»</text>
+  <path class="dash" d="M1495 880 L1495 972" marker-end="url(#open)"/>
+  <rect class="wash" x="1499" y="898" width="128" height="16"/>
+  <text class="lbl" x="1503" y="910">«use» all_results()</text>
+  <path class="dash" d="M940 1032 L990 1032" marker-end="url(#open)"/>
+  <text class="lbl" x="943" y="1024">«use»</text>
+
+  <!-- ================= data shapes and notation ================= -->
+  <rect class="panel" x="40" y="1236" width="1610" height="118" rx="8"/>
+  <text class="bold" x="58" y="1260">Data shapes passed between classes (plain dicts, not classes)</text>
+  <text class="bold" x="58" y="1284">Request, Response, Message, Stats</text>
+  <text class="small" x="58" y="1302">Aliases of dict[str, Any] in</text>
+  <text class="small" x="58" y="1318">gateway/interfaces.py (OpenAI</text>
+  <text class="small" x="58" y="1334">chat-completions format).</text>
+  <text class="bold" x="410" y="1284">Signals</text>
+  <text class="small" x="410" y="1302">num_tokens_est: int</text>
+  <text class="small" x="410" y="1318">has_code: bool</text>
+  <text class="bold" x="640" y="1284">Plan</text>
+  <text class="small" x="640" y="1302">use_cache: bool</text>
+  <text class="small" x="640" y="1318">trim: bool</text>
+  <text class="small" x="640" y="1334">reason: str</text>
+  <text class="bold" x="850" y="1284">Trim stats</text>
+  <text class="small" x="850" y="1302">tokens_before: int</text>
+  <text class="small" x="850" y="1318">tokens_after: int</text>
+  <text class="small" x="850" y="1334">tokens_saved: int  ·  trimmed: bool</text>
+  <text class="bold" x="1190" y="1284">Hard key</text>
+  <text class="small" x="1190" y="1302">SHA-256 of every field except</text>
+  <text class="small" x="1190" y="1318">user and message text, plus</text>
+  <text class="small" x="1190" y="1334">the message roles.</text>
+  <rect class="panel" x="40" y="1370" width="1610" height="84" rx="8"/>
+  <text class="bold" x="58" y="1398">Notation</text>
+  <path class="dash" d="M140 1394 L200 1394" marker-end="url(#tri)"/>
+  <text class="small" x="210" y="1398">realises interface (structural, typing.Protocol)</text>
+  <path class="line" d="M530 1394 L590 1394" marker-end="url(#open)" marker-start="url(#dia)"/>
+  <text class="small" x="600" y="1398">composition: owner holds the part for its lifetime</text>
+  <path class="dash" d="M930 1394 L990 1394" marker-end="url(#open)"/>
+  <text class="small" x="1000" y="1398">dependency «use»</text>
+  <text class="small" x="1160" y="1398">+ public    - private by convention (leading _)</text>
+  <text class="small" x="58" y="1430">The gateway uses the concrete classes directly and never imports gateway/interfaces.py; the components match those protocols by shape. The dashboards reach the gateway only over HTTP, so they appear in the sequence and deployment diagrams.</text>
+</svg>

@@ -106,6 +106,14 @@ Shows the coding agent, gateway, provider, and the primary interactions.
 ![Use-case diagram](assets/img/use-case.svg)
 
 <details>
+<summary>Class diagram</summary>
+
+Shows the gateway, its components and contracts, and how they relate in code.
+
+![Class diagram](assets/img/class-diagram.svg)
+</details>
+
+<details>
 <summary>Data-flow diagram</summary>
 
 Shows the levels of data flow through the gateway, cache, trimmer, and provider.
