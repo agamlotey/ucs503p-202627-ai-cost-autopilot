@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1540 822" width="1540" height="822" role="img" aria-labelledby="t d" font-family='-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif'>
+  <title id="t">Gantt chart for the AI Cost Autopilot semester plan</title>
+  <desc id="d">Project schedule from week 4 to week 17, taken from the roadmap, with milestones at the proposal, the prototype demo, the second prototype and the final deliverable.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#1f2328"/></marker>
+  </defs>
+  <rect width="1540" height="822" fill="#ffffff"/>
+  <text x="770.0" y="48.0" text-anchor="middle" font-size="26" fill="#111111" font-weight="700">Gantt Chart: Semester Plan</text>
+  <text x="770.0" y="76.0" text-anchor="middle" font-size="14" fill="#555555">Weeks 4 to 17, from the project roadmap. Diamonds mark milestones.</text>
+  <rect x="470" y="110" width="60" height="592" fill="#faf8f4"/>
+  <text x="500.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W4</text>
+  <text x="560.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W5</text>
+  <rect x="590" y="110" width="60" height="592" fill="#faf8f4"/>
+  <text x="620.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W6</text>
+  <text x="680.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W7</text>
+  <rect x="710" y="110" width="60" height="592" fill="#faf8f4"/>
+  <text x="740.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W8</text>
+  <text x="800.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W9</text>
+  <rect x="830" y="110" width="60" height="592" fill="#faf8f4"/>
+  <text x="860.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W10</text>
+  <text x="920.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W11</text>
+  <rect x="950" y="110" width="60" height="592" fill="#faf8f4"/>
+  <text x="980.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W12</text>
+  <text x="1040.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W13</text>
+  <rect x="1070" y="110" width="60" height="592" fill="#faf8f4"/>
+  <text x="1100.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W14</text>
+  <text x="1160.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W15</text>
+  <rect x="1190" y="110" width="60" height="592" fill="#faf8f4"/>
+  <text x="1220.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W16</text>
+  <text x="1280.0" y="136.0" text-anchor="middle" font-size="14" fill="#111111" font-weight="700">W17</text>
+  <line x1="470" y1="110" x2="470" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="530" y1="110" x2="530" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="590" y1="110" x2="590" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="650" y1="110" x2="650" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="710" y1="110" x2="710" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="770" y1="110" x2="770" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="830" y1="110" x2="830" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="890" y1="110" x2="890" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="950" y1="110" x2="950" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="1010" y1="110" x2="1010" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="1070" y1="110" x2="1070" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="1130" y1="110" x2="1130" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="1190" y1="110" x2="1190" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="1250" y1="110" x2="1250" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="1310" y1="110" x2="1310" y2="702" stroke="#d9d3c7" stroke-width="1"/>
+  <line x1="30" y1="150" x2="1310" y2="150" stroke="#1f2328" stroke-width="1.5"/>
+  <text x="40.0" y="136.0" text-anchor="start" font-size="14" fill="#111111" font-weight="700">Task</text>
+  <line x1="30" y1="196" x2="1310" y2="196" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="178.0" text-anchor="start" font-size="14" fill="#111111">Project proposal</text>
+  <rect x="476" y="162" width="40" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <polygon points="530,163.0 540,173.0 530,183.0 520,173.0" fill="#1f2328"/>
+  <text x="548.0" y="178.0" text-anchor="start" font-size="13.5" fill="#111111" font-weight="700">Proposal report</text>
+  <line x1="30" y1="242" x2="1310" y2="242" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="224.0" text-anchor="start" font-size="14" fill="#111111">Gateway pass-through, freeze interfaces</text>
+  <rect x="536" y="208" width="108" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <line x1="30" y1="288" x2="1310" y2="288" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="270.0" text-anchor="start" font-size="14" fill="#111111">v1 of trimmer, cache and autopilot</text>
+  <rect x="536" y="254" width="108" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <line x1="30" y1="334" x2="1310" y2="334" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="316.0" text-anchor="start" font-size="14" fill="#111111">Prototype: end-to-end build</text>
+  <rect x="656" y="300" width="40" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <polygon points="710,301.0 720,311.0 710,321.0 700,311.0" fill="#1f2328"/>
+  <text x="728.0" y="316.0" text-anchor="start" font-size="13.5" fill="#111111" font-weight="700">Prototype demo (MST)</text>
+  <line x1="30" y1="380" x2="1310" y2="380" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="362.0" text-anchor="start" font-size="14" fill="#111111">Improvement plan from feedback</text>
+  <rect x="716" y="346" width="48" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <line x1="30" y1="426" x2="1310" y2="426" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="408.0" text-anchor="start" font-size="14" fill="#777777" font-style="italic">MST period</text>
+  <rect x="776" y="392" width="108" height="22" rx="4" fill="#e4e0d8" stroke="#8a8378" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="30" y1="472" x2="1310" y2="472" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="454.0" text-anchor="start" font-size="14" fill="#111111">Semantic cache, second language, tuning</text>
+  <rect x="896" y="438" width="108" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <line x1="30" y1="518" x2="1310" y2="518" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="500.0" text-anchor="start" font-size="14" fill="#111111">Integrate and measure savings</text>
+  <rect x="896" y="484" width="108" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <line x1="30" y1="564" x2="1310" y2="564" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="546.0" text-anchor="start" font-size="14" fill="#777777" font-style="italic">Buffer (holiday week)</text>
+  <rect x="1016" y="530" width="48" height="22" rx="4" fill="#e4e0d8" stroke="#8a8378" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="30" y1="610" x2="1310" y2="610" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="592.0" text-anchor="start" font-size="14" fill="#111111">Full integration, benchmark across tools</text>
+  <rect x="1076" y="576" width="100" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <polygon points="1190,577.0 1200,587.0 1190,597.0 1180,587.0" fill="#1f2328"/>
+  <text x="1208.0" y="592.0" text-anchor="start" font-size="13.5" fill="#111111" font-weight="700">Second prototype</text>
+  <line x1="30" y1="656" x2="1310" y2="656" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="638.0" text-anchor="start" font-size="14" fill="#111111">Improvements over second prototype</text>
+  <rect x="1196" y="622" width="48" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <line x1="30" y1="702" x2="1310" y2="702" stroke="#ece7dd" stroke-width="1"/>
+  <text x="40.0" y="684.0" text-anchor="start" font-size="14" fill="#111111">Final prototype, presentation, report</text>
+  <rect x="1256" y="668" width="40" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <polygon points="1310,669.0 1320,679.0 1310,689.0 1300,679.0" fill="#1f2328"/>
+  <text x="1328.0" y="684.0" text-anchor="start" font-size="13.5" fill="#111111" font-weight="700">Final deliverable (EST)</text>
+  <rect x="40" y="745" width="40" height="22" rx="4" fill="#e8a33d" stroke="#1f2328" stroke-width="1.2"/>
+  <text x="92.0" y="761.0" text-anchor="start" font-size="13.5" fill="#111111">Project work</text>
+  <rect x="240" y="745" width="40" height="22" rx="4" fill="#e4e0d8" stroke="#8a8378" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="292.0" y="761.0" text-anchor="start" font-size="13.5" fill="#111111">Exams / holiday (no planned work)</text>
+  <polygon points="560,747 570,757 560,767 550,757" fill="#1f2328"/>
+  <text x="580.0" y="761.0" text-anchor="start" font-size="13.5" fill="#111111">Milestone / deliverable</text>
+</svg>
