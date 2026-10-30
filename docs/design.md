@@ -12,6 +12,7 @@ the same system:
 | [ER diagram](#entity-relationship-diagram) | What data does the system hold, and how is it related? |
 | [Collaboration diagram](#collaboration-diagram) | Which objects are linked, and what do they send each other? |
 | [Activity diagram](#activity-diagram) | In what order do things happen, and who does each step? |
+| [Deployment diagram](#deployment-diagram) | Where does each piece run, and how do they connect? |
 
 The semester schedule is on the [Roadmap](roadmap.md#gantt-chart) as a Gantt chart.
 
@@ -164,3 +165,24 @@ trimmed request can still be reused later.
     entity) is part of the design, but the gateway does not store metrics yet.
     Everything else in these diagrams matches the current code in
     `code/gateway/app.py`.
+
+## Deployment diagram
+
+![Deployment diagram. A developer workstation hosts the coding agent, a browser, the
+uvicorn process running the gateway with its in-memory cache and metrics, and an
+optional Vite dev server. The gateway calls the LLM provider and model file hosts over
+HTTPS. GitHub hosts the repository, Actions runners and the Pages documentation
+site.](assets/img/deployment-diagram.svg){ width="900" }
+
+The deployment diagram shows **where each piece runs**, as the repository is set up
+today: one local gateway process per developer. There is no container image or hosted
+production gateway.
+
+- **The gateway process** is one uvicorn process on port 8000. It holds the cache and
+  metrics in memory, so they are not shared between workers and are lost on restart.
+- **The LLM provider** is the only runtime dependency outside the machine, and mock
+  mode removes it.
+- **Two dashboards** exist: `dashboard.html`, served by the gateway itself, and the
+  React app, which needs the optional Vite dev server on port 3000.
+- **GitHub** runs the tests and publishes this documentation site. It does not deploy
+  the gateway.

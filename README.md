@@ -153,6 +153,14 @@ Shows the planned data relationships for the system.
 ![Entity-relationship diagram](assets/img/er-diagram.svg)
 </details>
 
+<details>
+<summary>Deployment diagram</summary>
+
+Shows where each piece runs: the local gateway process, the dashboards, the LLM provider, and GitHub.
+
+![Deployment diagram](assets/img/deployment-diagram.svg)
+</details>
+
 ## Project status and roadmap
 
 The gateway, Python trimmer, exact and prose-semantic cache paths, autopilot policy, mock provider, benchmarks, and CI are implemented. The gateway does not yet store metrics, and the trimmer currently supports Python only.
