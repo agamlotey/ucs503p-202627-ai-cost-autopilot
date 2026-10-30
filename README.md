@@ -130,6 +130,14 @@ Shows the request decision path, including cache hits and trimming.
 </details>
 
 <details>
+<summary>Collaboration diagram</summary>
+
+Shows the same request as numbered messages over the links between objects.
+
+![Collaboration diagram](assets/img/collaboration-diagram.svg)
+</details>
+
+<details>
 <summary>Entity-relationship diagram</summary>
 
 Shows the planned data relationships for the system.

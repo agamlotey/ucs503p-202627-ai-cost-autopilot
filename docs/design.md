@@ -9,6 +9,7 @@ the same system:
 | [Class diagram](#class-diagram) | What are the building blocks, and how do they relate? |
 | [Data flow diagram](#data-flow-diagram) | Where does data go, and what transforms it? |
 | [ER diagram](#entity-relationship-diagram) | What data does the system hold, and how is it related? |
+| [Collaboration diagram](#collaboration-diagram) | Which objects are linked, and what do they send each other? |
 | [Activity diagram](#activity-diagram) | In what order do things happen, and who does each step? |
 
 The semester schedule is on the [Roadmap](roadmap.md#gantt-chart) as a Gantt chart.
@@ -92,6 +93,26 @@ code it reads (source files, functions and the calls between them).
 `calls` is a **recursive** relationship: both ends are Function, one as the
 caller and one as the callee. This is the call graph the trimmer builds to decide
 which function bodies to keep.
+
+## Collaboration diagram
+
+![Collaboration diagram. The gateway object is at the centre, linked to the coding
+agent, dashboard, autopilot, cache, trimmer, provider and metrics objects. The
+autopilot links to its secrets detector and the provider links to the LLM provider.
+Numbered messages along the links show one chat completion, its cache-hit alternative
+and the dashboard polling.](assets/img/collaboration-diagram.svg){ width="900" }
+
+The collaboration diagram (called a **communication diagram** in UML 2) shows the
+same interaction as the sequence diagram, organised by **which objects are linked**
+rather than by time.
+
+- **The gateway is the hub:** every component has a link to the gateway, and the
+  components have no links to each other. This is the "the gateway is the only place
+  they meet" rule from the [architecture](architecture.md).
+- **Decimal numbers** give the order and nesting, so `1.4.1 scan` runs inside
+  `1.4 decide`.
+- **The `a` suffix** marks the cache-hit path: `1.6a` and `1.7a` replace `1.6` to
+  `1.10`.
 
 ## Activity diagram
 

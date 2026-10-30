@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 1136" width="1560" height="1136" role="img" aria-labelledby="t d">
+  <title id="t">UML collaboration (communication) diagram for AI Cost Autopilot</title>
+  <desc id="d">The gateway object sits at the centre, linked to the coding agent, the dashboard, the autopilot and its secrets detector, the semantic cache, the code trimmer, the provider module with the LLM provider, and the metrics object. Numbered messages along the links show one chat completion with a cache miss, its cache-hit alternative, and the dashboard polling for statistics.</desc>
+
+  <style>
+    .bg    { fill:#ffffff }
+    .box   { fill:#fff4d6; stroke:#1f2328; stroke-width:1.6 }
+    .ext   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.6 }
+    .plain { fill:#ffffff; stroke:#1f2328; stroke-width:1.6 }
+    .frame { fill:none; stroke:#1f2328; stroke-width:1.4 }
+    .tag   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.4 }
+    .sep   { stroke:#1f2328; stroke-width:1.2; fill:none }
+    .line  { stroke:#1f2328; stroke-width:1.5; fill:none }
+    .dash  { stroke:#1f2328; stroke-width:1.5; fill:none; stroke-dasharray:7 5 }
+    .life  { stroke:#6b7280; stroke-width:1.2; fill:none; stroke-dasharray:5 5 }
+    .bar   { fill:#ffffff; stroke:#1f2328; stroke-width:1.3 }
+    .panel { fill:#f7f4ee; stroke:#d8d3c7; stroke-width:1.2 }
+    .note  { fill:#fffdf5; stroke:#1f2328; stroke-width:1.1 }
+    .wash  { fill:#ffffff; opacity:.93 }
+    .head  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:25px; font-weight:700 }
+    .subt  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:14px }
+    .name  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:14px; font-weight:700 }
+    .ste   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px; font-style:italic }
+    .mem   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .txt   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px }
+    .small { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px }
+    .lbl   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:12px; font-style:italic }
+    .msg   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .bold  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px; font-weight:700 }
+  </style>
+
+  <defs>
+    <marker id="open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1.5 1.5 L10.5 6 L1.5 10.5" fill="none" stroke="#1f2328" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="fill" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+    <marker id="tri" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="14" markerHeight="14" orient="auto-start-reverse">
+      <path d="M1 1.5 L15 8 L1 14.5 Z" fill="#ffffff" stroke="#1f2328" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="dia" viewBox="0 0 20 12" refX="19" refY="6" markerWidth="16" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1560" height="1136"/>
+  <text class="head" x="780.0" y="48" text-anchor="middle">Collaboration Diagram — AI Cost Autopilot</text>
+  <text class="subt" x="780.0" y="74" text-anchor="middle">The same chat completion as the sequence diagram, organised by who is linked to whom. Decimal numbers give the order and nesting of messages.</text>
+
+  <!-- ================= links ================= -->
+  <path class="line" d="M230 460 L640 460"/>
+  <path class="line" d="M230 800 L330 800 L330 540 L640 540"/>
+  <path class="line" d="M470 198 L470 350 L650 350 L650 440"/>
+  <path class="line" d="M240 170 L370 170"/>
+  <path class="line" d="M910 440 L910 350 L1090 350 L1090 198"/>
+  <path class="line" d="M920 500 L1300 500"/>
+  <path class="line" d="M880 560 L880 680 L1060 680"/>
+  <path class="line" d="M1160 708 L1160 852"/>
+  <path class="line" d="M780 560 L780 772"/>
+
+  <!-- ================= objects ================= -->
+  <rect class="box" x="640.0" y="440.0" width="280" height="120" rx="3"/>
+  <text class="name" x="780" y="496" text-anchor="middle">gateway</text>
+  <path class="sep" d="M754 499 H806"/>
+  <text class="ste" x="780" y="516" text-anchor="middle">:app.chat_completions()</text>
+  <rect class="ext" x="30.0" y="432.0" width="200" height="56" rx="3"/>
+  <text class="name" x="130" y="456" text-anchor="middle">agent</text>
+  <path class="sep" d="M112 459 H148"/>
+  <text class="ste" x="130" y="476" text-anchor="middle">:Coding Agent  «external»</text>
+  <rect class="ext" x="30.0" y="772.0" width="200" height="56" rx="3"/>
+  <text class="name" x="130" y="796" text-anchor="middle">dashboard</text>
+  <path class="sep" d="M97 799 H163"/>
+  <text class="ste" x="130" y="816" text-anchor="middle">:Dashboard (browser)</text>
+  <rect class="box" x="370.0" y="142.0" width="200" height="56" rx="3"/>
+  <text class="name" x="470" y="166" text-anchor="middle">autopilot</text>
+  <path class="sep" d="M437 169 H503"/>
+  <text class="ste" x="470" y="186" text-anchor="middle">:Autopilot</text>
+  <rect class="box" x="20.0" y="142.0" width="220" height="56" rx="3"/>
+  <text class="name" x="130" y="166" text-anchor="middle">_secrets</text>
+  <path class="sep" d="M100 169 H160"/>
+  <text class="ste" x="130" y="186" text-anchor="middle">:SecretsDetector</text>
+  <rect class="box" x="980.0" y="142.0" width="220" height="56" rx="3"/>
+  <text class="name" x="1090" y="166" text-anchor="middle">cache</text>
+  <path class="sep" d="M1072 169 H1108"/>
+  <text class="ste" x="1090" y="186" text-anchor="middle">:SemanticCache</text>
+  <rect class="box" x="1300.0" y="472.0" width="200" height="56" rx="3"/>
+  <text class="name" x="1400" y="496" text-anchor="middle">trimmer</text>
+  <path class="sep" d="M1374 499 H1426"/>
+  <text class="ste" x="1400" y="516" text-anchor="middle">:CodeTrimmer</text>
+  <rect class="box" x="1060.0" y="652.0" width="200" height="56" rx="3"/>
+  <text class="name" x="1160" y="676" text-anchor="middle">provider</text>
+  <path class="sep" d="M1130 679 H1190"/>
+  <text class="ste" x="1160" y="696" text-anchor="middle">«module» gateway.provider</text>
+  <rect class="ext" x="1030.0" y="852.0" width="260" height="56" rx="3"/>
+  <text class="name" x="1160" y="876" text-anchor="middle">llm</text>
+  <path class="sep" d="M1149 879 H1171"/>
+  <text class="ste" x="1160" y="896" text-anchor="middle">:LLM Provider  «external»</text>
+  <rect class="box" x="680.0" y="772.0" width="200" height="56" rx="3"/>
+  <text class="name" x="780" y="796" text-anchor="middle">metrics</text>
+  <path class="sep" d="M754 799 H806"/>
+  <text class="ste" x="780" y="816" text-anchor="middle">:Metrics</text>
+
+  <!-- ================= messages along the links ================= -->
+  <rect class="wash" x="243" y="389" width="282" height="18"/>
+  <path class="line" d="M246 398 L268 398" marker-end="url(#fill)"/>
+  <text class="msg" x="276" y="402">1: POST /v1/chat/completions(body)</text>
+  <rect class="wash" x="243" y="409" width="166" height="18"/>
+  <path class="line" d="M268 418 L246 418" marker-end="url(#fill)"/>
+  <text class="msg" x="276" y="422">1.10: 200 response</text>
+  <rect class="wash" x="243" y="429" width="261" height="18"/>
+  <path class="line" d="M268 438 L246 438" marker-end="url(#fill)"/>
+  <text class="msg" x="276" y="442">1.7a [hit]: 200 stored response</text>
+  <path class="line" d="M740 440 L740 412 L820 412 L820 440" marker-end="url(#fill)"/>
+  <text class="msg" x="780" y="348" text-anchor="middle">1.1: deepcopy(body): original</text>
+  <text class="msg" x="780" y="368" text-anchor="middle">1.2: _tokens(), _preview()</text>
+  <text class="msg" x="780" y="388" text-anchor="middle">1.3: compute_signals(original)</text>
+  <rect class="wash" x="483" y="267" width="297" height="18"/>
+  <path class="line" d="M497 283 L497 268" marker-end="url(#fill)"/>
+  <text class="msg" x="516" y="280">1.4: decide(original, signals): plan</text>
+  <rect class="wash" x="147" y="115" width="254" height="18"/>
+  <path class="line" d="M172 124 L150 124" marker-end="url(#fill)"/>
+  <text class="msg" x="180" y="128">1.4.1: scan(text): has_secrets</text>
+  <rect class="wash" x="1103" y="249" width="348" height="18"/>
+  <path class="line" d="M1117 265 L1117 250" marker-end="url(#fill)"/>
+  <text class="msg" x="1136" y="262">1.5 [plan.use_cache]: lookup(original): hit</text>
+  <rect class="wash" x="1103" y="271" width="420" height="18"/>
+  <path class="line" d="M1117 287 L1117 272" marker-end="url(#fill)"/>
+  <text class="msg" x="1136" y="284">1.8 [plan.use_cache, miss]: store(original, response)</text>
+  <rect class="wash" x="933" y="451" width="196" height="18"/>
+  <path class="line" d="M936 460 L958 460" marker-end="url(#fill)"/>
+  <text class="msg" x="966" y="464">1.6 [plan.trim, miss]:</text>
+  <rect class="wash" x="963" y="471" width="333" height="18"/>
+  <text class="msg" x="996" y="484">trim(messages, budget, {}): (msgs, stats)</text>
+  <rect class="wash" x="893" y="607" width="290" height="18"/>
+  <path class="line" d="M907 608 L907 623" marker-end="url(#fill)"/>
+  <text class="msg" x="926" y="620">1.7 [miss]: forward(body): response</text>
+  <rect class="wash" x="1173" y="767" width="297" height="18"/>
+  <path class="line" d="M1187 768 L1187 783" marker-end="url(#fill)"/>
+  <text class="msg" x="1206" y="780">1.7.1 [live]: POST /chat/completions</text>
+  <path class="line" d="M1260 665 L1292 665 L1292 695 L1260 695" marker-end="url(#fill)"/>
+  <rect class="wash" x="1267" y="711" width="275" height="18"/>
+  <text class="msg" x="1300" y="724">1.7.1 [mock]: mock_response(body)</text>
+  <rect class="wash" x="368" y="627" width="398" height="18"/>
+  <path class="line" d="M382.5 628 L382.5 643" marker-end="url(#fill)"/>
+  <text class="msg" x="401.5" y="640">1.6a [hit]: record(baseline, sent=0, "cache", ...)</text>
+  <rect class="wash" x="354" y="649" width="413" height="18"/>
+  <path class="line" d="M368.0 650 L368.0 665" marker-end="url(#fill)"/>
+  <text class="msg" x="387.0" y="662">1.9: record(baseline, sent, outcome, model, preview)</text>
+  <rect class="wash" x="506" y="671" width="261" height="18"/>
+  <path class="line" d="M520.25 672 L520.25 687" marker-end="url(#fill)"/>
+  <text class="msg" x="539.25" y="684">2.1: snapshot(): totals, recent</text>
+  <rect class="wash" x="333" y="493" width="239" height="18"/>
+  <path class="line" d="M336 502 L358 502" marker-end="url(#fill)"/>
+  <text class="msg" x="366" y="506">2 *[every 1.5 s]: GET /stats</text>
+  <rect class="wash" x="333" y="513" width="304" height="18"/>
+  <path class="line" d="M336 522 L358 522" marker-end="url(#fill)"/>
+  <text class="msg" x="366" y="526">3 [Try it]: POST /v1/chat/completions</text>
+
+  <!-- ================= notation ================= -->
+  <rect class="panel" x="40" y="940" width="1480" height="170" rx="8"/>
+  <text class="bold" x="60" y="970">How to read it</text>
+  <text class="small" x="60" y="994">Boxes are objects (name : class, underlined). A line is a link: the objects can reach each other. The small arrow before each message gives its direction.</text>
+  <text class="small" x="60" y="1016">Numbers nest: 1.4.1 runs inside 1.4. On a cache hit, 1.6a and 1.7a replace 1.6 to 1.10, so no trim and no provider call happen. Message 3 then repeats the 1.x messages.</text>
+  <text class="small" x="60" y="1038">Guards in [ ] must hold for the message to be sent. * means repeated. A return value follows a colon, as in lookup(original): hit.</text>
+  <text class="small" x="60" y="1060">Secret detected: plan.use_cache is False, so 1.5 and 1.8 are skipped; 1.6 can still run when the request is code-heavy and over the 1000-token threshold.</text>
+  <text class="small" x="60" y="1082">The cache is keyed on the original request (1.1), never the trimmed one, so a trimmed request can still be reused later.</text>
+</svg>
