@@ -10,6 +10,7 @@ Every item in the project evaluation, in one place, with a link to where it live
 | Data flow diagram (levels 0, 1 and 2) | [DataFlowDiagram_AI_Cost_Autopilot.pdf](Diagrams/DataFlowDiagram_AI_Cost_Autopilot.pdf) | [Design](design.md#data-flow-diagram) |
 | ER diagram | [AI_Cost_Autopilot_ER_Diagram.pdf](Diagrams/AI_Cost_Autopilot_ER_Diagram.pdf) | [Design](design.md#entity-relationship-diagram) |
 | Activity (swimlane) diagram | [AI_Cost_Autopilot_Swimlane.pdf](Diagrams/AI_Cost_Autopilot_Swimlane.pdf) | [Design](design.md#activity-diagram) |
+| Deployment diagram | [AI_Cost_Autopilot_Deployment_Diagram.pdf](Diagrams/AI_Cost_Autopilot_Deployment_Diagram.pdf) | [Design](design.md#deployment-diagram) |
 | Gantt chart | [AI_Cost_Autopilot_Gantt_Chart.pdf](AI_Cost_Autopilot_Gantt_Chart.pdf), [.xlsx](AI_Cost_Autopilot_Gantt_Chart.xlsx) | [Roadmap](roadmap.md#gantt-chart) |
 | Presentation | [AI_Cost_Autopilot_Proposal_ppt.pdf](AI_Cost_Autopilot_Proposal_ppt.pdf) | |
 
