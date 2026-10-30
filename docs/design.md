@@ -8,6 +8,7 @@ the same system:
 | [Use case diagram](#use-case-diagram) | Who uses the system, and for what? |
 | [Class diagram](#class-diagram) | What are the building blocks, and how do they relate? |
 | [Data flow diagram](#data-flow-diagram) | Where does data go, and what transforms it? |
+| [Sequence diagram](#sequence-diagram) | In what time order do objects exchange messages? |
 | [ER diagram](#entity-relationship-diagram) | What data does the system hold, and how is it related? |
 | [Collaboration diagram](#collaboration-diagram) | Which objects are linked, and what do they send each other? |
 | [Activity diagram](#activity-diagram) | In what order do things happen, and who does each step? |
@@ -67,6 +68,27 @@ All three levels are drawn in one diagram, in Gane and Sarson notation:
   (D1 Semantic Cache, D2 Metrics Log).
 - **Level 2:** process 4.0, the compiler-aware trimmer, as seven steps from parsing
   the code to measuring the tokens saved.
+
+## Sequence diagram
+
+![Sequence diagram. A coding agent posts a chat completion. The gateway snapshots
+the request, computes signals and asks the autopilot for a plan. If caching is
+allowed it looks up the cache and returns early on a hit. Otherwise it optionally
+trims, forwards through the provider module, stores the response under the original
+request, records metrics and replies. A second frame shows the dashboard polling
+/stats.](assets/img/sequence-diagram.svg){ width="900" }
+
+The sequence diagram puts the messages of one request in **time order**, using the
+real method names from `code/gateway/app.py`.
+
+- **`opt` frames** are conditional: the cache lookup and store depend on
+  `plan["use_cache"]`, and trimming depends on `plan["trim"]`.
+- **The `alt` frame** is the provider's choice between the mock reply and the real
+  LLM call.
+- **The nested `opt`** is the early exit: on a cache hit, the gateway records
+  `sent=0` and returns without trimming or calling the provider.
+- **`sd live dashboard`** is the second interaction, with `GET /stats` polled every
+  1.5 seconds.
 
 ## Entity relationship diagram
 

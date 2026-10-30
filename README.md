@@ -122,6 +122,14 @@ Shows the levels of data flow through the gateway, cache, trimmer, and provider.
 </details>
 
 <details>
+<summary>Sequence diagram</summary>
+
+Shows the messages of one request in time order, using the real method names.
+
+![Sequence diagram](assets/img/sequence-diagram.svg)
+</details>
+
+<details>
 <summary>Activity diagram</summary>
 
 Shows the request decision path, including cache hits and trimming.
