@@ -163,9 +163,9 @@ Shows where each piece runs: the local gateway process, the dashboards, the LLM 
 
 ## Project status and roadmap
 
-The gateway, Python trimmer, exact and prose-semantic cache paths, autopilot policy, mock provider, benchmarks, and CI are implemented. The gateway does not yet store metrics, and the trimmer currently supports Python only.
+The gateway, Python trimmer, exact and prose-semantic cache paths, autopilot policy, mock provider, benchmarks, and CI are implemented. The gateway keeps metrics in memory only, so they reset when it restarts, and the trimmer currently supports Python only.
 
-Next work includes autopilot threshold tuning, a metrics store, TypeScript support, and prefix caching for multi-turn chats.
+Next work includes autopilot threshold tuning, a persistent metrics store, TypeScript support, and prefix caching for multi-turn chats.
 
 ![Project Gantt chart](assets/img/gantt-chart.svg)
 
