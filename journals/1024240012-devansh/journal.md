@@ -270,3 +270,48 @@ next dataset. Building the dashboard was worth it for a second reason: it made
 the cache's behaviour *visible*, which is what surfaced the miss in the first
 place — and what will let an audience see, rather than take on trust, that the
 gateway reuses by meaning.
+
+---
+
+## Week 7: The collaboration and deployment diagrams, and the docs they proved wrong
+
+### Context
+I added collaboration and deployment diagrams to the design docs (PR #44 and PR #45),
+drafting them with Claude Code from the code on `master`. The diagrams needed to show
+what the system does today, not what the proposal planned.
+
+### Problem
+The code and the docs had drifted apart. `README.md` and `docs/design.md` said the
+gateway does not store metrics yet, but my dashboard work in Week 6 added
+`gateway/metrics.py`. `docs/architecture.md` listed SQLite/FAISS as the vector store,
+but the cache keeps its entries in process memory. A deployment diagram drawn from
+those docs would have shown a database that does not exist.
+
+### Key Observation
+The collaboration diagram makes one design rule visible: every component links to the
+gateway and none of them link to each other, which is what "the gateway is the only
+place they meet" means in practice.
+
+The deployment diagram makes a limit visible. The cache and metrics live inside one
+uvicorn process, so they are not shared between workers and are lost on restart, and
+the repository has no container image or hosted gateway. The shared cloud cache in the
+TODO at the top of `cache/cache.py` is still future work.
+
+The same check turned up two small differences from the activity diagram: a cache hit
+records metrics too, and the response is stored before metrics are recorded rather
+than in parallel.
+
+### Solution
+PR #44 adds the collaboration diagram, with numbered messages and the gateway as the
+hub. PR #45 adds the deployment diagram, which states what is not deployed. PR #46
+corrects the metrics and SQLite/FAISS statements and records the activity diagram
+differences in a note, rather than redrawing that diagram.
+
+`docs/usage.md` still says to copy `.env.example` to `.env`, but the code only reads
+`os.getenv` and never loads that file. The deployment diagram notes this, and the usage
+page still needs fixing.
+
+### Takeaway
+Docs go stale at the moment a feature lands, and nothing fails when they do. Drawing a
+diagram from the code is a cheap way to catch this, but only if the diagram is checked
+against the code and not against the docs it is meant to extend.
