@@ -45,6 +45,7 @@ workloads.
 ## Tech stack
 
 Python, FastAPI (gateway), httpx (forwarding), tree-sitter (parsing), tiktoken
-(token counting), sentence-transformers (cache embeddings), SQLite/FAISS (vector
-store), pytest + GitHub Actions (CI). The gateway has an offline **mock mode** so
+(token counting), sentence-transformers (cache embeddings), an in-memory store
+for cache entries (a persistent vector store is future work), pytest + GitHub
+Actions (CI). The gateway has an offline **mock mode** so
 the pipeline runs with no API key and no cost.

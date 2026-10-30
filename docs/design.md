@@ -95,8 +95,12 @@ per component so it is clear who performs each step. It uses:
 The cache is always keyed on the **original** request, taken before trimming, so a
 trimmed request can still be reused later.
 
-!!! note "Designed, not yet built"
-    Recording metrics (DFD process 6.0, data store D2, and the Metric Record
-    entity) is part of the design, but the gateway does not store metrics yet.
+!!! note "Metrics are in memory only"
+    `code/gateway/metrics.py` records every request, but only in memory: running
+    totals and the last 30 requests, served at `GET /stats` and lost on restart.
+    The persistent store in the design (data store D2 and the Metric Record entity)
+    is not built yet. The code also differs from the activity diagram in two small
+    ways: a cache hit records metrics too, and the response is stored before metrics
+    are recorded rather than in parallel.
     Everything else in these diagrams matches the current code in
     `code/gateway/app.py`.
