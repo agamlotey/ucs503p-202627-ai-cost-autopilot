@@ -8,6 +8,7 @@ Every item in the project evaluation, in one place, with a link to where it live
 |---|---|---|
 | Use case diagram | [UseCaseDiagram_AI_Cost_Autopilot.pdf](Diagrams/UseCaseDiagram_AI_Cost_Autopilot.pdf) | [Design](design.md#use-case-diagram) |
 | Data flow diagram (levels 0, 1 and 2) | [DataFlowDiagram_AI_Cost_Autopilot.pdf](Diagrams/DataFlowDiagram_AI_Cost_Autopilot.pdf) | [Design](design.md#data-flow-diagram) |
+| Sequence diagram | [AI_Cost_Autopilot_Sequence_Diagram.pdf](Diagrams/AI_Cost_Autopilot_Sequence_Diagram.pdf) | [Design](design.md#sequence-diagram) |
 | ER diagram | [AI_Cost_Autopilot_ER_Diagram.pdf](Diagrams/AI_Cost_Autopilot_ER_Diagram.pdf) | [Design](design.md#entity-relationship-diagram) |
 | Activity (swimlane) diagram | [AI_Cost_Autopilot_Swimlane.pdf](Diagrams/AI_Cost_Autopilot_Swimlane.pdf) | [Design](design.md#activity-diagram) |
 | Gantt chart | [AI_Cost_Autopilot_Gantt_Chart.pdf](AI_Cost_Autopilot_Gantt_Chart.pdf), [.xlsx](AI_Cost_Autopilot_Gantt_Chart.xlsx) | [Roadmap](roadmap.md#gantt-chart) |
