@@ -1,11 +1,12 @@
 # Design
 
-The four design diagrams for AI Cost Autopilot, each covering a different view of
+The design diagrams for AI Cost Autopilot, each covering a different view of
 the same system:
 
 | Diagram | Question it answers |
 |---|---|
 | [Use case diagram](#use-case-diagram) | Who uses the system, and for what? |
+| [Class diagram](#class-diagram) | What are the building blocks, and how do they relate? |
 | [Data flow diagram](#data-flow-diagram) | Where does data go, and what transforms it? |
 | [ER diagram](#entity-relationship-diagram) | What data does the system hold, and how is it related? |
 | [Activity diagram](#activity-diagram) | In what order do things happen, and who does each step? |
@@ -28,6 +29,26 @@ benchmark.](assets/img/use-case.svg){ width="900" }
 - **«extend»** means optional behaviour that only runs under a condition. Reusing a
   past answer runs on a cache hit, reducing code context runs when the request is
   over the token budget, and obtaining a completion runs on a cache miss.
+
+## Class diagram
+
+![Class diagram. The gateway.app module owns one CodeTrimmer, SemanticCache,
+Autopilot and Metrics instance and uses the provider, config and benchmarks
+modules. The three components implement the frozen Trimmer, Cache and Autopilot
+protocols. Autopilot owns a SecretsDetector, SemanticCache holds cache entries and
+Metrics holds up to 30 recent entries.](assets/img/class-diagram.svg){ width="900" }
+
+This is the **static structure** of the Python backend in `code/`.
+
+- **Realisation:** `CodeTrimmer`, `SemanticCache` and `Autopilot` match the
+  `typing.Protocol` contracts in `gateway/interfaces.py` by shape. They do not
+  inherit from them.
+- **Composition:** `gateway/app.py` creates one instance of each component at
+  import time, and those instances live as long as the process. `Autopilot` owns
+  its `SecretsDetector`, and `SemanticCache` owns its entries.
+- **Stereotypes:** much of the code is modules and plain dicts rather than
+  classes, so `«module»`, `«dict»` and `«list»` mark what each box really is.
+  The data shapes in the lower panel are the dicts passed between components.
 
 ## Data flow diagram
 
