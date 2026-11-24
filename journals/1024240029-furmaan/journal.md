@@ -44,49 +44,59 @@ Pick the cheapest safe action per request instead of stacking every trick. The
 decision order (safety -> cache -> trim -> passthrough) came straight from the
 cost of each action.
 
-## Retrospective for Weeks 2–8
+I grouped Weeks 2–8 retrospectively in the order the policy developed. The dates below identify the commits and reviews I used to reconstruct the work. The original working weeks are approximate.
 
-I reconstructed these notes from my commits and reviews on 25 November. The
-dates below are the dates of the work. I still need to confirm which course
-week each entry belongs to.
+## Week 2: First autopilot module
 
-### 31 August — First autopilot module
+Repository record: 31 August 2026.
 
 I added the first standalone module. It put the trimmer, cache and autopilot in
 one file. The later gateway integration used the shared component interfaces.
 [Initial module](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/ba65dd2)
 
-### 12 September — Routing large code requests
+## Week 3: Routing large code requests
+
+Repository record: 12 September 2026.
 
 The policy used two signals to decide when to trim: the request contained code
 and its estimated size exceeded 1,000 tokens. I added counters so we could see
 which decision the policy made. [Routing policy](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/b20c84d)
 
-### 12 September — Missing secret signal
+## Week 4: Missing secret signal
+
+Repository record: 12 September 2026.
 
 The gateway could supply a token estimate without a secret flag. I wired the
 detector into the policy so the request text still got checked before cache
 lookup. [Policy integration](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/c530ecf)
 
-### 13 September — Trimming a request that contains a secret
+## Week 5: Trimming a request that contains a secret
+
+Repository record: 13 September 2026.
 
 Originally a detected secret disabled both caching and trimming. I split the
 decisions. A large code request can still be trimmed while its response stays
 out of the cache. [Policy correction](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/7f6af8c)
 
-### 13 September — Multipart messages and false alarms
+## Week 6: Multipart messages and false alarms
+
+Repository record: 13 September 2026.
 
 I added a case with a key in a text part beside an image part. The opposite
 case mattered too: an ordinary assignment like `password = payload.get("password")`
 should still be eligible for caching. [Detector cases](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/7f6af8c)
 
-### 13 September — Hyphens inside a key
+## Week 7: Hyphens inside a key
+
+Repository record: 13 September 2026.
 
 A separate test used an OpenAI project key with a hyphen inside its body. I
 updated the pattern and checked the actual routing decision in the test:
 `use_cache` must be false. [Key-pattern fix](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/68c7301)
 
-### 13 September — Project overview and diagram review
+## Week 8: Project overview and diagram review
+
+Repository record: 13 September 2026.
 
 I replaced the template README with the project overview and approved the
 revised request-flow diagram. [README](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/35) · [Diagram review](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/36)
