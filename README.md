@@ -197,3 +197,13 @@ Lab instructor: Dr. Jeelani Asif.
 - [Prototype report PDF](project-report-prototype-stage/AI_Cost_Autopilot_Report_Prototype.pdf)
 - [Prototype presentation PDF](project-report-prototype-stage/AI_Cost_Autopilot_Prototype_ppt.pdf)
 - [Contribution guide](code/CONTRIBUTING.md)
+
+### Streamlit app
+
+From `code/`, install `streamlit_app/requirements.txt` in your virtual environment
+with `python -m pip install -r streamlit_app/requirements.txt`. Start the gateway
+with `MOCK_PROVIDER=1 uvicorn gateway.app:app --port 8000`. In a second terminal,
+from the same directory, run `streamlit run streamlit_app/app.py`.
+Select the notes_api example or enter your own task and source code.
+**Repeat last request** resends the same input. Set `GATEWAY_URL` when the gateway
+runs at a different address.
