@@ -257,6 +257,60 @@ class EmptyNote(Exception):
 '''
 
 
+HIERARCHY = '''
+class LedgerError(Exception):
+    def __init__(self, message, row=None):
+        self.message = message
+        self.row = row
+        super().__init__(self._describe())
+
+    def _describe(self):
+        return f"{self.message} (row {self.row})"
+
+
+class ParseError(LedgerError):
+    def __init__(self, field, value, row=None):
+        self.field = field
+        super().__init__(f"could not read {field}: {value!r}", row)
+
+
+class Unrelated(LedgerError):
+    def __init__(self, code):
+        self.code = code
+        super().__init__("unrelated")
+
+
+def parse_row(line):
+    raise ParseError("date", line, 2)
+'''
+
+
+def test_super_resolves_to_the_declared_base():
+    g = build_call_graph(HIERARCHY)
+    assert "LedgerError.__init__" in g["ParseError.__init__"]
+    # still no false self-edge: the base's own super() goes to Exception
+    assert "__init__" not in g["__init__"]
+
+
+def test_base_class_constructor_is_kept():
+    """A subclass constructor that defers to its base leaves the real work in
+    the base, so keeping only the subclass shows the agent nothing."""
+    out, _ = CodeTrimmer().trim(
+        [{"role": "user", "content": "fix parse_row so the message names the column"},
+         {"role": "user", "content": HIERARCHY}], token_budget=0)
+    code = out[-1]["content"]
+    assert "self.field = field" in code              # the subclass constructor
+    assert "self.message = message" in code          # the base constructor
+    assert "(row {self.row})" in code                # and what it calls
+
+
+def test_an_unrelated_subclass_constructor_still_collapses():
+    out, _ = CodeTrimmer().trim(
+        [{"role": "user", "content": "fix parse_row so the message names the column"},
+         {"role": "user", "content": HIERARCHY}], token_budget=0)
+    assert "self.code = code" not in out[-1]["content"]
+
+
 def test_constructor_in_another_file_is_kept():
     out, _ = CodeTrimmer().trim(
         [{"role": "user", "content": "fix save_note"},

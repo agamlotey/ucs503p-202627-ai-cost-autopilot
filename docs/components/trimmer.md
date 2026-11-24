@@ -109,11 +109,11 @@ define a constructor where `notes_api` has one.
 |---|---|---:|---:|---:|---|
 | `notes_api` | fix create_note | 2,166 of 3,277 | 33.9% | 18 of 45 | complete |
 | `notes_api` | fix delete_note | 1,694 of 3,277 | 48.3% | 7 of 45 | complete |
-| `ledger_cli` | fix parse_row | 1,544 of 2,472 | 37.5% | 9 of 37 | complete |
+| `ledger_cli` | fix parse_row | 1,586 of 2,472 | 35.8% | 10 of 37 | complete |
 | `ledger_cli` | fix validate | 1,240 of 2,472 | 49.8% | 6 of 37 | complete |
 | `ledger_cli` | fix render | 1,252 of 2,472 | 49.4% | 5 of 36 | complete |
 
-Mean saving: **41.1%** on `notes_api`, **45.6%** on `ledger_cli`. Every output
+Mean saving: **41.1%** on `notes_api`, **45.0%** on `ledger_cli`. Every output
 still compiles.
 
 "Context" is the part token counts cannot show. For each task the functions a
