@@ -1,0 +1,41 @@
+% The test cases as a standalone deliverable PDF, alongside the Gantt chart.
+% The table itself is shared with the reports and is generated, so this
+% wrapper only supplies a title page and the packages the table needs.
+%
+% Build it with:  python report-common/sync.py   (regenerates the table)
+%                 tectonic -X compile report-common/test-cases-standalone.tex
+%                 cp report-common/test-cases-standalone.pdf \
+%                    docs/AI_Cost_Autopilot_Test_Cases.pdf
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\hypersetup{
+    hidelinks,
+    pdftitle={AI Cost Autopilot: Test Cases},
+    pdfsubject={UCS503 Software Engineering Project}
+}
+\providecommand{\code}[1]{\texttt{#1}}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\begin{center}
+    {\Large\bfseries AI Cost Autopilot}\\[0.25cm]
+    {\large Test Cases}\\[0.5cm]
+    {\normalsize UCS503 -- Software Engineering Project, 2026--2027}\\[0.15cm]
+    {\small Agampreet Kaur (1024240033) \quad Devansh Sharma (1024240012)
+            \quad Furmaandeep Kaur (1024240029)}\\[0.15cm]
+    {\small Thapar Institute of Engineering and Technology, Patiala}
+\end{center}
+
+\vspace{0.4cm}
+
+\input{test-cases}
+
+\end{document}
