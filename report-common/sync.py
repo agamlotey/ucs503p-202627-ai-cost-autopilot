@@ -22,7 +22,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
 REPORTS = (
-    "project-proposal",
+    # The proposal is deliberately not here: it is written before the code
+    # exists, so test results have no place in it.
     "project-report-prototype-stage",
     "project-report-final",
 )
