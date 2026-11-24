@@ -31,7 +31,7 @@ TC-11 &  & super().\_\_init\_\_() dispatches to the base class, not to our \_\_i
 TC-12 &  & Recursion adds nothing to focus expansion & Pass \\
 TC-13 &  & Real edges still resolved & Pass \\
 TC-14 &  & Instantiating a class is an edge to its constructor & Pass \\
-TC-15 &  & Regression: `raise ConfigError(...)` created no edge, so the constructor was collapsed and the agent could not see what it did with the message & Pass \\
+TC-15 &  & Regression: \texttt{raise ConfigError(...)} created no edge, so the constructor was collapsed and the agent could not see what it did with the message & Pass \\
 TC-16 &  & The constructor calls \_format, which the fix also needs & Pass \\
 TC-17 &  & Only the instantiated class's \_\_init\_\_ is kept, not every \_\_init\_\_ & Pass \\
 TC-18 &  & Class without a constructor is harmless & Pass \\
@@ -64,7 +64,7 @@ TC-44 &  & Different wording, same meaning (cosine 0.96 >= 0.90) -> reuse & Pass
 TC-45 &  & A genuinely different question (cosine 0.0) must not reuse the answer & Pass \\
 TC-46 &  & Same text, different model -> different bucket -> no reuse & Pass \\
 TC-47 &  & Different temperature does not match & Pass \\
-TC-48 &  & `user` is denylisted -> same bucket -> reuse & Pass \\
+TC-48 &  & \texttt{user} is denylisted -> same bucket -> reuse & Pass \\
 TC-49 &  & Below the default a paraphrase misses; lower the bar and it hits & Pass \\
 TC-50 &  & Lookup returns a copy & Pass \\
 TC-51 &  & Store snapshots response & Pass \\
@@ -72,7 +72,7 @@ TC-52 &  & Real embeddings match paraphrase not unrelated & Skip \\
 TC-53 &  & Without sentence-transformers the cache must not crash AND must still do EXACT-match reuse (identical request hits); only fuzzy prose is disabled & Pass \\
 TC-54 &  & Code caching is exact-match, so it must work with no embedder at all & Pass \\
 TC-55 &  & Re-storing the SAME request refreshes the answer (newest wins) and keeps exactly one bucket entry — restored from v1, adapted to v2's buckets & Pass \\
-TC-56 &  & `>` vs `>=`: near-identical vectors, but OPPOSITE meaning -> must MISS & Pass \\
+TC-56 &  & \texttt{>} vs \texttt{>=}: near-identical vectors, but OPPOSITE meaning -> must MISS & Pass \\
 TC-57 &  & Identical code still hits & Pass \\
 TC-58 &  & Non-code paraphrase must still reuse (routing only tightens code) & Pass \\
 TC-59 &  & Ttl expires stale entries & Pass \\

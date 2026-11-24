@@ -42,8 +42,20 @@ TEX_ESCAPES = {
 }
 
 
-def tex(text: str) -> str:
+def _escape(text: str) -> str:
     return "".join(TEX_ESCAPES.get(ch, ch) for ch in text)
+
+
+def tex(text: str) -> str:
+    """Escape for LaTeX, rendering `backtick spans` as monospace.
+
+    Docstrings quote code with backticks; left alone those come out as curly
+    quotation marks, which reads as prose rather than as code.
+    """
+    out = []
+    for i, part in enumerate(re.split(r"`([^`]+)`", text)):
+        out.append(f"\\texttt{{{_escape(part)}}}" if i % 2 else _escape(part))
+    return "".join(out)
 
 
 def humanise(name: str) -> str:
