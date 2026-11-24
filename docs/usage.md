@@ -26,7 +26,17 @@ curl http://localhost:8000/health
 
 ## Configuration
 
-Copy `code/.env.example` to `code/.env` and adjust:
+The gateway reads environment variables when it starts. From the `code/`
+directory, export your settings in the same terminal before launching it.
+For example:
+
+```shell
+export DEFAULT_MODEL=gpt-4o-mini
+uvicorn gateway.app:app --port 8000
+```
+
+See `.env.example` for the available settings. Copying that file alone does
+not load its values into the gateway process.
 
 | Variable | Meaning |
 |---|---|
