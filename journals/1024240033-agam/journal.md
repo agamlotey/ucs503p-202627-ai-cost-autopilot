@@ -374,3 +374,121 @@ it shows, so the numbers can be reproduced with one command.
 Re-measure after every correctness fix, and never report a saving without the
 check that the result is still correct. The honest number is smaller, but it is
 the one that holds up when someone asks how it was measured.
+
+---
+
+## Week 7: The constructor the agent could not see
+
+### Context
+Devansh's review list asked me to verify one case: when a task depends on
+`ConfigError(...)`, does the trimmer keep the constructor? Our prototype report
+already listed this as a known limitation, so I expected to confirm it and move
+on.
+
+### Problem
+It reproduced immediately. For a task "fix `load_config`", where `load_config`
+does `raise ConfigError("missing key", path)`, the trimmer kept `load_config` in
+full and collapsed the constructor:
+
+```python
+class ConfigError(Exception):
+    def __init__(self, message, path=None):
+        """Raised when a config file is invalid."""
+        ...
+```
+
+An agent asked to change what the error does with its message could not see the
+code that handles the message. The cause was one line: `_defined_functions`
+collects `def` names only, so a class name was never a known symbol, and a call
+on it resolved to nothing.
+
+### Key Observation
+The obvious fix is wrong. The whole call graph is keyed on bare function names,
+so adding `__init__` to the keep set keeps *every* constructor in the request,
+not the one the task needs. Precision requires a qualified name,
+`ConfigError.__init__`, and the collapse step has to know which class it is
+inside to match it.
+
+Fixing that exposed a second bug one level up. Our `ledger_cli` exceptions are
+four deep, and `ParseError.__init__` defers to its base through
+`super().__init__(...)`. The subclass was kept, the base was not:
+
+```
+ParseError.__init__    kept
+LedgerError.__init__   collapsed   <- where the message is actually formatted
+_describe              collapsed   <- where the text is built
+```
+
+`super()` calls were ignored on purpose since Week 3, because without class
+context `super().__init__()` looks like `__init__` calling itself. That guard
+was right then and wrong now: once classes and their declared bases are
+tracked, the call can be resolved properly.
+
+### Solution
+Classes are now known symbols, an edge to a class leads on to its constructor,
+and methods are tracked by qualified name. `super().foo()` resolves against the
+bases named in the class header, which is what makes it work across files: the
+header names the base even when the base is defined somewhere else, and the
+merged symbol set says which base actually defines the method.
+
+The Week 3 test that catches the false self-edge still passes, which is what
+made me confident the fix did not undo the earlier one.
+
+This cost 1.7 percentage points on one task, 37.5% down to 35.8%, because the
+trimmer now correctly keeps one function more.
+
+### Takeaway
+A guard written for one version of the code can become a bug in the next. The
+`super()` exclusion was correct when the trimmer had no notion of classes, and
+became wrong the moment it did. Worth re-reading the assumptions behind a
+deliberate exclusion whenever the surrounding model changes.
+
+---
+
+## Week 8: Checking that what survives is enough, and two numbers that were already wrong
+
+### Context
+With the constructor fixed I moved to the next item: measure the trimmer on a
+second Python project. One fixture can only show that it worked once, and the
+trimmer keys on code shape, so `notes_api` alone proves very little.
+
+### Problem
+Writing a second project, `ledger_cli`, was the easy half. The hard half was
+deciding what a good result even looks like. A token count cannot tell a good
+saving from a cheaper wrong answer: collapsing every function body saves 57% and
+throws away the function being fixed.
+
+### Key Observation
+The check has to be written from the fix, not from the output. For each task I
+wrote down by hand which functions a correct patch must be able to read, then
+asserted those survive trimming. Because the list comes from the fix rather than
+from what the trimmer happened to keep, it can actually fail.
+
+It did. Both constructor bugs in Week 7 were found this way, and neither would
+have shown up in a percentage.
+
+Then, updating the docs, I noticed a claim that other tasks saved "47% to 55%".
+Re-measuring gave 33.1% to 48.3%. My first assumption was that my own change had
+caused it, so before writing anything I checked out pre-fix `master` in a
+throwaway worktree and ran the same five tasks. The token counts were identical,
+so the claim had been wrong when it was written, and `create_note` was never the
+hardest case. `update_note` is, at 33.1%.
+
+### Solution
+`python -m trimmer.benchmark.projects` now runs every fixture and task side by
+side and reports the context column next to the saving. Across two projects and
+five tasks the mean is 41.1% and 45.0%, every output compiles, and every context
+is complete. CI enforces it.
+
+For the reports I stopped copying the shared parts around. The eight diagrams,
+the Gantt chart and the test cases live once in `report-common/` and are synced
+into each report, which stays self-contained. The test-case table is generated
+from the suite itself, taking each case's description from its docstring and its
+result from a real pytest run, so it cannot claim something the tests do not do.
+
+### Takeaway
+Two habits came out of this week. Generate an artefact from its source of truth
+rather than maintaining a copy, because a hand-written table drifts silently.
+And before reporting that a number moved, prove whether your own change moved
+it: the worktree check took five minutes and changed what I wrote from an
+apology into a correction.
