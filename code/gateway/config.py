@@ -1,5 +1,16 @@
 import os
 
+# .env.example tells you to copy it to .env and fill it in, so .env has to be
+# read for that to be true. Values already in the environment win, which keeps
+# CI and an explicit `MOCK_PROVIDER=1 uvicorn ...` in charge. Missing file or
+# missing library: nothing happens and the defaults below apply.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+except ImportError:
+    pass
+
 PROVIDER_BASE_URL = os.getenv("PROVIDER_BASE_URL", "https://api.openai.com/v1")
 PROVIDER_API_KEY = os.getenv("PROVIDER_API_KEY", "")
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4o-mini")
