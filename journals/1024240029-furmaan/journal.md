@@ -43,3 +43,23 @@ a wrong-but-cheap answer is worse than paying full price.
 Pick the cheapest safe action per request instead of stacking every trick. The
 decision order (safety -> cache -> trim -> passthrough) came straight from the
 cost of each action.
+
+## 12 September 2026 — Putting the policy behind the gateway
+
+I wired the routing decision to the secret detector. The gateway could send a
+code flag and a token estimate without a secret flag, so the policy needed to
+scan the request itself in that case. For ordinary code requests, I used 1,000
+estimated tokens as the default trimming threshold and added counters for the
+decisions. [Implementation and review](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/26)
+
+## 13 September 2026 — What a secret changes
+
+My first implementation disabled both caching and trimming when it detected a
+secret. I changed that decision so a large code request can still be trimmed
+while its response stays out of the cache. I added cases for text inside a
+multipart message and for ordinary code that mentions an auth variable.
+A separate fix covered hyphens inside OpenAI keys.
+[Routing and multipart fix](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/7f6af8c) · [Key-pattern fix](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/68c7301)
+
+I also replaced the template README with the project overview and reviewed the
+revised request-flow diagram. [README](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/35) · [Diagram review](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/36)
