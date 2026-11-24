@@ -15,6 +15,7 @@ Every item in the project evaluation, in one place, with a link to where it live
 | Activity (swimlane) diagram | [AI_Cost_Autopilot_Swimlane.pdf](Diagrams/AI_Cost_Autopilot_Swimlane.pdf) | [Design](design.md#activity-diagram) |
 | Deployment diagram | [AI_Cost_Autopilot_Deployment_Diagram.pdf](Diagrams/AI_Cost_Autopilot_Deployment_Diagram.pdf) | [Design](design.md#deployment-diagram) |
 | Gantt chart | [AI_Cost_Autopilot_Gantt_Chart.pdf](AI_Cost_Autopilot_Gantt_Chart.pdf), [.xlsx](AI_Cost_Autopilot_Gantt_Chart.xlsx) | [Roadmap](roadmap.md#gantt-chart) |
+| Test cases | [AI_Cost_Autopilot_Test_Cases.pdf](AI_Cost_Autopilot_Test_Cases.pdf) | in both reports |
 | Presentation | [AI_Cost_Autopilot_Proposal_ppt.pdf](AI_Cost_Autopilot_Proposal_ppt.pdf) | |
 
 The diagram PDFs are in
