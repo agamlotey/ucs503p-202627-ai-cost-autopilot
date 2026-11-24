@@ -2,6 +2,9 @@
 
 From code/: python -m cache.benchmark.compare
 """
+import argparse
+import json
+from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -45,6 +48,10 @@ def measure(session, use_cache, use_trimmer):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, help="Save the comparison as JSON in a new file.")
+    args = parser.parse_args()
+    rows = []
     initial = as_messages("fix create_note")
     follow_up = initial + [
         {"role": "assistant", "content": "I will inspect create_note and its validator."},
@@ -58,6 +65,19 @@ def main():
                                   ("Cache only", True, False), ("Both", True, True)]:
             calls, sent, output = measure(session, cache, trim)
             print(f"{mode:16} {calls:6} {sent:8} {output:8}")
+            result = {"provider_calls": calls, "input_text_tokens": sent, "output_text_tokens": output}
+            if mode == "Off":
+                baseline = result
+            rows.append({"workload": workload, "mode": mode, "baseline": baseline, "result": result})
+
+    if args.output:
+        report = {"provider": "mock", "fixture": "notes_api", "task": "fix create_note", "runs": rows}
+        try:
+            with args.output.open("x", encoding="utf-8") as destination:
+                destination.write(json.dumps(report, indent=2) + "\n")
+        except OSError as error:
+            parser.exit(1, f"Cannot save comparison: {error}\n")
+
 
 
 if __name__ == "__main__":
