@@ -61,13 +61,15 @@ def main():
     for workload, session in [("Exact repeat", [initial, initial]),
                               ("Multi-turn (fixed history)", [initial, follow_up])]:
         print(f"\n{workload}\n{'Mode':16} {'Calls':>6} {'Input':>8} {'Output':>8}")
+        results = {}
         for mode, cache, trim in [("Off", False, False), ("Trimmer only", False, True),
                                   ("Cache only", True, False), ("Both", True, True)]:
             calls, sent, output = measure(session, cache, trim)
             print(f"{mode:16} {calls:6} {sent:8} {output:8}")
-            result = {"provider_calls": calls, "input_text_tokens": sent, "output_text_tokens": output}
-            if mode == "Off":
-                baseline = result
+            results[mode] = {"provider_calls": calls, "input_text_tokens": sent, "output_text_tokens": output}
+
+        baseline = results["Off"]
+        for mode, result in results.items():
             rows.append({"workload": workload, "mode": mode, "baseline": baseline, "result": result})
 
     if args.output:
@@ -77,7 +79,6 @@ def main():
                 destination.write(json.dumps(report, indent=2) + "\n")
         except OSError as error:
             parser.exit(1, f"Cannot save comparison: {error}\n")
-
 
 
 if __name__ == "__main__":
