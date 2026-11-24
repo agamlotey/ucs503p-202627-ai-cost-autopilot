@@ -7,7 +7,7 @@ Flow:  request -> signals -> autopilot.decide -> (cache.lookup) ->
 import copy
 import os
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
 
 from . import provider, config
@@ -107,7 +107,7 @@ def health():
 
 
 @app.post("/v1/chat/completions")
-async def chat_completions(req: Request):
+async def chat_completions(req: Request, http_response: Response):
     body = await req.json()
 
     # Snapshot the request BEFORE trimming mutates it. The cache must key on the
@@ -118,14 +118,23 @@ async def chat_completions(req: Request):
     model = original.get("model", config.DEFAULT_MODEL)
     preview = _preview(original)
 
+    def record(sent, outcome):
+        metrics.record(baseline=baseline, sent=sent, outcome=outcome,
+                       model=model, preview=preview)
+        http_response.headers.update({
+            "X-Autopilot-Outcome": outcome,
+            "X-Autopilot-Input-Tokens": str(baseline),
+            "X-Autopilot-Forwarded-Tokens": str(sent),
+            "X-Autopilot-Provider": "mock" if config.MOCK_PROVIDER or not config.PROVIDER_API_KEY else "live",
+        })
+
     signals = compute_signals(original)
     plan = autopilot.decide(original, signals)
 
     if plan.get("use_cache"):
         hit = cache.lookup(original)
         if hit is not None:
-            metrics.record(baseline=baseline, sent=0, outcome="cache",
-                           model=model, preview=preview)
+            record(0, "cache")
             return hit
 
     if plan.get("trim"):
@@ -140,6 +149,5 @@ async def chat_completions(req: Request):
 
     sent = _tokens(body.get("messages", []))
     outcome = "trim" if sent < baseline else "forward"
-    metrics.record(baseline=baseline, sent=sent, outcome=outcome,
-                   model=model, preview=preview)
+    record(sent, outcome)
     return response
