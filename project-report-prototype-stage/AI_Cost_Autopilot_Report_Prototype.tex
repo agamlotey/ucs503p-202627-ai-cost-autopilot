@@ -10,6 +10,7 @@
 \usepackage{fancyhdr}
 \usepackage{float}
 \usepackage{graphicx}
+\usepackage{pdflscape}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{titlesec}
@@ -432,6 +433,17 @@ every push to \code{master}. Reviews have caught real defects in both
 directions: missing parameters in the cache key and a cache that returned the
 oldest duplicate were found in review, as was the trimmed-key bug described above.
 Each member keeps a weekly technical journal in the repository.
+Figure~\ref{fig:semester-plan} shows when the team scheduled each milestone.
+
+\begin{landscape}
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\linewidth,height=0.82\textheight,keepaspectratio]{../docs/AI_Cost_Autopilot_Gantt_Chart.pdf}
+    \caption{Semester plan for weeks 4--17. Diamonds mark scheduled deliverables.}
+    \label{fig:semester-plan}
+\end{figure}
+\end{landscape}
+
 
 % =========================================================================
 % CHAPTER 3: RESULTS AND EVALUATION
