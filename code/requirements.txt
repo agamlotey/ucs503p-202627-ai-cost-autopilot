@@ -3,6 +3,7 @@ fastapi
 uvicorn[standard]
 httpx
 tiktoken
+python-dotenv
 pytest
 
 # --- trimmer (Agam) ---

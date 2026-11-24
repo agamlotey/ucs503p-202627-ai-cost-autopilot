@@ -131,6 +131,45 @@ python -m trimmer.benchmark.projects
 python -m trimmer.benchmark.projects --markdown
 ```
 
+### Does a real model still fix the bug?
+
+Token counts and context checks are both static. The last question is whether
+a real model, given only what the trimmer kept, still produces a patch that
+passes the project's own tests.
+
+`agent_run.py` injects one real bug into `ledger_cli`, confirms the suite now
+fails, then asks the model to fix it twice: once with the whole project, once
+with the trimmed context. Each answer is applied to a fresh copy and judged by
+the project's own 13 tests. The bug is deliberately **not** in the function the
+task names: the task points at `parse_row`, the fault is in
+`LedgerError._describe`, two steps away through a constructor and a `super()`
+call. That is the case the trimmer used to get wrong.
+
+Across 22 trials with `gpt-4o-mini`:
+
+| Condition | Tokens sent | Fixed it |
+|---|---:|---:|
+| Full context | 2,769 | 13 of 22 |
+| Trimmed context | 2,303 (16.8% fewer) | 13 of 22 |
+
+The same success rate on 16.8% fewer tokens. The model succeeds on roughly
+three runs in five either way, so this task sits at the edge of what
+`gpt-4o-mini` can do, and a single run proves nothing: use `--trials`.
+
+**It also found a real design gap.** A model answering with whole files hands
+the elision back as if it were code, and applying that answer deletes working
+functions. In the first runs this wiped three bodies in `dates.py` and dropped
+the suite to 5 of 13, which looks exactly like "the trimmer cut too much" and
+is not. The gateway is what replaced those bodies, so the gateway is what can
+restore them: the benchmark re-expands every elided body before applying an
+answer, and reports what it restored. Trimming is only safe for a write-back
+workflow if something puts back what it took out. Doing that inside the
+gateway rather than in the benchmark is the next piece of work.
+
+``` shell
+python -m trimmer.benchmark.agent_run --trials 6
+```
+
 ## Status and next steps
 
 - [x] Collapse Python function/method bodies to signatures
@@ -139,6 +178,8 @@ python -m trimmer.benchmark.projects --markdown
 - [x] Benchmark against simple baselines (`trimmer/benchmark/`)
 - [x] Class instantiation edges (`raise ConfigError(...)` keeps that class's constructor)
 - [x] A second project, with a context-sufficiency check in CI
-- [ ] Run one real coding agent against trimmed context and judge the patch by
-      `ledger_cli`'s own tests (needs a provider API key)
+- [x] Run a real model against trimmed context and judge the patch by
+      `ledger_cli`'s own tests (`trimmer/benchmark/agent_run.py`)
+- [ ] Re-expansion in the gateway itself, so a trimmed reply can be written
+      back safely without the benchmark doing it
 - [ ] A second language (TypeScript)
