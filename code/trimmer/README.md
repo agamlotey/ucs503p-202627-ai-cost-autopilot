@@ -8,6 +8,7 @@ Compiler-aware code trimmer. See docstring in `trimmer.py` for the pipeline.
 - [x] Collapse non-focus functions to `def name(args) -> ret: ...`.
 - [x] Return real token-saving stats (uses `tiktoken`).
 - [x] Call graph + focus expansion, resolved across files.
+- [x] Class instantiation edges: a class the task reaches keeps its constructor.
 
 ## Benchmark
 Compare the trimmer with simple baselines on the realistic fixture:

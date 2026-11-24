@@ -58,17 +58,25 @@ def _docstring(body, data: bytes):
     return None
 
 
-def _collect_edits(node, data: bytes, keep: set[str], edits: list):
+def _collect_edits(node, data: bytes, keep: set[str], edits: list, cls: str | None = None):
+    """Collapse every function body except the ones named in `keep`.
+
+    `cls` is the enclosing class, so a method can be kept by its qualified
+    name (`ConfigError.__init__`). That keeps one class's constructor without
+    keeping every `__init__` in the request.
+    """
     for child in node.children:
+        if child.type == "class_definition":
+            name_node = child.child_by_field_name("name")
+            cname = _text(name_node, data) if name_node is not None else None
+            _collect_edits(child, data, keep, edits, cname or cls)
+            continue
         if child.type == "function_definition":
             name_node = child.child_by_field_name("name")
-            name = (
-                data[name_node.start_byte:name_node.end_byte].decode("utf-8", "ignore")
-                if name_node else ""
-            )
-            if name in keep:
+            name = _text(name_node, data) if name_node else ""
+            if name in keep or (cls and f"{cls}.{name}" in keep):
                 # keep this one in full, but still collapse nested functions
-                _collect_edits(child, data, keep, edits)
+                _collect_edits(child, data, keep, edits, cls)
                 continue
             body = child.child_by_field_name("body")
             if body is not None:
@@ -76,9 +84,8 @@ def _collect_edits(node, data: bytes, keep: set[str], edits: list):
                 doc = _docstring(body, data)
                 repl = f"{doc}\n{indent}..." if doc else "..."
                 edits.append((body.start_byte, body.end_byte, repl.encode("utf-8")))
-            # do NOT recurse into a collapsed function
-        else:
-            _collect_edits(child, data, keep, edits)
+            continue  # do NOT recurse into a collapsed function
+        _collect_edits(child, data, keep, edits, cls)
 
 
 def collapse_python(source: str, keep: set[str] | None = None) -> str:
@@ -138,6 +145,54 @@ def _text(node, data: bytes) -> str:
     return data[node.start_byte:node.end_byte].decode("utf-8", "ignore")
 
 
+def _defined_classes(source: str) -> dict[str, set[str]]:
+    """Map each class defined in `source` to the method names it defines."""
+    try:
+        parser = _get_parser()
+    except Exception:
+        return {}
+    data = source.encode("utf-8")
+    tree = parser.parse(data)
+    classes: dict[str, set[str]] = {}
+
+    def walk(node, cls: str | None = None):
+        for child in node.children:
+            if child.type == "class_definition":
+                nn = child.child_by_field_name("name")
+                cname = _text(nn, data) if nn is not None else None
+                if cname:
+                    classes.setdefault(cname, set())
+                walk(child, cname or cls)
+                continue
+            if child.type == "function_definition" and cls:
+                nn = child.child_by_field_name("name")
+                if nn is not None:
+                    classes.setdefault(cls, set()).add(_text(nn, data))
+            walk(child, cls)
+
+    walk(tree.root_node)
+    return classes
+
+
+def _constructor(cls: str) -> str:
+    """The qualified name of a class's constructor."""
+    return f"{cls}.__init__"
+
+
+def _symbols(source: str) -> set[str]:
+    """Every name the call graph can resolve in `source`.
+
+    Functions, classes, and the qualified constructor of each class that
+    defines one. Classes are included so that instantiating a class
+    (`raise ConfigError(...)`) resolves to a known symbol instead of being
+    dropped as an unresolvable call.
+    """
+    classes = _defined_classes(source)
+    names = _defined_functions(source) | set(classes)
+    names |= {_constructor(c) for c, methods in classes.items() if "__init__" in methods}
+    return names
+
+
 def _callee_name(fn_node, data: bytes) -> str:
     """Name of the function being called, or "" if it cannot be resolved.
 
@@ -180,8 +235,9 @@ def build_call_graph(source: str, known: set[str] | None = None) -> dict[str, se
     data = source.encode("utf-8")
     tree = parser.parse(data)
     defined = _defined_functions(source)
+    classes = _defined_classes(source)
     if known is None:
-        known = defined
+        known = _symbols(source)
     graph: dict[str, set[str]] = {name: set() for name in defined}
 
     def calls_in(node) -> set[str]:
@@ -198,8 +254,17 @@ def build_call_graph(source: str, known: set[str] | None = None) -> dict[str, se
         w(node)
         return found
 
-    def walk(node):
+    def walk(node, cls: str | None = None):
         for child in node.children:
+            if child.type == "class_definition":
+                nn = child.child_by_field_name("name")
+                cname = _text(nn, data) if nn is not None else None
+                # Instantiating a class runs its constructor, so an edge to
+                # the class leads on to that constructor's body.
+                if cname and "__init__" in classes.get(cname, set()):
+                    graph.setdefault(cname, set()).add(_constructor(cname))
+                walk(child, cname or cls)
+                continue
             if child.type == "function_definition":
                 nn = child.child_by_field_name("name")
                 body = child.child_by_field_name("body")
@@ -209,7 +274,13 @@ def build_call_graph(source: str, known: set[str] | None = None) -> dict[str, se
                     # expansion, since the caller is already in the set.
                     edges = {c for c in calls_in(body) if c != caller}
                     graph.setdefault(caller, set()).update(edges)
-            walk(child)
+                    if cls:
+                        # Also under the qualified name, so expanding from one
+                        # class's method does not pull in every same-named
+                        # method in the request.
+                        qualified = f"{cls}.{caller}"
+                        graph.setdefault(qualified, set()).update(edges - {qualified})
+            walk(child, cls)
 
     walk(tree.root_node)
     return graph
@@ -246,7 +317,7 @@ def merge_call_graphs(sources: list[str]) -> tuple[dict[str, set[str]], set[str]
     """
     defined_all: set[str] = set()
     for src in sources:
-        defined_all |= _defined_functions(src)
+        defined_all |= _symbols(src)
 
     graph: dict[str, set[str]] = {}
     for src in sources:
@@ -285,7 +356,7 @@ class CodeTrimmer:
             m["content"] if isinstance(m.get("content"), str) else None
             for m in messages
         ]
-        defined_per = [_defined_functions(c) if c is not None else set() for c in contents]
+        defined_per = [_symbols(c) if c is not None else set() for c in contents]
 
         # ONE graph across every code message, so a call that crosses a file
         # boundary is still an edge.
@@ -302,6 +373,14 @@ class CodeTrimmer:
         # Expand once, globally; with no focus at all everything collapses.
         focus = focus_names & defined_all
         keep_all = expand_focus(focus, graph, hops) if focus else set()
+
+        # Keeping a class means keeping its constructor: the task may well be
+        # about what the constructor does with its arguments. Added after the
+        # hop budget is spent, so a class reached on the last hop still brings
+        # its constructor, then expanded again for what the constructor calls.
+        ctors = {_constructor(c) for c in keep_all} & defined_all
+        if ctors:
+            keep_all |= expand_focus(ctors, graph, hops)
 
         trimmed = []
         for m, content, defined in zip(messages, contents, defined_per):

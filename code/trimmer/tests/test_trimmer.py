@@ -166,6 +166,105 @@ def test_real_edges_still_resolved():
     assert g["caller"] == {"helper"}
 
 
+# ---- class instantiation edges ----
+
+CLASS_SAMPLE = '''
+class ConfigError(Exception):
+    def __init__(self, message, path=None):
+        """Raised when a config file is invalid."""
+        self.message = _format(message)
+        self.path = path
+        super().__init__(self.message)
+
+
+class UnrelatedError(Exception):
+    def __init__(self, code):
+        """Nothing in the task raises this."""
+        self.code = code
+        self.tag = "unrelated"
+
+
+def _format(message):
+    return message.strip().capitalize()
+
+
+def load_config(path):
+    """Read and validate a config file."""
+    if not path:
+        raise ConfigError("missing path", path)
+    return {"path": path}
+
+
+def untouched(x):
+    return x * 99
+'''
+
+
+def _trim_class_sample(task="fix load_config so the error message is clearer"):
+    out, _ = CodeTrimmer().trim(
+        [{"role": "user", "content": task},
+         {"role": "user", "content": CLASS_SAMPLE}], token_budget=0)
+    return out[-1]["content"]
+
+
+def test_instantiating_a_class_is_an_edge_to_its_constructor():
+    g = build_call_graph(CLASS_SAMPLE)
+    assert "ConfigError" in g["load_config"]          # the class is a known symbol
+    assert g["ConfigError"] == {"ConfigError.__init__"}
+
+
+def test_constructor_body_is_kept_when_the_task_raises_it():
+    """Regression: `raise ConfigError(...)` created no edge, so the constructor
+    was collapsed and the agent could not see what it did with the message."""
+    code = _trim_class_sample()
+    assert "self.message = _format(message)" in code
+
+
+def test_constructors_own_dependency_is_kept():
+    """The constructor calls _format, which the fix also needs."""
+    assert "return message.strip().capitalize()" in _trim_class_sample()
+
+
+def test_other_constructors_still_collapse():
+    """Only the instantiated class's __init__ is kept, not every __init__."""
+    code = _trim_class_sample()
+    assert "self.code = code" not in code
+    assert 'self.tag = "unrelated"' not in code
+    assert "return x * 99" not in code                # plain functions too
+
+
+def test_class_without_a_constructor_is_harmless():
+    src = 'class Marker:\n    """no constructor"""\n\n\ndef go():\n    return Marker()\n'
+    g = build_call_graph(src)
+    assert "Marker" in g["go"]
+    assert "Marker.__init__" not in g.get("Marker", set())
+
+
+CLASS_FILE_A = '''
+def save_note(text):
+    """entry point"""
+    if not text:
+        raise EmptyNote("note is empty")
+    return text
+'''
+
+CLASS_FILE_B = '''
+class EmptyNote(Exception):
+    def __init__(self, reason):
+        """Raised when a note has no body."""
+        self.reason = reason
+        self.hint = "type something first"
+'''
+
+
+def test_constructor_in_another_file_is_kept():
+    out, _ = CodeTrimmer().trim(
+        [{"role": "user", "content": "fix save_note"},
+         {"role": "user", "content": CLASS_FILE_A},
+         {"role": "user", "content": CLASS_FILE_B}], token_budget=0)
+    assert 'self.hint = "type something first"' in out[-1]["content"]
+
+
 # ---- cross-file dependencies ----
 
 FILE_A = '''

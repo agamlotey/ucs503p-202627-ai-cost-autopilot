@@ -47,7 +47,11 @@ Python**.
    messages.
 4. **Expand** from the focus across the call graph (breadth-first, a
    configurable number of hops) — the focus *and what it calls* stay in full.
-5. **Collapse** every other function/method body to `...`, keeping its
+5. **Keep the constructors** of any class reached, because instantiating a
+   class runs its `__init__`. Constructors are tracked by qualified name
+   (`ConfigError.__init__`), so keeping one class's constructor does not keep
+   every `__init__` in the request.
+6. **Collapse** every other function/method body to `...`, keeping its
    signature and docstring.
 
 Because it cuts along real code boundaries, it is **deterministic**: it never
@@ -99,5 +103,5 @@ python -m trimmer.benchmark.baselines --task "fix delete_note"
 - [x] Call graph + focus expansion
 - [x] Cross-file dependency resolution
 - [x] Benchmark against simple baselines (`trimmer/benchmark/`)
-- [ ] Class instantiation edges (`raise ConfigError(...)` does not yet link to its constructor)
+- [x] Class instantiation edges (`raise ConfigError(...)` keeps that class's constructor)
 - [ ] A second language (TypeScript)
