@@ -315,3 +315,28 @@ page still needs fixing.
 Docs go stale at the moment a feature lands, and nothing fails when they do. Drawing a
 diagram from the code is a cheap way to catch this, but only if the diagram is checked
 against the code and not against the docs it is meant to extend.
+
+## Week 8: What the cache saves on a repeat and a follow-up
+
+**24 November 2026**
+
+I ran the same `notes_api` task with both optimizations off, trimming alone,
+caching alone, and both enabled. When I sent the request twice, caching cut two
+mock provider calls to one. The gateway counted 6,696 input tokens across the
+two requests with everything off, 3,348 with caching, and 2,237 with both.
+Adding a follow-up changed the conversation history. Both calls went through,
+and the cache-only run used the same 6,712 input tokens as its baseline.
+[PR #50](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/50)
+
+I added a JSON export so I could keep those comparisons after the process exited.
+Agam caught an assumption in my first version: each row got the right baseline
+only if I ran the off configuration first. I moved the baseline lookup after
+all four measurements, then ran the CLI with that configuration first and last.
+All eight rows matched across the two exports.
+[PR #51](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/51)
+
+I also tried the fixture in the separate Streamlit app. In Chrome the first run
+showed 2,237 tokens forwarded and repeating it showed a cache hit with zero
+forwarded. The app is up for review. My next measurement is whether a real
+coding agent completes the same fix directly and through the gateway.
+[PR #52](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/52)
