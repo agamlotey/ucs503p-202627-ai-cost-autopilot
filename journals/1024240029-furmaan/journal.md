@@ -44,22 +44,49 @@ Pick the cheapest safe action per request instead of stacking every trick. The
 decision order (safety -> cache -> trim -> passthrough) came straight from the
 cost of each action.
 
-## 12 September 2026 — Putting the policy behind the gateway
+## Retrospective for Weeks 2–8
 
-I wired the routing decision to the secret detector. The gateway could send a
-code flag and a token estimate without a secret flag, so the policy needed to
-scan the request itself in that case. For ordinary code requests, I used 1,000
-estimated tokens as the default trimming threshold and added counters for the
-decisions. [Implementation and review](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/26)
+I reconstructed these notes from my commits and reviews on 25 November. The
+dates below are the dates of the work. I still need to confirm which course
+week each entry belongs to.
 
-## 13 September 2026 — What a secret changes
+### 31 August — First autopilot module
 
-My first implementation disabled both caching and trimming when it detected a
-secret. I changed that decision so a large code request can still be trimmed
-while its response stays out of the cache. I added cases for text inside a
-multipart message and for ordinary code that mentions an auth variable.
-A separate fix covered hyphens inside OpenAI keys.
-[Routing and multipart fix](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/7f6af8c) · [Key-pattern fix](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/68c7301)
+I added the first standalone module. It put the trimmer, cache and autopilot in
+one file. The later gateway integration used the shared component interfaces.
+[Initial module](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/ba65dd2)
 
-I also replaced the template README with the project overview and reviewed the
+### 12 September — Routing large code requests
+
+The policy used two signals to decide when to trim: the request contained code
+and its estimated size exceeded 1,000 tokens. I added counters so we could see
+which decision the policy made. [Routing policy](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/b20c84d)
+
+### 12 September — Missing secret signal
+
+The gateway could supply a token estimate without a secret flag. I wired the
+detector into the policy so the request text still got checked before cache
+lookup. [Policy integration](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/c530ecf)
+
+### 13 September — Trimming a request that contains a secret
+
+Originally a detected secret disabled both caching and trimming. I split the
+decisions. A large code request can still be trimmed while its response stays
+out of the cache. [Policy correction](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/7f6af8c)
+
+### 13 September — Multipart messages and false alarms
+
+I added a case with a key in a text part beside an image part. The opposite
+case mattered too: an ordinary assignment like `password = payload.get("password")`
+should still be eligible for caching. [Detector cases](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/7f6af8c)
+
+### 13 September — Hyphens inside a key
+
+A separate test used an OpenAI project key with a hyphen inside its body. I
+updated the pattern and checked the actual routing decision in the test:
+`use_cache` must be false. [Key-pattern fix](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/commit/68c7301)
+
+### 13 September — Project overview and diagram review
+
+I replaced the template README with the project overview and approved the
 revised request-flow diagram. [README](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/35) · [Diagram review](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/36)
