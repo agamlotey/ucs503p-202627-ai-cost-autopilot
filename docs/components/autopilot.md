@@ -1,66 +1,42 @@
 # Autopilot
 
-**Owner:** Furmaan (1024240029) · **Code:** `code/autopilot/`
+**Owner:** Furmaan (1024240029) · **Code:** `code/autopilot/policy.py`
 
-Decides, for every request, which cost-saving action to take — the "brain" that
-ties the trimmer and the cache together.
+The gateway asks the policy two questions before forwarding a completion:
+may this request use the response cache, and is its code large enough to trim?
 
-## Why a decision layer is needed
+## Routing
 
-It is tempting to apply every trick to every request, but the techniques
-**overlap**. Trimming rewrites the prompt, which lowers how often the cache
-matches. Blindly stacking them wastes effort and can reduce total savings.
+The gateway estimates input size from string message content and looks for code
+markers. When the caller supplies no secret flag, the policy checks message
+text, including text parts in multipart messages, for known credential and PII
+patterns. A match disables both cache lookup and storage. Large code requests
+can still be trimmed.
 
-The autopilot therefore picks the cheapest **safe** action per request, rather
-than doing everything at once.
+For eligible requests the gateway looks in the cache first. A hit returns the
+stored response. On a miss, the gateway calls the trimmer if the policy selected
+it, then forwards the request to the provider. The cache owns similarity matching.
+The policy keeps decision counts in memory. The gateway records token estimates
+and the observed outcome in `/stats`.
 
-## Signals
+## Choosing the trim threshold
 
-Before deciding, it reads a few cheap signals:
+I ran each threshold in a fresh local gateway with a mock provider and held
+the trimmer's separate token budget at 1,000. I sent the fixture files as
+individual messages using `trimmer.fixtures.loader.as_messages`. The table shows
+the gateway's forwarded input-token counts on the first request.
 
-| Signal | Why it matters |
-|---|---|
-| Estimated token count | Trimming a tiny request is not worth the delay |
-| Contains code? | Selects the compiler-aware path |
-| Contains secrets / PII? | Must not be cached |
-| Cache similarity score | A hit is near-free |
+| Fixture and task | Original | Threshold 500 | Threshold 1,000 | Threshold 4,000 |
+|---|---:|---:|---:|---:|
+| notes_api, fix create_note | 3,348 | 2,237 | 2,237 | 3,348 |
+| ledger_cli, fix parse_row | 2,536 | 1,650 | 1,650 | 2,536 |
 
-## Decision order
+I kept the default at 1,000. Lowering it produced the same counts on these
+fixtures. Raising it to 4,000 skipped trimming on both. Requests near the
+lower cutoff would be needed to distinguish 500 from 1,000 more precisely.
 
-The order follows the cost of each action — cheapest first:
-
-```
-1. Safety check      -> secrets present? do not cache
-2. Cache lookup      -> hit? return the stored answer   (near-free)
-3. Code-heavy?       -> trim the request
-4. Otherwise         -> pass through untouched
-```
-
-``` python
-def decide(request, signals):
-    if signals["has_secrets"]:
-        return {"use_cache": False, "trim": False}
-    return {
-        "use_cache": True,
-        "trim": signals["has_code"] and signals["num_tokens_est"] > 1000,
-    }
-```
-
-## Guardrails
-
-- A **close-enough** cache match is not reused — correctness beats cost.
-- Sensitive requests are never stored.
-- Trimming is skipped when the context is too small to benefit.
-
-## Measurement and tuning
-
-The autopilot logs tokens saved, cache hit-rate, and cost per request. Those
-measurements feed back into its thresholds — which is what makes it an
-*autopilot* rather than a fixed rulebook.
-
-## Status and next steps
-
-- [ ] Full decision tree with safety checks
-- [ ] Signal extraction (token count, code detection, secret detection)
-- [ ] Conservative cache-reuse rule
-- [ ] Metrics logging and threshold tuning
+At the default threshold, repeating the notes request returned the same
+completion ID and forwarded zero tokens. I then appended a synthetic project
+key in a user message and sent that request twice. Both calls forwarded
+2,251 of 3,362 input tokens and returned different mock completion IDs. The
+gateway trimmed the request both times and bypassed the response cache.
