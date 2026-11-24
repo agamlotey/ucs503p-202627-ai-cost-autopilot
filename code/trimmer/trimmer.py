@@ -6,8 +6,11 @@ bodies to their signatures (keeping the docstring), so the model still sees the
 *shape* of the code without paying for every line. Token savings measured with
 tiktoken.
 
-Later: dependency graph (keep the focus + its direct deps in full), more
-languages. See trimmer/README.md.
+Now also: a call graph merged across files, so the focus keeps the functions
+it depends on wherever they live, including the constructor of any class it
+instantiates and the base constructor that one defers to.
+
+Later: more languages. See trimmer/README.md.
 
 The module degrades gracefully: if tree-sitter isn't installed, `collapse_python`
 returns the source unchanged, so the gateway still runs as a passthrough.
@@ -174,6 +177,56 @@ def _defined_classes(source: str) -> dict[str, set[str]]:
     return classes
 
 
+def _class_bases(source: str) -> dict[str, tuple[str, ...]]:
+    """Map each class to the names of its direct base classes.
+
+    Taken from the class header, so a base defined in another file is still
+    named here and `super()` can be resolved against the merged symbol set.
+    """
+    try:
+        parser = _get_parser()
+    except Exception:
+        return {}
+    data = source.encode("utf-8")
+    tree = parser.parse(data)
+    bases: dict[str, tuple[str, ...]] = {}
+
+    def walk(node):
+        for child in node.children:
+            if child.type == "class_definition":
+                nn = child.child_by_field_name("name")
+                args = child.child_by_field_name("superclasses")
+                names: list[str] = []
+                if args is not None:
+                    for arg in args.children:
+                        if arg.type == "identifier":
+                            names.append(_text(arg, data))
+                        elif arg.type == "attribute":  # mod.Base -> "Base"
+                            attr = arg.child_by_field_name("attribute")
+                            if attr is not None:
+                                names.append(_text(attr, data))
+                if nn is not None:
+                    bases[_text(nn, data)] = tuple(names)
+            walk(child)
+
+    walk(tree.root_node)
+    return bases
+
+
+def _super_method(fn_node, data: bytes) -> str:
+    """`super().foo()` -> "foo", otherwise ""."""
+    if fn_node is None or fn_node.type != "attribute":
+        return ""
+    obj = fn_node.child_by_field_name("object")
+    if obj is None or obj.type != "call":
+        return ""
+    inner = obj.child_by_field_name("function")
+    if inner is None or _text(inner, data) != "super":
+        return ""
+    attr = fn_node.child_by_field_name("attribute")
+    return _text(attr, data) if attr is not None else ""
+
+
 def _constructor(cls: str) -> str:
     """The qualified name of a class's constructor."""
     return f"{cls}.__init__"
@@ -189,7 +242,7 @@ def _symbols(source: str) -> set[str]:
     """
     classes = _defined_classes(source)
     names = _defined_functions(source) | set(classes)
-    names |= {_constructor(c) for c, methods in classes.items() if "__init__" in methods}
+    names |= {f"{cls}.{m}" for cls, methods in classes.items() for m in methods}
     return names
 
 
@@ -200,9 +253,10 @@ def _callee_name(fn_node, data: bytes) -> str:
     which is an approximation: it can link to a same-named function elsewhere
     in the file. It errs towards keeping too much rather than too little.
 
-    `super().method()` is excluded — it dispatches to the *base class*, so
-    treating it as a call to a same-named function in this file produces a
-    false edge (notably `__init__` appearing to call itself).
+    `super().method()` returns "" here: it dispatches to the *base class*, so
+    treating it as a call to a same-named function in this file would produce
+    a false edge (notably `__init__` appearing to call itself). It is resolved
+    separately, against the class's declared bases, by `_super_method`.
     """
     if fn_node is None:
         return ""
@@ -236,18 +290,30 @@ def build_call_graph(source: str, known: set[str] | None = None) -> dict[str, se
     tree = parser.parse(data)
     defined = _defined_functions(source)
     classes = _defined_classes(source)
+    bases = _class_bases(source)
     if known is None:
         known = _symbols(source)
     graph: dict[str, set[str]] = {name: set() for name in defined}
 
-    def calls_in(node) -> set[str]:
+    def calls_in(node, cls: str | None = None) -> set[str]:
         found: set[str] = set()
 
         def w(n):
             if n.type == "call":
-                name = _callee_name(n.child_by_field_name("function"), data)
-                if name in known:
-                    found.add(name)
+                fn = n.child_by_field_name("function")
+                method = _super_method(fn, data) if cls else ""
+                if method:
+                    # super().foo() dispatches to a base class, which may be
+                    # declared in another file; the merged symbol set says
+                    # which of the declared bases actually defines it.
+                    for base in bases.get(cls, ()):
+                        qualified = f"{base}.{method}"
+                        if qualified in known:
+                            found.add(qualified)
+                else:
+                    name = _callee_name(fn, data)
+                    if name in known:
+                        found.add(name)
             for c in n.children:
                 w(c)
 
@@ -272,7 +338,7 @@ def build_call_graph(source: str, known: set[str] | None = None) -> dict[str, se
                     caller = data[nn.start_byte:nn.end_byte].decode("utf-8", "ignore")
                     # Drop self-edges: recursion adds nothing to focus
                     # expansion, since the caller is already in the set.
-                    edges = {c for c in calls_in(body) if c != caller}
+                    edges = {c for c in calls_in(body, cls) if c != caller}
                     graph.setdefault(caller, set()).update(edges)
                     if cls:
                         # Also under the qualified name, so expanding from one

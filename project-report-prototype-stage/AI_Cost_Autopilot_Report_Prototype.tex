@@ -10,6 +10,8 @@
 \usepackage{fancyhdr}
 \usepackage{float}
 \usepackage{graphicx}
+\usepackage{pdflscape}
+\usepackage{longtable}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{titlesec}
@@ -231,52 +233,7 @@ their part with mocks. The gateway is the only place they meet.
 
 \subsection{Design Diagrams}
 
-The design is documented with four diagrams, all available on the project site and
-in \code{docs/Diagrams/}:
-
-\begin{itemize}
-    \item \textbf{Use case diagram} (Figure~\ref{fig:usecase}): the Developer and
-          the Coding Agent send requests; reducing cost is always included, while
-          reusing an answer, reducing code context and calling the LLM are
-          conditional extensions.
-    \item \textbf{Data flow diagram} (Figure~\ref{fig:dfd}): Level~0 shows the
-          gateway and its external entities, Level~1 its six processes and two data
-          stores, and Level~2 the seven steps of the trimmer.
-    \item \textbf{Activity (swimlane) diagram} (Figure~\ref{fig:activity}): one
-          request through the gateway, with one lane per component, decisions,
-          and fork/join for independent work.
-    \item \textbf{ER diagram} (Figure~\ref{fig:er}): the conceptual data model,
-          covering cache entries, metric records, and the trimmer's model of source
-          files, functions and the calls between them.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{use-case}
-    \caption{Use case diagram.}
-    \label{fig:usecase}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[height=0.82\textheight, width=\textwidth, keepaspectratio]{dfd}
-    \caption{Data flow diagram, levels 0, 1 and 2.}
-    \label{fig:dfd}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[height=0.82\textheight, width=\textwidth, keepaspectratio]{activity}
-    \caption{Activity diagram with swimlanes for handling one coding request.}
-    \label{fig:activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{er}
-    \caption{Entity relationship diagram (Chen notation).}
-    \label{fig:er}
-\end{figure}
+\input{diagrams}
 
 \subsection{Technical Stack}
 
@@ -431,7 +388,11 @@ test workflow runs on every pull request and on
 every push to \code{master}. Reviews have caught real defects in both
 directions: missing parameters in the cache key and a cache that returned the
 oldest duplicate were found in review, as was the trimmed-key bug described above.
-Each member keeps a weekly technical journal in the repository.
+Each member keeps a weekly technical journal in the repository. The
+semester plan the team worked to is shown in Figure~\ref{fig:gantt}.
+
+\input{gantt}
+
 
 % =========================================================================
 % CHAPTER 3: RESULTS AND EVALUATION
@@ -460,6 +421,10 @@ Figure~\ref{fig:testing} shows how the suites feed continuous integration.
 \caption{Test suites and continuous integration.}
 \label{fig:testing}
 \end{figure}
+
+\subsection{Test Cases}
+
+\input{test-cases}
 
 Measurements use a realistic fixture, \code{notes\_api}: a small but genuine
 service with 10 files, 45 functions and 3,277 tokens, with real imports between

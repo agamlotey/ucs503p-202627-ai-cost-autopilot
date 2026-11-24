@@ -11,13 +11,24 @@ Compiler-aware code trimmer. See docstring in `trimmer.py` for the pipeline.
 - [x] Class instantiation edges: a class the task reaches keeps its constructor.
 
 ## Benchmark
-Compare the trimmer with simple baselines on the realistic fixture:
+Compare the trimmer with simple baselines on one fixture:
 
 ```bash
 python -m trimmer.benchmark.baselines                       # run from code/
 python -m trimmer.benchmark.baselines --task "fix delete_note"
 python -m trimmer.benchmark.baselines --markdown            # table for the docs
 ```
+
+Check that the saving holds on a second project, and that nothing a correct
+patch needs was collapsed:
+
+```bash
+python -m trimmer.benchmark.projects
+python -m trimmer.benchmark.projects --markdown
+```
+
+Fixtures: `notes_api` (a service), `ledger_cli` (a CLI with classes and its own
+test suite), `sample_project` (a 2-file toy, for unit tests).
 
 Results and what they mean: `docs/components/trimmer.md`.
 
