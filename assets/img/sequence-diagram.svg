@@ -1,0 +1,260 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1556" width="1600" height="1556" role="img" aria-labelledby="t d">
+  <title id="t">UML sequence diagram for AI Cost Autopilot</title>
+  <desc id="d">A coding agent posts a chat completion to the gateway. The gateway snapshots the request, computes signals and asks the autopilot for a plan. If caching is allowed it looks up the cache and returns early on a hit. Otherwise it optionally trims, forwards through the provider module to the mock or the real LLM, stores the response under the original request, records metrics and returns. A second frame shows the dashboard polling the gateway for statistics.</desc>
+
+  <style>
+    .bg    { fill:#ffffff }
+    .box   { fill:#fff4d6; stroke:#1f2328; stroke-width:1.6 }
+    .ext   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.6 }
+    .plain { fill:#ffffff; stroke:#1f2328; stroke-width:1.6 }
+    .frame { fill:none; stroke:#1f2328; stroke-width:1.4 }
+    .tag   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.4 }
+    .sep   { stroke:#1f2328; stroke-width:1.2; fill:none }
+    .line  { stroke:#1f2328; stroke-width:1.5; fill:none }
+    .dash  { stroke:#1f2328; stroke-width:1.5; fill:none; stroke-dasharray:7 5 }
+    .life  { stroke:#6b7280; stroke-width:1.2; fill:none; stroke-dasharray:5 5 }
+    .bar   { fill:#ffffff; stroke:#1f2328; stroke-width:1.3 }
+    .panel { fill:#f7f4ee; stroke:#d8d3c7; stroke-width:1.2 }
+    .note  { fill:#fffdf5; stroke:#1f2328; stroke-width:1.1 }
+    .wash  { fill:#ffffff; opacity:.93 }
+    .head  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:25px; font-weight:700 }
+    .subt  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:14px }
+    .name  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:14px; font-weight:700 }
+    .ste   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px; font-style:italic }
+    .mem   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .txt   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px }
+    .small { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px }
+    .lbl   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:12px; font-style:italic }
+    .msg   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .bold  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px; font-weight:700 }
+  </style>
+
+  <defs>
+    <marker id="open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1.5 1.5 L10.5 6 L1.5 10.5" fill="none" stroke="#1f2328" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="fill" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+    <marker id="tri" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="14" markerHeight="14" orient="auto-start-reverse">
+      <path d="M1 1.5 L15 8 L1 14.5 Z" fill="#ffffff" stroke="#1f2328" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="dia" viewBox="0 0 20 12" refX="19" refY="6" markerWidth="16" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1600" height="1556"/>
+  <text class="head" x="800.0" y="48" text-anchor="middle">Sequence Diagram — AI Cost Autopilot</text>
+  <text class="subt" x="800.0" y="74" text-anchor="middle">One POST /v1/chat/completions through gateway/app.py, then the dashboard polling loop. Messages use the real method names.</text>
+
+  <!-- ================= lifelines ================= -->
+  <path class="life" d="M90 150 L90 1425"/>
+  <rect class="ext" x="22" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="90" y="121" text-anchor="middle">Coding Agent</text>
+  <text class="ste" x="90" y="139" text-anchor="middle">«external»</text>
+  <path class="life" d="M235 150 L235 1425"/>
+  <rect class="ext" x="167" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="235" y="121" text-anchor="middle">Dashboard</text>
+  <text class="ste" x="235" y="139" text-anchor="middle">browser</text>
+  <path class="life" d="M390 150 L390 1425"/>
+  <rect class="box" x="322" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="390" y="121" text-anchor="middle">:gateway.app</text>
+  <text class="ste" x="390" y="139" text-anchor="middle">chat_completions()</text>
+  <path class="life" d="M545 150 L545 1425"/>
+  <rect class="box" x="477" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="545" y="121" text-anchor="middle">metrics</text>
+  <text class="ste" x="545" y="139" text-anchor="middle">:Metrics</text>
+  <path class="life" d="M695 150 L695 1425"/>
+  <rect class="box" x="627" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="695" y="121" text-anchor="middle">autopilot</text>
+  <text class="ste" x="695" y="139" text-anchor="middle">:Autopilot</text>
+  <path class="life" d="M845 150 L845 1425"/>
+  <rect class="box" x="777" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="845" y="121" text-anchor="middle">_secrets</text>
+  <text class="ste" x="845" y="139" text-anchor="middle">:SecretsDetector</text>
+  <path class="life" d="M1000 150 L1000 1425"/>
+  <rect class="box" x="932" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="1000" y="121" text-anchor="middle">cache</text>
+  <text class="ste" x="1000" y="139" text-anchor="middle">:SemanticCache</text>
+  <path class="life" d="M1150 150 L1150 1425"/>
+  <rect class="box" x="1082" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="1150" y="121" text-anchor="middle">trimmer</text>
+  <text class="ste" x="1150" y="139" text-anchor="middle">:CodeTrimmer</text>
+  <path class="life" d="M1300 150 L1300 1425"/>
+  <rect class="box" x="1232" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="1300" y="121" text-anchor="middle">provider</text>
+  <text class="ste" x="1300" y="139" text-anchor="middle">«module»</text>
+  <path class="life" d="M1470 150 L1470 1425"/>
+  <rect class="ext" x="1402" y="100" width="136" height="50" rx="3"/>
+  <text class="name" x="1470" y="121" text-anchor="middle">LLM Provider</text>
+  <text class="ste" x="1470" y="139" text-anchor="middle">«external»</text>
+
+  <!-- ================= sd 1: handle one chat completion ================= -->
+  <rect class="frame" x="24" y="168" width="1552" height="1042"/>
+  <path class="tag" d="M24 168 H226 V181 L218 190 H24 Z"/>
+  <text class="bold" x="30" y="184">sd handle chat completion</text>
+  <rect class="bar" x="85" y="214" width="10" height="978"/>
+  <rect class="bar" x="385" y="214" width="10" height="978"/>
+  <path class="line" d="M95 214 L385 214" marker-end="url(#fill)"/>
+  <rect class="wash" x="98" y="196" width="254" height="16"/>
+  <text class="msg" x="102" y="208">1: POST /v1/chat/completions(body)</text>
+  <path class="line" d="M395 232 L421 232 L421 248 L397 248" marker-end="url(#fill)"/>
+  <rect class="wash" x="423" y="232" width="204" height="16"/>
+  <text class="msg" x="427" y="244">2: deepcopy(body): original</text>
+  <path class="line" d="M395 266 L421 266 L421 282 L397 282" marker-end="url(#fill)"/>
+  <rect class="wash" x="423" y="266" width="320" height="16"/>
+  <text class="msg" x="427" y="278">3: _tokens(), _preview(): baseline, preview</text>
+  <path class="line" d="M395 300 L421 300 L421 316 L397 316" marker-end="url(#fill)"/>
+  <rect class="wash" x="423" y="300" width="276" height="16"/>
+  <text class="msg" x="427" y="312">4: compute_signals(original): signals</text>
+  <rect class="bar" x="690" y="346" width="10" height="84"/>
+  <path class="line" d="M395 346 L690 346" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="328" width="211" height="16"/>
+  <text class="msg" x="402" y="340">5: decide(original, signals)</text>
+  <rect class="bar" x="840" y="374" width="10" height="28"/>
+  <path class="line" d="M700 374 L840 374" marker-end="url(#fill)"/>
+  <rect class="wash" x="703" y="356" width="117" height="16"/>
+  <text class="msg" x="707" y="368">5.1: scan(text)</text>
+  <path class="dash" d="M840 402 L700 402" marker-end="url(#open)"/>
+  <rect class="wash" x="703" y="384" width="73" height="16"/>
+  <text class="msg" x="707" y="396">5.2: bool</text>
+  <path class="dash" d="M690 430 L395 430" marker-end="url(#open)"/>
+  <rect class="wash" x="398" y="412" width="247" height="16"/>
+  <text class="msg" x="402" y="424">6: plan {use_cache, trim, reason}</text>
+
+  <!-- ================= opt: cache lookup ================= -->
+  <rect class="frame" x="330" y="448" width="770" height="200"/>
+  <path class="tag" d="M330 448 H365 V461 L357 470 H330 Z"/>
+  <text class="bold" x="336" y="464">opt</text>
+  <rect class="wash" x="398" y="452" width="407" height="16"/>
+  <text class="msg" x="402" y="464">[plan["use_cache"]]  (False when a secret was detected)</text>
+  <rect class="bar" x="995" y="498" width="10" height="28"/>
+  <path class="line" d="M395 498 L995 498" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="480" width="146" height="16"/>
+  <text class="msg" x="402" y="492">7: lookup(original)</text>
+  <path class="dash" d="M995 526 L395 526" marker-end="url(#open)"/>
+  <rect class="wash" x="398" y="508" width="138" height="16"/>
+  <text class="msg" x="402" y="520">8: Response | None</text>
+  <rect class="frame" x="342" y="542" width="746" height="94"/>
+  <path class="tag" d="M342 542 H377 V555 L369 564 H342 Z"/>
+  <text class="bold" x="348" y="558">opt</text>
+  <rect class="wash" x="398" y="546" width="131" height="16"/>
+  <text class="msg" x="402" y="558">[hit is not None]</text>
+  <rect class="bar" x="540" y="586" width="10" height="14"/>
+  <path class="line" d="M395 586 L540 586" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="568" width="443" height="16"/>
+  <text class="msg" x="402" y="580">9: record(baseline, sent=0, outcome="cache", model, preview)</text>
+  <path class="dash" d="M385 620 L95 620" marker-end="url(#open)"/>
+  <rect class="wash" x="98" y="602" width="88" height="16"/>
+  <text class="msg" x="102" y="614">10: 200 hit</text>
+  <text class="lbl" x="400" y="624">return early: no trim, no provider call, 0 tokens sent</text>
+
+  <!-- ================= opt: trim ================= -->
+  <rect class="frame" x="330" y="662" width="962" height="110"/>
+  <path class="tag" d="M330 662 H365 V675 L357 684 H330 Z"/>
+  <text class="bold" x="336" y="678">opt</text>
+  <rect class="wash" x="398" y="666" width="385" height="16"/>
+  <text class="msg" x="402" y="678">[plan["trim"]]  (has_code and num_tokens_est &gt; 1000)</text>
+  <rect class="bar" x="1145" y="712" width="10" height="46"/>
+  <path class="line" d="M395 712 L1145 712" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="694" width="298" height="16"/>
+  <text class="msg" x="402" y="706">11: trim(messages, TOKEN_BUDGET, ctx={})</text>
+  <path class="line" d="M1155 714 L1181 714 L1181 730 L1157 730" marker-end="url(#fill)"/>
+  <rect class="wash" x="1183" y="714" width="110" height="16"/>
+  <text class="msg" x="1187" y="726">11.1: collapse</text>
+  <path class="dash" d="M1145 758 L395 758" marker-end="url(#open)"/>
+  <rect class="wash" x="398" y="740" width="414" height="16"/>
+  <text class="msg" x="402" y="752">12: (trimmed messages, stats); body["messages"] replaced</text>
+
+  <!-- ================= forward through the provider module ================= -->
+  <rect class="bar" x="1295" y="808" width="10" height="188"/>
+  <path class="line" d="M395 808 L1295 808" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="790" width="131" height="16"/>
+  <text class="msg" x="402" y="802">13: forward(body)</text>
+  <rect class="frame" x="1214" y="826" width="352" height="154"/>
+  <path class="tag" d="M1214 826 H1249 V839 L1241 848 H1214 Z"/>
+  <text class="bold" x="1220" y="842">alt</text>
+  <rect class="wash" x="1312" y="830" width="189" height="16"/>
+  <text class="msg" x="1316" y="842">[MOCK_PROVIDER or no key]</text>
+  <path class="line" d="M1305 852 L1331 852 L1331 868 L1307 868" marker-end="url(#fill)"/>
+  <rect class="wash" x="1333" y="852" width="160" height="16"/>
+  <text class="msg" x="1337" y="864">13.1: mock_response()</text>
+  <path class="dash" d="M1214 890 L1566 890"/>
+  <rect class="wash" x="1312" y="894" width="88" height="16"/>
+  <text class="msg" x="1316" y="906">[otherwise]</text>
+  <rect class="bar" x="1465" y="932" width="10" height="30"/>
+  <path class="line" d="M1305 932 L1465 932" marker-end="url(#fill)"/>
+  <rect class="wash" x="1308" y="915" width="211" height="16"/>
+  <text class="msg" x="1312" y="927">13.1: POST /chat/completions</text>
+  <path class="dash" d="M1465 962 L1305 962" marker-end="url(#open)"/>
+  <rect class="wash" x="1308" y="945" width="160" height="16"/>
+  <text class="msg" x="1312" y="957">13.2: completion JSON</text>
+  <path class="dash" d="M1295 996 L395 996" marker-end="url(#open)"/>
+  <rect class="wash" x="398" y="978" width="95" height="16"/>
+  <text class="msg" x="402" y="990">14: response</text>
+
+  <!-- ================= opt: store, then record and reply ================= -->
+  <rect class="frame" x="330" y="1012" width="770" height="70"/>
+  <path class="tag" d="M330 1012 H365 V1025 L357 1034 H330 Z"/>
+  <text class="bold" x="336" y="1028">opt</text>
+  <rect class="wash" x="398" y="1016" width="146" height="16"/>
+  <text class="msg" x="402" y="1028">[plan["use_cache"]]</text>
+  <rect class="bar" x="995" y="1062" width="10" height="10"/>
+  <path class="line" d="M395 1062 L995 1062" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="1044" width="588" height="16"/>
+  <text class="msg" x="402" y="1056">15: store(original, response)  (keyed on the ORIGINAL, not the trimmed, request)</text>
+  <path class="line" d="M395 1092 L421 1092 L421 1108 L397 1108" marker-end="url(#fill)"/>
+  <rect class="wash" x="423" y="1092" width="639" height="16"/>
+  <text class="msg" x="427" y="1104">16: _tokens(body["messages"]): sent; outcome = "trim" if sent &lt; baseline else "forward"</text>
+  <rect class="bar" x="540" y="1136" width="10" height="12"/>
+  <path class="line" d="M395 1136 L540 1136" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="1118" width="378" height="16"/>
+  <text class="msg" x="402" y="1130">17: record(baseline, sent, outcome, model, preview)</text>
+  <path class="dash" d="M385 1176 L95 1176" marker-end="url(#open)"/>
+  <rect class="wash" x="98" y="1158" width="124" height="16"/>
+  <text class="msg" x="102" y="1170">18: 200 response</text>
+
+  <!-- ================= sd 2: live dashboard ================= -->
+  <rect class="frame" x="24" y="1226" width="1552" height="194"/>
+  <path class="tag" d="M24 1226 H165 V1239 L157 1248 H24 Z"/>
+  <text class="bold" x="30" y="1242">sd live dashboard</text>
+  <rect class="frame" x="170" y="1262" width="590" height="146"/>
+  <path class="tag" d="M170 1262 H212 V1275 L204 1284 H170 Z"/>
+  <text class="bold" x="176" y="1278">loop</text>
+  <rect class="wash" x="216" y="1266" width="189" height="16"/>
+  <text class="msg" x="220.4" y="1278">[every 1.5 s, GET /stats]</text>
+  <rect class="bar" x="230" y="1310" width="10" height="82"/>
+  <rect class="bar" x="385" y="1310" width="10" height="82"/>
+  <rect class="bar" x="540" y="1336" width="10" height="28"/>
+  <path class="line" d="M240 1310 L385 1310" marker-end="url(#fill)"/>
+  <rect class="wash" x="243" y="1292" width="102" height="16"/>
+  <text class="msg" x="247" y="1304">1: GET /stats</text>
+  <path class="line" d="M395 1336 L540 1336" marker-end="url(#fill)"/>
+  <rect class="wash" x="398" y="1318" width="102" height="16"/>
+  <text class="msg" x="402" y="1330">2: snapshot()</text>
+  <path class="dash" d="M540 1364 L395 1364" marker-end="url(#open)"/>
+  <rect class="wash" x="398" y="1346" width="138" height="16"/>
+  <text class="msg" x="402" y="1358">3: totals + recent</text>
+  <path class="dash" d="M385 1392 L240 1392" marker-end="url(#open)"/>
+  <rect class="wash" x="243" y="1374" width="88" height="16"/>
+  <text class="msg" x="247" y="1386">4: 200 JSON</text>
+  <rect class="note" x="780" y="1270" width="780" height="118"/>
+  <text class="small" x="790" y="1290">The "Try it" box posts to /v1/chat/completions and follows sd handle chat completion,</text>
+  <text class="small" x="790" y="1308">then re-reads /stats. It may send one prompt, or the task + 10 files from</text>
+  <text class="small" x="790" y="1326">GET /demo/example-request.</text>
+  <text class="small" x="790" y="1356">If the provider call raises (httpx error or non-2xx), the exception propagates: FastAPI</text>
+  <text class="small" x="790" y="1374">answers 500, and steps 15 to 18 do not run, so nothing is cached or metered.</text>
+
+  <!-- ================= notation ================= -->
+  <rect class="panel" x="24" y="1442" width="1552" height="90" rx="8"/>
+  <text class="bold" x="44" y="1472">Notation</text>
+  <path class="line" d="M140 1467 L200 1467" marker-end="url(#fill)"/>
+  <text class="small" x="210" y="1472">synchronous call</text>
+  <path class="dash" d="M340 1467 L400 1467" marker-end="url(#open)"/>
+  <text class="small" x="410" y="1472">return</text>
+  <rect class="bar" x="482" y="1458" width="10" height="20"/>
+  <text class="small" x="502" y="1472">activation</text>
+  <text class="small" x="590" y="1472">opt: runs only if the guard holds   ·   alt: exactly one branch runs   ·   loop: repeats   ·   sd: named interaction</text>
+  <text class="small" x="44" y="1504">The autopilot scans for secrets itself (step 5.1) because compute_signals() does not set has_secrets. A request with a secret skips both cache steps but can still be trimmed and forwarded. Step 11.1 is merge_call_graphs, expand_focus, then collapse_python.</text>
+</svg>

@@ -1,0 +1,259 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 1180" width="1560" height="1180" role="img" aria-labelledby="t d">
+  <title id="t">UML deployment diagram for AI Cost Autopilot</title>
+  <desc id="d">The developer workstation hosts the coding agent, a browser, the Python uvicorn process that runs the gateway with its in-memory cache and metrics, and an optional Vite dev server for the React dashboard. The gateway calls the LLM provider over HTTPS when a key is set. Model hosts supply tiktoken and embedding files on first use. GitHub hosts the repository, Actions runners for tests and docs, and the Pages documentation site.</desc>
+
+  <style>
+    .bg    { fill:#ffffff }
+    .box   { fill:#fff4d6; stroke:#1f2328; stroke-width:1.6 }
+    .ext   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.6 }
+    .plain { fill:#ffffff; stroke:#1f2328; stroke-width:1.6 }
+    .frame { fill:none; stroke:#1f2328; stroke-width:1.4 }
+    .tag   { fill:#f7f4ee; stroke:#1f2328; stroke-width:1.4 }
+    .sep   { stroke:#1f2328; stroke-width:1.2; fill:none }
+    .line  { stroke:#1f2328; stroke-width:1.5; fill:none }
+    .dash  { stroke:#1f2328; stroke-width:1.5; fill:none; stroke-dasharray:7 5 }
+    .life  { stroke:#6b7280; stroke-width:1.2; fill:none; stroke-dasharray:5 5 }
+    .bar   { fill:#ffffff; stroke:#1f2328; stroke-width:1.3 }
+    .panel { fill:#f7f4ee; stroke:#d8d3c7; stroke-width:1.2 }
+    .note  { fill:#fffdf5; stroke:#1f2328; stroke-width:1.1 }
+    .wash  { fill:#ffffff; opacity:.93 }
+    .head  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:25px; font-weight:700 }
+    .subt  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:14px }
+    .name  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:14px; font-weight:700 }
+    .ste   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px; font-style:italic }
+    .mem   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .txt   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px }
+    .small { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#555555; font-size:12px }
+    .lbl   { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:12px; font-style:italic }
+    .msg   { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; fill:#111111; font-size:12px; white-space:pre }
+    .bold  { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; fill:#111111; font-size:13px; font-weight:700 }
+  </style>
+
+  <defs>
+    <marker id="open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="11" markerHeight="11" orient="auto-start-reverse">
+      <path d="M1.5 1.5 L10.5 6 L1.5 10.5" fill="none" stroke="#1f2328" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="fill" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1.5 L11 6 L1 10.5 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+    <marker id="tri" viewBox="0 0 16 16" refX="15" refY="8" markerWidth="14" markerHeight="14" orient="auto-start-reverse">
+      <path d="M1 1.5 L15 8 L1 14.5 Z" fill="#ffffff" stroke="#1f2328" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="dia" viewBox="0 0 20 12" refX="19" refY="6" markerWidth="16" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 6 L10 1 L19 6 L10 11 Z" fill="#1f2328" stroke="#1f2328" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1560" height="1180"/>
+  <text class="head" x="780.0" y="48" text-anchor="middle">Deployment Diagram — AI Cost Autopilot</text>
+  <text class="subt" x="780.0" y="74" text-anchor="middle">What the repository actually deploys today: one local gateway process per developer. There is no container image or hosted production gateway.</text>
+
+  <!-- ================= developer workstation ================= -->
+  <path class="plain" d="M40 112 L52 100 H1012 V790 L1000 802 Z"/>
+  <rect class="plain" x="40" y="112" width="960" height="690"/>
+  <path class="sep" d="M1000 112 L1012 100"/>
+  <text class="ste" x="52" y="132">«device»</text>
+  <text class="name" x="52" y="150">Developer workstation</text>
+  <path class="ext" d="M66 176 L74 168 H364 V280 L356 288 Z"/>
+  <rect class="ext" x="66" y="176" width="290" height="112"/>
+  <path class="sep" d="M356 176 L364 168"/>
+  <text class="ste" x="78" y="196">«execution environment»</text>
+  <text class="name" x="78" y="214">Coding agent process</text>
+  <rect class="ext" x="80" y="232" width="262" height="44" rx="2"/>
+  <text class="ste" x="88" y="248">«client»</text>
+  <text class="bold" x="88" y="266">Cursor / Claude Code / Codex</text>
+  <path class="sep" d="M322 239 h8 l5 5 v12 h-13 Z M330 239 v5 h5"/>
+  <path class="ext" d="M66 318 L74 310 H364 V430 L356 438 Z"/>
+  <rect class="ext" x="66" y="318" width="290" height="120"/>
+  <path class="sep" d="M356 318 L364 310"/>
+  <text class="ste" x="78" y="338">«execution environment»</text>
+  <text class="name" x="78" y="356">Python CLI (code/)</text>
+  <rect class="ext" x="80" y="374" width="262" height="58" rx="2"/>
+  <text class="ste" x="88" y="390">«script»</text>
+  <text class="bold" x="88" y="408">ask.py</text>
+  <text class="small" x="88" y="424">sends prompts over HTTP</text>
+  <path class="sep" d="M322 381 h8 l5 5 v12 h-13 Z M330 381 v5 h5"/>
+  <path class="ext" d="M66 468 L74 460 H364 V760 L356 768 Z"/>
+  <rect class="ext" x="66" y="468" width="290" height="300"/>
+  <path class="sep" d="M356 468 L364 460"/>
+  <text class="ste" x="78" y="488">«execution environment»</text>
+  <text class="name" x="78" y="506">Web browser</text>
+  <rect class="ext" x="80" y="524" width="262" height="58" rx="2"/>
+  <text class="ste" x="88" y="540">«page»</text>
+  <text class="bold" x="88" y="558">dashboard.html</text>
+  <text class="small" x="88" y="574">polls /stats every 1.5 s</text>
+  <path class="sep" d="M322 531 h8 l5 5 v12 h-13 Z M330 531 v5 h5"/>
+  <rect class="ext" x="80" y="594" width="262" height="58" rx="2"/>
+  <text class="ste" x="88" y="610">«page»</text>
+  <text class="bold" x="88" y="628">React dashboard (SPA)</text>
+  <text class="small" x="88" y="644">MUI, ECharts; polls /stats</text>
+  <path class="sep" d="M322 601 h8 l5 5 v12 h-13 Z M330 601 v5 h5"/>
+  <rect class="ext" x="80" y="664" width="262" height="58" rx="2"/>
+  <text class="ste" x="88" y="680">«page»</text>
+  <text class="bold" x="88" y="698">AI Cost Autopilot docs</text>
+  <text class="small" x="88" y="714">read from GitHub Pages</text>
+  <path class="sep" d="M322 671 h8 l5 5 v12 h-13 Z M330 671 v5 h5"/>
+  <path class="box" d="M420 176 L428 168 H984 V606 L976 614 Z"/>
+  <rect class="box" x="420" y="176" width="556" height="438"/>
+  <path class="sep" d="M976 176 L984 168"/>
+  <text class="ste" x="432" y="196">«execution environment»</text>
+  <text class="name" x="432" y="214">Python venv: uvicorn, port 8000 (one process)</text>
+  <rect class="plain" x="436" y="232" width="250" height="58" rx="2"/>
+  <text class="ste" x="444" y="248">«artifact»</text>
+  <text class="bold" x="444" y="266">gateway.app:app</text>
+  <text class="small" x="444" y="282">FastAPI routes, pipeline wiring</text>
+  <path class="sep" d="M666 239 h8 l5 5 v12 h-13 Z M674 239 v5 h5"/>
+  <rect class="plain" x="702" y="232" width="258" height="58" rx="2"/>
+  <text class="ste" x="710" y="248">«artifact»</text>
+  <text class="bold" x="710" y="266">gateway/static/dashboard.html</text>
+  <text class="small" x="710" y="282">served at GET /</text>
+  <path class="sep" d="M940 239 h8 l5 5 v12 h-13 Z M948 239 v5 h5"/>
+  <rect class="plain" x="436" y="300" width="164" height="58" rx="2"/>
+  <text class="ste" x="444" y="316">«artifact»</text>
+  <text class="bold" x="444" y="334">autopilot/</text>
+  <text class="small" x="444" y="350">policy.py</text>
+  <path class="sep" d="M580 307 h8 l5 5 v12 h-13 Z M588 307 v5 h5"/>
+  <rect class="plain" x="614" y="300" width="164" height="58" rx="2"/>
+  <text class="ste" x="622" y="316">«artifact»</text>
+  <text class="bold" x="622" y="334">cache/</text>
+  <text class="small" x="622" y="350">cache.py</text>
+  <path class="sep" d="M758 307 h8 l5 5 v12 h-13 Z M766 307 v5 h5"/>
+  <rect class="plain" x="792" y="300" width="168" height="58" rx="2"/>
+  <text class="ste" x="800" y="316">«artifact»</text>
+  <text class="bold" x="800" y="334">trimmer/</text>
+  <text class="small" x="800" y="350">trimmer.py, fixtures</text>
+  <path class="sep" d="M940 307 h8 l5 5 v12 h-13 Z M948 307 v5 h5"/>
+  <rect class="plain" x="436" y="372" width="254" height="76" rx="2"/>
+  <text class="ste" x="444" y="390">«in-memory store»</text>
+  <text class="bold" x="444" y="408">SemanticCache._buckets</text>
+  <text class="small" x="444" y="426">LRU cap and optional sliding TTL;</text>
+  <text class="small" x="444" y="441">lost on restart</text>
+  <rect class="plain" x="706" y="372" width="254" height="76" rx="2"/>
+  <text class="ste" x="714" y="390">«in-memory store»</text>
+  <text class="bold" x="714" y="408">Metrics (deque of last 30)</text>
+  <text class="small" x="714" y="426">running totals for /stats;</text>
+  <text class="small" x="714" y="441">lost on restart</text>
+  <rect class="plain" x="436" y="460" width="524" height="72" rx="2"/>
+  <text class="ste" x="444" y="478">«library»</text>
+  <text class="txt" x="444" y="496">fastapi, uvicorn, httpx, tiktoken, tree-sitter, tree-sitter-python</text>
+  <text class="small" x="444" y="516">optional: sentence-transformers (all-MiniLM-L6-v2, enables prose similarity)</text>
+  <rect class="plain" x="436" y="544" width="524" height="54" rx="2"/>
+  <text class="ste" x="444" y="562">«environment»</text>
+  <text class="small" x="444" y="582">PROVIDER_*, DEFAULT_MODEL, MOCK_PROVIDER, TOKEN_BUDGET, CACHE_*</text>
+  <path class="ext" d="M420 648 L428 640 H984 V760 L976 768 Z"/>
+  <rect class="ext" x="420" y="648" width="556" height="120"/>
+  <path class="sep" d="M976 648 L984 640"/>
+  <text class="ste" x="432" y="668">«execution environment»</text>
+  <text class="name" x="432" y="686">Node.js: Vite dev server, port 3000 (optional)</text>
+  <rect class="plain" x="436" y="704" width="524" height="58" rx="2"/>
+  <text class="ste" x="444" y="720">«artifact»</text>
+  <text class="bold" x="444" y="738">code/frontend (npm run dev)</text>
+  <text class="small" x="444" y="754">serves the SPA; proxies /stats, /v1, /health, /benchmarks, /demo</text>
+  <path class="sep" d="M940 711 h8 l5 5 v12 h-13 Z M948 711 v5 h5"/>
+
+  <!-- ================= LLM provider ================= -->
+  <path class="ext" d="M1090 112 L1102 100 H1532 V218 L1520 230 Z"/>
+  <rect class="ext" x="1090" y="112" width="430" height="118"/>
+  <path class="sep" d="M1520 112 L1532 100"/>
+  <text class="ste" x="1102" y="132">«cloud service»</text>
+  <text class="name" x="1102" y="150">LLM provider (OpenAI-compatible)</text>
+  <rect class="plain" x="1106" y="168" width="398" height="44" rx="2"/>
+  <text class="ste" x="1114" y="184">«endpoint»</text>
+  <text class="bold" x="1114" y="202">POST {PROVIDER_BASE_URL}/chat/completions</text>
+  <path class="sep" d="M1484 175 h8 l5 5 v12 h-13 Z M1492 175 v5 h5"/>
+
+  <!-- ================= model hosts ================= -->
+  <path class="ext" d="M1090 268 L1102 256 H1532 V406 L1520 418 Z"/>
+  <rect class="ext" x="1090" y="268" width="430" height="150"/>
+  <path class="sep" d="M1520 268 L1532 256"/>
+  <text class="ste" x="1102" y="288">«cloud service»</text>
+  <text class="name" x="1102" y="306">Model file hosts (first run only)</text>
+  <rect class="plain" x="1106" y="324" width="192" height="58" rx="2"/>
+  <text class="ste" x="1114" y="340">«artifact»</text>
+  <text class="bold" x="1114" y="358">cl100k_base</text>
+  <text class="small" x="1114" y="374">tiktoken encoding</text>
+  <path class="sep" d="M1278 331 h8 l5 5 v12 h-13 Z M1286 331 v5 h5"/>
+  <rect class="plain" x="1312" y="324" width="192" height="58" rx="2"/>
+  <text class="ste" x="1320" y="340">«artifact»</text>
+  <text class="bold" x="1320" y="358">all-MiniLM-L6-v2</text>
+  <text class="small" x="1320" y="374">Hugging Face (optional)</text>
+  <path class="sep" d="M1484 331 h8 l5 5 v12 h-13 Z M1492 331 v5 h5"/>
+
+  <!-- ================= github ================= -->
+  <path class="ext" d="M1090 462 L1102 450 H1532 V790 L1520 802 Z"/>
+  <rect class="ext" x="1090" y="462" width="430" height="340"/>
+  <path class="sep" d="M1520 462 L1532 450"/>
+  <text class="ste" x="1102" y="482">«cloud service»</text>
+  <text class="name" x="1102" y="500">GitHub</text>
+  <rect class="plain" x="1106" y="518" width="398" height="58" rx="2"/>
+  <text class="ste" x="1114" y="534">«repository»</text>
+  <text class="bold" x="1114" y="552">agamlotey/ucs503p-202627-ai-cost-autopilot</text>
+  <text class="small" x="1114" y="568">source repository, master and gh-pages branches</text>
+  <path class="sep" d="M1484 525 h8 l5 5 v12 h-13 Z M1492 525 v5 h5"/>
+  <path class="plain" d="M1106 606 L1112 600 H1510 V688 L1504 694 Z"/>
+  <rect class="plain" x="1106" y="606" width="398" height="88"/>
+  <path class="sep" d="M1504 606 L1510 600"/>
+  <text class="ste" x="1118" y="626">«runner: ubuntu-latest»</text>
+  <text class="name" x="1118" y="644">GitHub Actions</text>
+  <text class="small" x="1118" y="662">tests.yml: pip install, pytest -q (push, pull request)</text>
+  <text class="small" x="1118" y="680">mkdocs.yml: mkdocs gh-deploy --force (push to master)</text>
+  <rect class="plain" x="1106" y="726" width="398" height="58" rx="2"/>
+  <text class="ste" x="1114" y="742">«static site»</text>
+  <text class="bold" x="1114" y="760">GitHub Pages</text>
+  <text class="small" x="1114" y="776">agamlotey.github.io/ucs503p-202627-ai-cost-autopilot</text>
+  <path class="sep" d="M1484 733 h8 l5 5 v12 h-13 Z M1492 733 v5 h5"/>
+
+  <!-- ================= communication paths ================= -->
+  <path class="line" d="M342 256 L420 256" marker-end="url(#open)"/>
+  <rect class="wash" x="358" y="236" width="33" height="16"/>
+  <text class="lbl" x="362" y="248">HTTP</text>
+  <path class="line" d="M342 403 L402 403 L402 280 L420 280" marker-end="url(#open)"/>
+  <rect class="wash" x="348" y="383" width="33" height="16"/>
+  <text class="lbl" x="352" y="395">HTTP</text>
+  <path class="line" d="M342 553 L420 553" marker-end="url(#open)"/>
+  <rect class="wash" x="358" y="533" width="33" height="16"/>
+  <text class="lbl" x="362" y="545">HTTP</text>
+  <path class="line" d="M342 623 L402 623 L402 716 L420 716" marker-end="url(#open)"/>
+  <rect class="wash" x="348" y="603" width="33" height="16"/>
+  <text class="lbl" x="352" y="615">HTTP</text>
+  <path class="line" d="M700 648 L700 614" marker-end="url(#open)"/>
+  <rect class="wash" x="704" y="624" width="159" height="16"/>
+  <text class="lbl" x="708" y="636">HTTP proxy (GATEWAY_URL)</text>
+  <path class="line" d="M976 200 L1090 200" marker-end="url(#open)"/>
+  <rect class="wash" x="1018" y="180" width="40" height="16"/>
+  <text class="lbl" x="1022" y="192">HTTPS</text>
+  <text class="small" x="1022" y="218">skipped in</text>
+  <text class="small" x="1022" y="232">mock mode</text>
+  <path class="line" d="M976 350 L1090 350" marker-end="url(#open)"/>
+  <rect class="wash" x="1018" y="330" width="40" height="16"/>
+  <text class="lbl" x="1022" y="342">HTTPS</text>
+  <path class="line" d="M1000 560 L1090 560" marker-end="url(#open)"/>
+  <rect class="wash" x="1018" y="540" width="58" height="16"/>
+  <text class="lbl" x="1022" y="552">git push</text>
+  <path class="line" d="M211 722 L211 830 L1050 830 L1050 755 L1106 755" marker-end="url(#open)"/>
+  <rect class="wash" x="496" y="822" width="166" height="16"/>
+  <text class="lbl" x="500" y="834">HTTPS: read the docs site</text>
+  <path class="line" d="M1305 576 L1305 600" marker-end="url(#open)"/>
+  <text class="small" x="1315" y="594">triggers on push / pull request</text>
+  <path class="line" d="M1305 694 L1305 726" marker-end="url(#open)"/>
+  <text class="small" x="1315" y="714">mkdocs gh-deploy</text>
+
+  <!-- ================= notes and notation ================= -->
+  <rect class="panel" x="40" y="866" width="1480" height="280" rx="8"/>
+  <text class="bold" x="60" y="896">Notes</text>
+  <text class="small" x="60" y="922">•  Mock mode: with MOCK_PROVIDER=1 or no PROVIDER_API_KEY, the gateway answers locally and never contacts the LLM provider, so the whole pipeline runs offline at no cost.</text>
+  <text class="small" x="60" y="946">•  Base URL: a coding agent connects by pointing its base URL at http://localhost:8000/v1. The built-in dashboard needs no separate server: GET / serves dashboard.html from the same process.</text>
+  <text class="small" x="60" y="970">•  State: the cache and metrics live inside the single uvicorn process. They are not shared between workers and do not survive a restart. A persistent or shared store is future work.</text>
+  <text class="small" x="60" y="994">•  Environment: the code reads settings with os.getenv and does not load .env by itself; export them or pass uvicorn --env-file .env.</text>
+  <text class="small" x="60" y="1018">•  Offline fallbacks: with no tiktoken download, count_tokens falls back to len/4. Without sentence-transformers, the cache still matches exact text and only prose similarity is off.</text>
+  <text class="small" x="60" y="1042">•  demo.py runs in process through FastAPI TestClient with the mock provider, so it needs no running server and is not a separate deployment.</text>
+  <text class="small" x="60" y="1066">•  Not deployed: the cache uses no database or vector store such as SQLite or FAISS; entries stay in process memory. No Dockerfile, compose file or hosted gateway exists in the repository.</text>
+  <text class="bold" x="60" y="1122">Notation</text>
+  <path class="plain" d="M130 1112 l6 -6 h24 v14 l-6 6 Z"/>
+  <rect class="plain" x="130" y="1112" width="24" height="14"/>
+  <text class="small" x="168" y="1124">node (device, environment or service)</text>
+  <rect class="plain" x="420" y="1110" width="24" height="16" rx="2"/>
+  <text class="small" x="452" y="1124">deployed artifact or store</text>
+  <path class="line" d="M640 1119 L700 1119" marker-end="url(#open)"/>
+  <text class="small" x="710" y="1124">communication path, labelled with its protocol; the arrow points at the callee</text>
+</svg>
