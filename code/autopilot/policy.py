@@ -30,6 +30,8 @@ from typing import Any
 
 from gateway.interfaces import Request
 
+SECRETS_DETECTED = "secrets_detected"
+
 
 # ----------------------------------------------------------------------
 # Safety check: secrets / PII detection
@@ -125,7 +127,7 @@ class Autopilot:
             return {
                 "use_cache": False,
                 "trim": should_trim,
-                "reason": "secrets_detected",
+                "reason": SECRETS_DETECTED,
             }
 
         # --- 2 & 3. Cache is always attempted; trim only if it's worth it ---
