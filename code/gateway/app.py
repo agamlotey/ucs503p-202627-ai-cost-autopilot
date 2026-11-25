@@ -116,10 +116,10 @@ async def chat_completions(req: Request):
     original = copy.deepcopy(body)
     baseline = _tokens(original.get("messages", []))
     model = original.get("model", config.DEFAULT_MODEL)
-    preview = _preview(original)
 
     signals = compute_signals(original)
     plan = autopilot.decide(original, signals)
+    preview = "Sensitive request" if plan.get("reason") == "secrets_detected" else _preview(original)
 
     if plan.get("use_cache"):
         hit = cache.lookup(original)

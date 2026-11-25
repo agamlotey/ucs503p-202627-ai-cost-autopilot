@@ -54,6 +54,15 @@ def test_plain_prompt_is_forwarded_untouched(client):
     assert last["saved"] == 0
 
 
+def test_flagged_request_has_a_private_activity_preview(client):
+    messages = [{"role": "user", "content": 'password = "synthetic-example"'}]
+    for _ in range(2):
+        last = _send(client, messages)
+        assert last["preview"] == "Sensitive request"
+        assert last["outcome"] == "forward"
+    assert client.get("/stats").json()["cache_hits"] == 0
+
+
 def test_stats_reset(client):
     _send(client, [{"role": "user", "content": "hello"}])
     client.post("/stats/reset")
