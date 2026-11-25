@@ -13,7 +13,9 @@ text, including text parts in multipart messages, for known credential and PII
 patterns. A match disables both cache lookup and storage. Large code requests
 can still be trimmed.
 
-For eligible requests the gateway looks in the cache first. A hit returns the
+Trimming rewrites the prompt. Looking up that rewritten prompt against entries
+keyed on the original can turn an exact repeat into a miss. The gateway checks
+the original request first and uses that same key when it stores a response. A hit returns the
 stored response. On a miss, the gateway calls the trimmer if the policy selected
 it, then forwards the request to the provider. The cache owns similarity matching.
 The policy keeps decision counts in memory. The gateway records token estimates
@@ -37,6 +39,14 @@ lower cutoff would be needed to distinguish 500 from 1,000 more precisely.
 
 At the default threshold, repeating the notes request returned the same
 completion ID and forwarded zero tokens. I then appended a synthetic project
-key in a user message and sent that request twice. Both calls forwarded
-2,251 of 3,362 input tokens and returned different mock completion IDs. The
-gateway trimmed the request both times and bypassed the response cache.
+key in a user message and sent that request twice. The gateway trimmed both requests
+and returned different mock completion IDs, confirming that the repeat also
+reached the mock provider.
+
+## Status and next steps
+
+- [x] Route code-heavy requests using the gateway’s size estimate and code markers.
+- [x] Bypass cache lookup and storage for detected secrets, including secrets in multipart text.
+- [x] Check eligible requests for a cache hit before trimming and record the outcome in `/stats`.
+- [x] Compare three policy thresholds on the notes_api and ledger_cli fixtures.
+- [ ] Measure requests near the 1,000-token cutoff to determine when trimming saves enough input to justify its latency. Threshold selection is currently manual.
