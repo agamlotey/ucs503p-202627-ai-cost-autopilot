@@ -79,3 +79,15 @@ pytest
 ```
 
 Tests also run automatically on every push and pull request via GitHub Actions.
+
+## Host the mock dashboard
+
+In Render, choose **New → Blueprint**, connect this repository, and select
+`master`. The root `render.yaml` configures one free Python service. The
+dashboard and gateway share the service URL. It starts in mock mode and needs
+no provider key.
+
+Once Render reports the service healthy, open its URL and send a sample prompt
+twice. An exact repeat should show a cache hit and zero tokens forwarded. Use
+sample text for this shared demo because ordinary prompt previews appear in
+the activity feed. A service restart clears the in-memory cache and counters.
