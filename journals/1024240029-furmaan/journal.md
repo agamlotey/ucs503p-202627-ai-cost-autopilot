@@ -100,3 +100,16 @@ Repository record: 13 September 2026.
 
 I replaced the template README with the project overview and approved the
 revised request-flow diagram. [README](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/35) · [Diagram review](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/36)
+
+### Follow-up verification, 25 November 2026
+
+I replayed Agam’s notes_api and ledger_cli fixtures through the mock gateway.
+With the trimmer budget held at 1,000, policy thresholds of 500 and 1,000
+forwarded the same input on both tasks. At 4,000 each went through in full.
+I kept the default. [Routing measurements](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/59)
+
+Repeating a request with a dummy credential bypassed Devansh’s cache both
+times. I followed the same decision into the dashboard and changed the shared
+activity preview to read “Sensitive request”. In Chrome I checked both the
+visible label and its tooltip, and verified that an ordinary prompt
+still had a preview. [Dashboard change](https://github.com/agamlotey/ucs503p-202627-ai-cost-autopilot/pull/61)
