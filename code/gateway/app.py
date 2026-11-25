@@ -14,7 +14,7 @@ from . import provider, config
 from .metrics import metrics
 from trimmer.trimmer import CodeTrimmer, count_tokens
 from cache.cache import SemanticCache
-from autopilot.policy import Autopilot
+from autopilot.policy import Autopilot, SECRETS_DETECTED
 
 app = FastAPI(title="AI Cost Autopilot")
 
@@ -116,10 +116,10 @@ async def chat_completions(req: Request):
     original = copy.deepcopy(body)
     baseline = _tokens(original.get("messages", []))
     model = original.get("model", config.DEFAULT_MODEL)
-    preview = _preview(original)
 
     signals = compute_signals(original)
     plan = autopilot.decide(original, signals)
+    preview = "Sensitive request" if plan.get("reason") == SECRETS_DETECTED else _preview(original)
 
     if plan.get("use_cache"):
         hit = cache.lookup(original)
