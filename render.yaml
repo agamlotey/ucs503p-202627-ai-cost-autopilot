@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ai-cost-autopilot-demo
+    runtime: python
+    plan: free
+    branch: master
+    rootDir: code
+    buildCommand: python -m pip install -r requirements.txt
+    startCommand: python -m uvicorn gateway.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: MOCK_PROVIDER
+        value: "1"
+      - key: PYTHON_VERSION
+        value: "3.12.12"
